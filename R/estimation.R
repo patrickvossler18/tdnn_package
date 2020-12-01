@@ -13,7 +13,7 @@ est_effect <- function(X,
     W_0 = W_0
   )
 
-  return(list(deDNN_pred = deDNN_pred, s_choice = s_choice0))
+  list(deDNN_pred = deDNN_pred, s_choice = s_choice0)
 }
 
 
@@ -83,6 +83,6 @@ est_variance <- function(X,
     ncpus = ncpus
   )
 
-  return (mean((boot_estimates$t - deDNN_pred)^2))
+  mean((boot_estimates$t - deDNN_pred)^2)
 
 }
