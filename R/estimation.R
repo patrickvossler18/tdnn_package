@@ -82,4 +82,7 @@ est_variance <- function(X,
     parallel = use_parallel,
     ncpus = ncpus
   )
+
+  return (mean((boot_estimates$t - deDNN_pred)^2))
+
 }
