@@ -60,5 +60,5 @@ td_dnn <- function(X, Y, X_test, s_choice, W_0) {
     bc_p = 2
   )$estimates
 
-  a_pred + b_pred) / 2
+  (a_pred + b_pred) / 2
 }
