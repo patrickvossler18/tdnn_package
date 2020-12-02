@@ -308,3 +308,65 @@ NumericVector tuning(NumericVector s_seq,  NumericMatrix X, NumericVector Y,
 
 
 }
+
+
+// [[Rcpp::export]]
+NumericVector tuning_greedy(NumericMatrix X, NumericVector Y,
+                     NumericMatrix X_test, double bc_p,
+                     Nullable<NumericVector> W0_ = R_NilValue){
+
+    double n_obs = X_test.nrow();
+    bool search_for_s = true;
+    arma::mat tuning_mat;
+    arma::vec best_s(n_obs, fill::zeros);
+    double s = 0;
+    // using zero indexing here to match with C++, note s + 1 -> s+2 in de_dnn call
+
+    while (search_for_s){
+        // For a given s, get the de_dnn estimates for each test observation
+        List de_dnn_estimates = de_dnn(as<arma::mat>(X), Y, as<arma::mat>(X_test),
+                                       s + 2, bc_p, W0_);
+        // This gives me an estimate for each test observation and is a n x 1 matrix
+        arma::mat candidate_results(n_obs, 1 );
+        candidate_results = as<arma::mat>(de_dnn_estimates["estimates"]);
+        // Might need to reshape this matrix?
+
+        // Now we add this column to our matrix if the matrix is empty
+        if (tuning_mat.is_empty()){
+            tuning_mat.column(s) = candiate_results;
+        } else {
+            // tuning_mat is an n x s matrix and we want to diff each of the rows
+            // arma::mat mat_row = estimate_matrix.row(i);
+            arma::mat out_diff = diff(tuning_mat, 1, 1);
+
+            IntegerVector idx = Range(0, (tuning_mat.n_cols)-2);
+            arma::mat out_denom = tuning_mat.cols(as<uvec>(idx));
+
+            arma::mat diff_ratio = diff(abs( out_diff / out_denom), 1, 1);
+
+            // Now we go through each row and check if any of the columns are
+            // greater than -0.01
+            for(R_xlen_t i = 0; i < diff_ratio.n_rows; ++i) {
+                // Only loop through the columns if we haven't already found a
+                // suitable s
+                if(best_s(i) == 0){
+                    for(R_xlen_t j = 0; j < diff_ratio.n_cols; ++j) {
+                        if (diff_ratio(i, j) > -0.01){
+                            best_s(i) = j + 1 + 3; // is this the correct indexing soln?
+                        }
+                    }
+                }
+            }
+
+            // Check if we still have observations without an s
+            if (all(best_s)){
+                // then we are done!
+                search_for_s = false;
+            } else {
+                tuning_mat.column(s) = candiate_results;
+            }
+            s += 1;
+        }
+    }
+
+    return best_s;
