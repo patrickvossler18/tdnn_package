@@ -13,11 +13,13 @@ td_dnn <- function(X, Y, X_test, s_choice, W_0) {
     stop(glue::glue("Found non-numeric columns. Column indices: {non_num_cols}"))
   }
 
-  # Check if Y is a matrix
   if (!is.matrix(Y)) {
     stop(glue("Y is of class {class(Y)[1]}, but needs to be a matrix"))
-    # Y = matrix(Y)
   }
+
+    if (!is.matrix(X_test)) {
+        stop(glue("X_test is of class {class(X_test)[1]}, but needs to be a matrix"))
+    }
 
   # Check that dimensions match up for X, Y, X_test, and W_0
   # need length of Y to match dim[1] of X
@@ -41,23 +43,23 @@ td_dnn <- function(X, Y, X_test, s_choice, W_0) {
     stop(glue::glue("Dimensions don't match: \n {toString(fail_messages)}"))
   }
 
-  X_fs <- X[, which(W_0 == 1)]
-  X_test_fs <- matrix(X_test[which(W_0 == 1)], nrow = 1)
 
   a_pred <- de_dnn(
-    X_fs,
+    X,
     Y,
-    X_test = X_test_fs,
+    X_test = X_test,
     s_size = s_choice,
-    bc_p = 2
+    bc_p = 2,
+    W0_ = W_0
   )$estimates
 
   b_pred <- de_dnn(
-    X_fs,
+    X,
     Y,
-    X_test = X_test_fs,
+    X_test = X_test,
     s_size = s_choice + 1,
-    bc_p = 2
+    bc_p = 2,
+    W0_ = W_0
   )$estimates
 
   (a_pred + b_pred) / 2

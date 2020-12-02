@@ -1,27 +1,25 @@
-#' Estimate a treatment effect using the two-scale DNN estimator
+#' Estimate a regression function using the two-scale DNN estimator
 #'
 #' @param X matrix of covariates
 #' @param Y matrix of responses
 #' @param X_test matrix of test observations
 #' @param W_0 optional Boolean feature screening vector
 #' @param t max size of tuning sequence. Default is 50
-#'
-#' @importFrom glue glue
+#' @export
 tdnn <- function(X,
                  Y,
                  X_test,
                  W_0 = NULL,
                  t = 50) {
-    s_choice0 <- tuning(seq(1, t, 1), X, Y, X_test, 2, W0_ = W_0)
+    s_choice <- tuning(seq(1, t, 1), X, Y, X_test, 2, W0_ = W_0)
 
-  deDNN_pred <- td_dnn(X,
-    Y,
-    X_test = X_test,
-    s_choice = s_choice0,
-    W_0 = W_0
-  )
+    deDNN_pred <- td_dnn(X,
+                         Y,
+                         X_test = X_test,
+                         s_choice = s_choice,
+                         W_0 = W_0)
 
-  list(deDNN_pred = deDNN_pred, s_choice = s_choice0)
+    list(deDNN_pred = deDNN_pred, s_choice = s_choice)
 }
 
 
@@ -46,13 +44,15 @@ est_effect <- function(X,
                        t= 50,
                        estimate_var = F,
                        ...) {
+
+
   effect_0 <-
-      td_dnn(X[W == 0, ], matrix(Y[W == 0]), X_test, W_0, t)
+      tdnn(X[W == 0, ], matrix(Y[W == 0]), X_test, W_0, t)
   deDNN_pred_0 <- effect_0$deDNN_pred
   s_choice_0 <- effect_0$s_choice
 
   effect_1 <-
-      td_dnn(X[W == 1, ], matrix(Y[W == 1]), X_test, W_0, t)
+      tdnn(X[W == 1, ], matrix(Y[W == 1]), X_test, W_0, t)
   deDNN_pred_1 <- effect_1$deDNN_pred
   s_choice_1 <- effect_1$s_choice
 
