@@ -2,22 +2,22 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 matrix_subset_logical <- function(x, y) {
-    .Call('_tdnn_matrix_subset_logical', PACKAGE = 'tdnn', x, y)
+    .Call(`_tdnn_matrix_subset_logical`, x, y)
 }
 
 dnn <- function(X, Y, X_test, n, p, s_size) {
-    .Call('_tdnn_dnn', PACKAGE = 'tdnn', X, Y, X_test, n, p, s_size)
+    .Call(`_tdnn_dnn`, X, Y, X_test, n, p, s_size)
 }
 
 de_dnn <- function(X, Y, X_test, s_size, bc_p, W0_ = NULL) {
-    .Call('_tdnn_de_dnn', PACKAGE = 'tdnn', X, Y, X_test, s_size, bc_p, W0_)
+    .Call(`_tdnn_de_dnn`, X, Y, X_test, s_size, bc_p, W0_)
 }
 
 best_s <- function(estimate_matrix) {
-    .Call('_tdnn_best_s', PACKAGE = 'tdnn', estimate_matrix)
+    .Call(`_tdnn_best_s`, estimate_matrix)
 }
 
 tuning <- function(s_seq, X, Y, X_test, bc_p, W0_ = NULL) {
-    .Call('_tdnn_tuning', PACKAGE = 'tdnn', s_seq, X, Y, X_test, bc_p, W0_)
+    .Call(`_tdnn_tuning`, s_seq, X, Y, X_test, bc_p, W0_)
 }
 

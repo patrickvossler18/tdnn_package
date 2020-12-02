@@ -3,17 +3,16 @@
 #' @param X matrix of covariates
 #' @param Y matrix of responses
 #' @param X_test matrix of test observations
-#' @param W_0 optional boolean feature screening vector
+#' @param W_0 optional Boolean feature screening vector
 #' @param t max size of tuning sequence. Default is 50
 #'
 #' @importFrom glue glue
-#' @export
 tdnn <- function(X,
-                       Y,
-                       X_test,
-                       W_0 = NULL,
-                       t = 50) {
-  s_choice0 <- tuning(seq(1, t, 1), X, Y, X_test, 2, W0_ = W_0)
+                 Y,
+                 X_test,
+                 W_0 = NULL,
+                 t = 50) {
+    s_choice0 <- tuning(seq(1, t, 1), X, Y, X_test, 2, W0_ = W_0)
 
   deDNN_pred <- td_dnn(X,
     Y,
@@ -29,6 +28,7 @@ tdnn <- function(X,
 #' Estimate a treatment effect using the two-scale DNN estimator
 #'
 #' @param X Matrix of covariates
+#' @param W Matrix of treatment assignments
 #' @param Y Matrix of responses
 #' @param X_test Matrix of test observations
 #' @param W_0 Optional boolean feature screening vector
@@ -59,7 +59,7 @@ est_effect <- function(X,
   deDNN_pred <- deDNN_pred_1 - deDNN_pred_0
 
   if( estimate_var){
-      boot_est <- est_variance(X, W, Y, X_test, ...)
+      boot_est <- est_variance(X, W, Y, X_test, W_0, s_choice_0, s_choice_1, ...)
 
      list(estimate = deDNN_pred,
           variance =  mean((boot_est$t - deDNN_pred)^2))
@@ -69,7 +69,8 @@ est_effect <- function(X,
 
 }
 
-est_variance <- function(X, W, Y, X_test, ...){
+
+est_variance <- function(X, W, Y, X_test, W_0, s_choice_0, s_choice_1, ...){
 
     boot_data <- data.frame(X, W, Y)
     d <- dim(X)[2]

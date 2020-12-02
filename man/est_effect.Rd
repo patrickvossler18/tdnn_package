@@ -9,6 +9,8 @@ est_effect(X, W, Y, X_test, W_0, t = 50, estimate_var = F, ...)
 \arguments{
 \item{X}{Matrix of covariates}
 
+\item{W}{Matrix of treatment assignments}
+
 \item{Y}{Matrix of responses}
 
 \item{X_test}{Matrix of test observations}

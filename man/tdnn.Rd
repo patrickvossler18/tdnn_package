@@ -13,7 +13,7 @@ tdnn(X, Y, X_test, W_0 = NULL, t = 50)
 
 \item{X_test}{matrix of test observations}
 
-\item{W_0}{optional boolean feature screening vector}
+\item{W_0}{optional Boolean feature screening vector}
 
 \item{t}{max size of tuning sequence. Default is 50}
 }
