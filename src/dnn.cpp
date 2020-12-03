@@ -126,7 +126,7 @@ NumericVector dnn( NumericMatrix X, NumericVector Y, NumericMatrix X_test,
 // [[Rcpp::plugins(cpp11)]]
 // [[Rcpp::export]]
 List de_dnn( arma::mat X, NumericVector Y, arma::mat X_test,
-                      double s_size, double bc_p,
+                      NumericVector s_sizes, double bc_p,
                       Nullable<NumericVector> W0_ = R_NilValue){
     // Handle case where W0 is not NULL:
     if (W0_.isNotNull()){
@@ -149,12 +149,7 @@ List de_dnn( arma::mat X, NumericVector Y, arma::mat X_test,
     //double choose(n, s_size);
     // Rcout << nChoosek(n, s_size);
 
-    // Weight vectors
-    NumericVector weight_1 = choose(ord, s_size - 1.0) / nChoosek(n, s_size);
-    weight_1.attr("dim") = Dimension(n,1);
 
-    NumericVector weight_2 = choose(ord, (s_size * bc_p) - 1.0) / nChoosek(n, (s_size * bc_p));
-    weight_2.attr("dim") = Dimension(n,1);
 
     // estimates vector
     NumericVector estimates;
@@ -202,6 +197,13 @@ List de_dnn( arma::mat X, NumericVector Y, arma::mat X_test,
         arma::vec U_1_vec;
         arma::vec U_2_vec;
         rowvec weight_vec;
+
+        // Weight vectors
+        NumericVector weight_1 = choose(ord, s_sizes(i) - 1.0) / nChoosek(n, s_sizes(i));
+        weight_1.attr("dim") = Dimension(n,1);
+
+        NumericVector weight_2 = choose(ord, (s_sizes(i) * bc_p) - 1.0) / nChoosek(n, (s_sizes(i) * bc_p));
+        weight_2.attr("dim") = Dimension(n,1);
 
         U_1_vec = reshape(ordered_Y,1,int(n)) * as<arma::mat>(weight_1);
         U_2_vec = reshape(ordered_Y,1,int(n)) * as<arma::mat>(weight_2);
