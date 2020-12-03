@@ -21,3 +21,7 @@ tuning <- function(s_seq, X, Y, X_test, bc_p, W0_ = NULL) {
     .Call(`_tdnn_tuning`, s_seq, X, Y, X_test, bc_p, W0_)
 }
 
+tuning_greedy <- function(X, Y, X_test, bc_p, W0_ = NULL) {
+    .Call(`_tdnn_tuning_greedy`, X, Y, X_test, bc_p, W0_)
+}
+

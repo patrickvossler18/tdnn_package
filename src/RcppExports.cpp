@@ -77,6 +77,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// tuning_greedy
+NumericVector tuning_greedy(NumericMatrix X, NumericVector Y, NumericMatrix X_test, double bc_p, Nullable<NumericVector> W0_);
+RcppExport SEXP _tdnn_tuning_greedy(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP bc_pSEXP, SEXP W0_SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< double >::type bc_p(bc_pSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
+    rcpp_result_gen = Rcpp::wrap(tuning_greedy(X, Y, X_test, bc_p, W0_));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_tdnn_matrix_subset_logical", (DL_FUNC) &_tdnn_matrix_subset_logical, 2},
@@ -84,6 +99,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_tdnn_de_dnn", (DL_FUNC) &_tdnn_de_dnn, 6},
     {"_tdnn_best_s", (DL_FUNC) &_tdnn_best_s, 1},
     {"_tdnn_tuning", (DL_FUNC) &_tdnn_tuning, 6},
+    {"_tdnn_tuning_greedy", (DL_FUNC) &_tdnn_tuning_greedy, 5},
     {NULL, NULL, 0}
 };
 

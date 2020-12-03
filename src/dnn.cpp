@@ -57,7 +57,7 @@ NumericVector seq_cpp(double lo, double hi) {
 }
 
 
-// [[Rcpp::export]]
+
 NumericVector dnn( NumericMatrix X, NumericVector Y, NumericMatrix X_test,
                    double n, double p, double s_size){
     NumericVector ord = seq_cpp(1, n);
@@ -317,33 +317,55 @@ NumericVector tuning_greedy(NumericMatrix X, NumericVector Y,
 
     double n_obs = X_test.nrow();
     bool search_for_s = true;
-    arma::mat tuning_mat;
+    // make tuning matrix large and then resize it?
+    arma::mat tuning_mat(n_obs, 50, fill::zeros);
     arma::vec best_s(n_obs, fill::zeros);
     double s = 0;
     // using zero indexing here to match with C++, note s + 1 -> s+2 in de_dnn call
 
     while (search_for_s){
+        // Rcout << "s: " << s << std::endl;
         // For a given s, get the de_dnn estimates for each test observation
         List de_dnn_estimates = de_dnn(as<arma::mat>(X), Y, as<arma::mat>(X_test),
                                        s + 2, bc_p, W0_);
+
         // This gives me an estimate for each test observation and is a n x 1 matrix
-        arma::mat candidate_results(n_obs, 1 );
-        candidate_results = as<arma::mat>(de_dnn_estimates["estimates"]);
+        arma::vec de_dnn_est_vec = as<arma::vec>(de_dnn_estimates["estimates"]);
+        arma::mat candidate_results = de_dnn_est_vec;
+        // arma::mat candidate_results(n_obs, 1 );
+        candidate_results.reshape(n_obs, 1);
+        // candidate_results.col(0) = de_dnn_est_vec;
+        // Rcout << "got candidate estimates: " << candidate_results << std::endl;
         // Might need to reshape this matrix?
 
         // Now we add this column to our matrix if the matrix is empty
-        if (tuning_mat.is_empty()){
-            tuning_mat.column(s) = candiate_results;
+        if (s == 0 | s == 1){
+            tuning_mat.col(s) = candidate_results;
         } else {
+            // Before we do anything with the matrix we need to resize it to avoid
+            // dividing by zero
+            arma::mat resized_mat = tuning_mat;
+//
+//             IntegerVector non_zero_idx = Range(0, (s-1));
+//             Rcout << "non_zero_idx: " << non_zero_idx << std::endl;
+//             arma::mat resized_mat = tuning_mat.cols(as<uvec>(non_zero_idx));
+//
+            resized_mat.resize(n_obs, s);
+            // Rcout << "resized mat: " << resized_mat << std::endl;
             // tuning_mat is an n x s matrix and we want to diff each of the rows
             // arma::mat mat_row = estimate_matrix.row(i);
-            arma::mat out_diff = diff(tuning_mat, 1, 1);
-
-            IntegerVector idx = Range(0, (tuning_mat.n_cols)-2);
-            arma::mat out_denom = tuning_mat.cols(as<uvec>(idx));
-
+            arma::mat out_diff = diff(resized_mat, 1, 1);
+            // if (s == 1){
+            //     IntegerVector idx = Range(0, (resized_mat.n_cols)-2);
+            // } else {
+            //     IntegerVector idx = Range(0, (resized_mat.n_cols)-2);
+            // }
+            IntegerVector idx = Range(0, (resized_mat.n_cols)-2);
+            // Rcout << "idx: " << idx << std::endl;
+            arma::mat out_denom = resized_mat.cols(as<uvec>(idx));
+            // Rcout << "out_denom: " << out_denom << std::endl;
             arma::mat diff_ratio = diff(abs( out_diff / out_denom), 1, 1);
-
+            // Rcout << "diff_ratio: " << diff_ratio << std::endl;
             // Now we go through each row and check if any of the columns are
             // greater than -0.01
             for(R_xlen_t i = 0; i < diff_ratio.n_rows; ++i) {
@@ -363,10 +385,13 @@ NumericVector tuning_greedy(NumericMatrix X, NumericVector Y,
                 // then we are done!
                 search_for_s = false;
             } else {
-                tuning_mat.column(s) = candiate_results;
+                tuning_mat.col(s) = candidate_results;
             }
-            s += 1;
-        }
-    }
 
-    return best_s;
+        }
+        // Rcout << "tuning_mat : " << tuning_mat << std::endl;
+        s += 1;
+    }
+    return NumericVector(best_s.begin(), best_s.end());
+    // return best_s;
+}
