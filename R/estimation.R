@@ -6,12 +6,12 @@
 #' @param W_0 optional Boolean feature screening vector
 #' @param t max size of tuning sequence. Default is 50
 #' @export
-tdnn <- function(X,
+est_reg_fn <- function(X,
                  Y,
                  X_test,
                  W_0 = NULL,
                  t = 50) {
-    s_choice <- tuning(seq(1, t, 1), X, Y, X_test, 2, W0_ = W_0)
+    s_choice <- tuning(X, Y, X_test, 2, W0_ = W_0)
 
     deDNN_pred <- td_dnn(X,
                          Y,
@@ -47,12 +47,12 @@ est_effect <- function(X,
 
 
   effect_0 <-
-      tdnn(X[W == 0, ], matrix(Y[W == 0]), X_test, W_0, t)
+    est_reg_fn(X[W == 0, ], matrix(Y[W == 0]), X_test, W_0, t)
   deDNN_pred_0 <- effect_0$deDNN_pred
   s_choice_0 <- effect_0$s_choice
 
   effect_1 <-
-      tdnn(X[W == 1, ], matrix(Y[W == 1]), X_test, W_0, t)
+    est_reg_fn(X[W == 1, ], matrix(Y[W == 1]), X_test, W_0, t)
   deDNN_pred_1 <- effect_1$deDNN_pred
   s_choice_1 <- effect_1$s_choice
 

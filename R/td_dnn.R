@@ -1,3 +1,4 @@
+#' @export
 td_dnn <- function(X, Y, X_test, s_choice, W_0) {
   # Data checks before we doing anything else
   # Check X is a dataframe or matrix. If df, make it a matrix
@@ -48,7 +49,7 @@ td_dnn <- function(X, Y, X_test, s_choice, W_0) {
     X,
     Y,
     X_test = X_test,
-    s_size = s_choice,
+    s_sizes = s_choice,
     bc_p = 2,
     W0_ = W_0
   )$estimates
@@ -57,7 +58,7 @@ td_dnn <- function(X, Y, X_test, s_choice, W_0) {
     X,
     Y,
     X_test = X_test,
-    s_size = s_choice + 1,
+    s_sizes = s_choice + 1,
     bc_p = 2,
     W0_ = W_0
   )$estimates

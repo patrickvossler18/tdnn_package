@@ -13,6 +13,10 @@ Suggests:
     testthat
 Imports:
     glue,
-    boot
+    boot,
+    RcppParallel,
+    RcppArmadillo,
+    Rcpp
 RoxygenNote: 7.1.1
-LinkingTo: Rcpp, RcppArmadillo
+LinkingTo: Rcpp, RcppArmadillo, RcppParallel
+SystemRequirements: GNU make
