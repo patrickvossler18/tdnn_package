@@ -1,4 +1,3 @@
-#' @export
 td_dnn <- function(X, Y, X_test, s_choice, W_0) {
   # Data checks before we doing anything else
   # Check X is a dataframe or matrix. If df, make it a matrix

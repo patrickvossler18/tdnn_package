@@ -15,11 +15,11 @@ de.dnn <-
         weight1 = choose(n - ord, s.size - 1) / choose(n, s.size)
         weight2 = choose(n - ord, bc.p * s.size - 1) / choose(n, bc.p * s.size)
         # Distance
-        X.dis = (X - kronecker(matrix(1, n, 1), X.test))*(matrix(1, n, 1) %*% W0)
+        X.dis = (X - kronecker(matrix(1, n, 1), X.test)) * (matrix(1, n, 1) %*% W0)
         EuDis = (X.dis ^ 2) %*% matrix(1, p, 1)
         # Ascending small->large
         noise = matrix(rnorm(1), n, 1)
-        TempD = data.frame(EuDis, Y, noise)[order(EuDis, noise), ]
+        TempD = data.frame(EuDis, Y, noise)[order(EuDis, noise),]
         # Estimator
         U1 = sum(TempD$Y * weight1)
         U2 = sum(TempD$Y * weight2)
@@ -30,9 +30,56 @@ de.dnn <-
         return(U)
     }
 
-td.dnn <- function(Dataset,X.test, s.choice, W0){
-    a.pred = de.dnn(Dataset,X.test = X.test, s.size = s.choice, W0=W0)
-    b.pred = de.dnn(Dataset, X.test = X.test, s.size = s.choice + 1, W0=W0)
-    t.pred = (a.pred + b.pred)/2
+td.dnn <- function(Dataset, X.test, s.choice, W0) {
+    a.pred = de.dnn(Dataset,
+                    X.test = X.test,
+                    s.size = s.choice,
+                    W0 = W0)
+    b.pred = de.dnn(Dataset,
+                    X.test = X.test,
+                    s.size = s.choice + 1,
+                    W0 = W0)
+    t.pred = (a.pred + b.pred) / 2
     return(t.pred)
+}
+
+est_reg_fn_old = function(X, Y, W0, Xtest) {
+    Dataset = data.frame(X, Y)
+
+    t = 50
+    tuning = matrix(0, t, 1)
+
+    for (s in seq(1, t, 1)) {
+        tuning[s] = de.dnn(Dataset,
+                           X.test = Xtest,
+                           s.size = s + 1,
+                           W0 = W0)
+    }
+    s.choice0 = which(diff(abs(diff(tuning) / tuning[1:t - 1])) > -0.01)[1] + 3
+
+
+    deDNN.pred = td.dnn(Dataset,
+                        X.test = Xtest,
+                        s.choice = s.choice0,
+                        W0 = W0)
+
+    return(list(deDNN.pred = deDNN.pred, s.choice = s.choice0))
+}
+
+est_effect_old <- function(X, W, Y, W0, X_test) {
+    results_0 = est_reg_fn_old(X[W == 0,], Y[W == 0], W0, X_test)
+    deDNN.pred_0 = results_0$deDNN.pred
+    s.choice_0 = results_0$s.choice
+
+    results_1 = est_reg_fn_old(X[W == 1,], Y[W == 1], W0, X_test)
+    deDNN.pred_1 = results_1$deDNN.pred
+    s.choice_1 = results_1$s.choice
+
+    deDNN.pred = deDNN.pred_1 - deDNN.pred_0
+
+    return(list(
+        deDNN_pred = deDNN.pred,
+        s_choice0 = s.choice_0,
+        s_choice1 = s.choice_1
+    ))
 }

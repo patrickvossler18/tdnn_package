@@ -30,8 +30,10 @@ est_reg_fn <- function(X,
 #' @param Y Matrix of responses
 #' @param X_test Matrix of test observations
 #' @param W_0 Optional boolean feature screening vector
-#' @param t Max size of tuning sequence. Default is 50
 #' @param estimate_var Boolean for estimating variance using bootstrap
+#' @param feature_screening Boolean for performing feature screening step
+#' using the energy package's (Rizzo and Szekely, 2019) `dcor.test`
+#' @param alpha Threshold value for multiple testing correction used in the feature screening step
 #' @param ... Extra arguments to be passed to boot when estimating variance (e.g. ncpus, parallel, R)
 #'
 #' @importFrom glue glue
@@ -41,10 +43,16 @@ est_effect <- function(X,
                        Y,
                        X_test,
                        W_0,
-                       t= 50,
                        estimate_var = F,
+                       feature_screening= T,
+                       alpha=0.001,
                        ...) {
 
+  if(feature_screening){
+    W_0 <- screen_features(X, Y, alpha=alpha)
+  } else if(is.null(W_0)){
+    W_0 <- rep(1,ncol(X))
+  }
 
   effect_0 <-
     est_reg_fn(X[W == 0, ], matrix(Y[W == 0]), X_test, W_0, t)
@@ -105,4 +113,13 @@ est_variance <- function(X, W, Y, X_test, W_0, s_choice_0, s_choice_1, ...){
         ...
     )
     boot_estimates
+}
+
+
+screen_features <- function(X, Y, alpha){
+  if(is.null(alpha)){alpha = 0.001}
+  p0 <- ncol(X)
+  sapply(1:p0, function(i){
+      as.numeric(energy::dcor.test(X[, i], Y)$p.value < alpha/p0)
+  })
 }

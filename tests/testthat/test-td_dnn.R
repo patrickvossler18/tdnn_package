@@ -66,7 +66,7 @@ test_that("multi-threaded version of de_dnn gives same estimate as R version for
 test_that("td_dnn using multi-threading gives same estimate as R version for single test point",
           {
               expect_equal(
-                  tdnn::td_dnn(X, Y, Xtest,2,W0),
+                  tdnn:::td_dnn(X, Y, Xtest,2,W0),
                   td.dnn(data.frame(X, Y),Xtest, 2, W0)
               )
           })
@@ -108,3 +108,5 @@ test_that(
         expect_equal(b, a)
     }
 )
+
+# TO-DO: Add tests that check that we provide useful error messages when passed improper data

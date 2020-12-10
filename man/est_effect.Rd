@@ -4,7 +4,17 @@
 \alias{est_effect}
 \title{Estimate a treatment effect using the two-scale DNN estimator}
 \usage{
-est_effect(X, W, Y, X_test, W_0, t = 50, estimate_var = F, ...)
+est_effect(
+  X,
+  W,
+  Y,
+  X_test,
+  W_0,
+  estimate_var = F,
+  feature_screening = T,
+  alpha = 0.001,
+  ...
+)
 }
 \arguments{
 \item{X}{Matrix of covariates}
@@ -17,9 +27,12 @@ est_effect(X, W, Y, X_test, W_0, t = 50, estimate_var = F, ...)
 
 \item{W_0}{Optional boolean feature screening vector}
 
-\item{t}{Max size of tuning sequence. Default is 50}
-
 \item{estimate_var}{Boolean for estimating variance using bootstrap}
+
+\item{feature_screening}{Boolean for performing feature screening step
+using the energy package's (Rizzo and Szekely, 2019) `dcor.test`}
+
+\item{alpha}{Threshold value for multiple testing correction used in the feature screening step}
 
 \item{...}{Extra arguments to be passed to boot when estimating variance (e.g. ncpus, parallel, R)}
 }
