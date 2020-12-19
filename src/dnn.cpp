@@ -58,16 +58,19 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::plugins(cpp11)]]
 // [[Rcpp::export]]
-List de_dnn_st( arma::mat X, NumericVector Y, arma::mat X_test,
-                      NumericVector s_sizes, double bc_p,
+arma::vec de_dnn_st( arma::mat X, NumericVector Y, arma::mat X_test,
+                      NumericVector s_sizes, double c,
                       Nullable<NumericVector> W0_ = R_NilValue){
     // Handle case where W0 is not NULL:
+    int d = X.n_cols;
     if (W0_.isNotNull()){
         NumericVector W0(W0_);
         // Now we need to filter X and X_test to only contain these columns
         X = matrix_subset_logical(X, as<arma::vec>(W0));
         X_test = matrix_subset_logical(X_test, as<arma::vec>(W0));
+        d = sum(W0);
     }
+
 
     // Infer n and p from our data after we've filtered for relevant features
     double n = X.n_rows;
@@ -112,7 +115,10 @@ List de_dnn_st( arma::mat X, NumericVector Y, arma::mat X_test,
         // arma::mat noise(int(n), 1);
         // double noise_val = R::rnorm(0, 1);
         // noise.fill(noise_val);
-        arma::vec noise = arma::randn<vec>(int(n));
+        arma::vec noise(n);
+        double noise_val = arma::randn<double>();
+        noise.fill(noise_val);
+        // arma::vec noise = arma::randn<vec>(int(n));
 
         // TO-DO: Rewrite the order vector using std::sort and a custom comparison function
         // Function f("order");
@@ -172,6 +178,11 @@ List de_dnn_st( arma::mat X, NumericVector Y, arma::mat X_test,
         arma::vec U_2_vec;
         rowvec weight_vec;
 
+
+        double w_1 = c/(c-1);
+        double w_2 = -1/(c-1);
+        double s_1 = s_sizes(i);
+        double s_2 = round(s_1 * pow(c, - double(d) / 2.0));
         // Weight vectors
         // NumericVector weight_1_rcpp = choose(ord, s_sizes(i) - 1.0) / nChoosek(n, s_sizes(i));
         // weight_1_rcpp.attr("dim") = Dimension(n,1);
@@ -186,16 +197,16 @@ List de_dnn_st( arma::mat X, NumericVector Y, arma::mat X_test,
         // Rcout << "got to weights ok" << std::endl;
         arma::vec weight_1(ord.length());
         for (int j = 0 ; j < ord.length() ; j++) {
-            weight_1(j) = nChoosek(ord(j), s_sizes(i) - 1.0);
+            weight_1(j) = nChoosek(ord(j), s_1 - 1.0);
         }
-        weight_1 /=  nChoosek(n, s_sizes(i));
+        weight_1 /=  nChoosek(n, s_1);
         weight_1.reshape(int(n), 1);
 
         arma::vec weight_2(ord.length());
         for (int k = 0 ; k < ord.length() ; k++) {
-            weight_2(k) = nChoosek(ord(k), ((s_sizes(i) * bc_p) - 1.0));
+            weight_2(k) = nChoosek(ord(k), (s_2 - 1.0));
         }
-        weight_2 /= nChoosek(n, (s_sizes(i) * bc_p));
+        weight_2 /= nChoosek(n, s_2);
         weight_2.reshape(int(n), 1);
         // Rcout << "made weights ok" << std::endl;
 
@@ -209,17 +220,28 @@ List de_dnn_st( arma::mat X, NumericVector Y, arma::mat X_test,
         // Rcout << "multi U_1, U_2 ok" << std::endl;
         // weight_vec = (reshape(ordered_Y, int(n), 1) % as<arma::mat>(weight_1)).t();
 
-        arma::mat A_mat(arma::vec{1, 1, 1, pow((1 / bc_p),(2 /   std::min(p, 3.0)) ) });
-        A_mat.reshape(2,2);
-        arma::mat A_mat_inv = A_mat.i();
+        arma::vec U_vec = w_1 * U_1_vec + w_2 * U_2_vec;
+        // Rcout << "w_1: " << w_1 << std::endl;
+        // Rcout << "w_2: " << w_2 << std::endl;
+        // Rcout << "s_1: " << s_1 << std::endl;
+        // Rcout << "s_2: " << s_2 << std::endl;
+        // Rcout << "d: " << d << std::endl;
+        // Rcout << "s_1 * pow(c, -d/2): " << s_1 * pow(c, - double(d) / 2.0) << std::endl;
+        // Rcout << "round(s_1 * pow(c, -d/2)): " << round(s_1 * pow(c, - double(d) / 2.0)) << std::endl;
+        // Rcout << "U_1: " << U_1_vec << std::endl;
+        // Rcout << "U_2: " << U_2_vec << std::endl;
 
-
-        arma::mat B_mat(arma::vec{1, 0});
-        B_mat.reshape(2, 1);
-
-        arma::mat Coefs = A_mat_inv * B_mat;
-
-        arma::vec U_vec = Coefs(0,0) * U_1_vec + Coefs(1,0) * U_2_vec;
+        // arma::mat A_mat(arma::vec{1, 1, 1, pow((1 / bc_p),(2 /   std::min(p, 3.0)) ) });
+        // A_mat.reshape(2,2);
+        // arma::mat A_mat_inv = A_mat.i();
+        //
+        //
+        // arma::mat B_mat(arma::vec{1, 0});
+        // B_mat.reshape(2, 1);
+        //
+        // arma::mat Coefs = A_mat_inv * B_mat;
+        //
+        // arma::vec U_vec = Coefs(0,0) * U_1_vec + Coefs(1,0) * U_2_vec;
         // Rcout << "Shape of Y: " << size(ordered_Y) << "\n";
         // Rcout << "Shape of weights: " << size(as<arma::mat>(weight)) << "\n";
         // Rcout << "Shape of U_vec: " << size(U_vec) << "\n";
@@ -231,165 +253,193 @@ List de_dnn_st( arma::mat X, NumericVector Y, arma::mat X_test,
                 // }, 1);
     };
     // List out = List::create( Named("estimates") = estimates, Named("weights") = transpose(weight_mat));
-    List out = List::create( Named("estimates") = estimates);
-    // Rcout << "Estimates: " << estimates;
-    // return estimates;
-    return out;
+    // List out = List::create( Named("estimates") = estimates);
+    return as<arma::vec>(estimates);
+    // return out;
 
 }
 
-// // [[Rcpp::export]]
-// NumericVector best_s(arma::mat estimate_matrix){
-//
-//     NumericVector s_values(estimate_matrix.n_rows);
-//     // NumericVector s_values;
-//
-//     // Loop through each of the rows of the estimate matrix
-//     for(R_xlen_t i = 0; i < estimate_matrix.n_rows; ++i) {
-//         arma::mat mat_row = estimate_matrix.row(i);
-//         arma::mat out_diff = diff(mat_row, 1, 1);
-//
-//         IntegerVector idx = Range(0, (estimate_matrix.n_cols)-2);
-//         arma::mat out_denom = mat_row.cols(as<uvec>(idx));
-//
-//         arma::mat diff_ratio = diff(abs( out_diff / out_denom), 1, 1);
-//         // Rcout << "diff_ratio: " << diff_ratio << "\n";
-//         double first_s = 0.0;
-//         // TO-DO: How do we handle the case where no s satisfies our condition?
-//         for(R_xlen_t i = 0; i < diff_ratio.size(); ++i) {
-//             if(diff_ratio(i) > -0.01){
-//                 first_s = i + 1; // handle indexing difference between R and C++
-//                 break;
-//             }
-//         }
-//
-//         first_s += 3;
-//         s_values[i] = first_s;
-//         // return  first_s;
-//     }
-//     return s_values;
-// }
-//
-//
-// // [[Rcpp::export]]
-// NumericVector tuning(NumericVector s_seq,  NumericMatrix X, NumericVector Y,
-//               NumericMatrix X_test, double bc_p,
-//               Nullable<NumericVector> W0_ = R_NilValue){
-//
-//     R_xlen_t n_vals = s_seq.length();
-//     double n_obs = X_test.nrow();
-//     arma::mat out(n_obs, n_vals, fill::zeros);
-//
-//     // loop through and get the dnn estimates for each s value in sequence
-//     for(uword i = 0; i < n_vals; ++i) {
-//         List de_dnn_estimates = de_dnn(as<arma::mat>(X), Y, as<arma::mat>(X_test),
-//                                        s_seq[i] + 1, bc_p, W0_);
-//         // Change de_dnn to output a matrix even if only 1 x 1
-//         // arma::vec de_dnn_preds = as<colvec>(de_dnn_estimates["estimates"]);
-//         arma::vec de_dnn_preds(n_obs);
-//         de_dnn_preds = as<arma::vec>(de_dnn_estimates["estimates"]);
-//         // de_dnn_preds.attr("dim") = Dimension(1,n_obs);
-//         // Rcout << de_dnn_preds << std::endl;
-//         // out.column(i) = NumericVector(de_dnn_preds.begin(), de_dnn_preds.end());
-//         out.col(i) =  de_dnn_preds;
-//         // Rcout << "issue not with out matrix"<< "\n";
-//         // out[i] = List::create( Named("estimates") = de_dnn_estimates["estimates"],
-//         //                        Named("s") = s_seq[i]);
-//
-//     }
-//     // Rcout <<
-//     // which(diff(abs(diff(tuning) / tuning[1:t - 1])) > -0.01)[1] + 3
-//     NumericVector s_choice = best_s(out);
-//
-//
-//     return s_choice;
-//
-//
-// }
+// [[Rcpp::export]]
+NumericVector best_s(arma::mat estimate_matrix){
+
+    NumericVector s_values(estimate_matrix.n_rows);
+    // NumericVector s_values;
+
+    // Loop through each of the rows of the estimate matrix
+    for(R_xlen_t i = 0; i < estimate_matrix.n_rows; ++i) {
+        arma::mat mat_row = estimate_matrix.row(i);
+        arma::mat out_diff = diff(mat_row, 1, 1);
+
+        IntegerVector idx = Range(0, (estimate_matrix.n_cols)-2);
+        // Rcout << idx << std::endl;
+        arma::mat out_denom = mat_row.cols(as<uvec>(idx));
+        // Rcout << out_denom << std::endl;
+        arma::mat diff_ratio = diff(abs( out_diff / out_denom), 1, 1);
+        // Rcout << "diff_ratio: " << diff_ratio << "\n";
+        double first_s = 0.0;
+        // TO-DO: How do we handle the case where no s satisfies our condition?
+        for(R_xlen_t i = 0; i < diff_ratio.size(); ++i) {
+            if(diff_ratio(i) > -0.01){
+                first_s = i + 1; // handle indexing difference between R and C++
+                break;
+            }
+        }
+
+        first_s += 3;
+        s_values[i] = first_s;
+        // return  first_s;
+    }
+    return s_values;
+}
 
 
 // [[Rcpp::export]]
-NumericVector tuning_st(NumericMatrix X, NumericVector Y,
-                     NumericMatrix X_test, double bc_p,
-                     Nullable<NumericVector> W0_ = R_NilValue){
+NumericVector tuning_st(NumericVector s_seq,  arma::mat &X, NumericVector &Y,
+                        arma::mat &X_test, double c,
+              NumericVector W0_){
+    // Nullable<NumericVector> W0 = R_NilValue;
+    // if (W0_.isNotNull()){
+    //     W0 = W0_;
+    // }
 
-    double n_obs = X_test.nrow();
-    bool search_for_s = true;
-    // make tuning matrix large and then resize it?
-    arma::mat tuning_mat(n_obs, 50, fill::zeros);
-    arma::vec best_s(n_obs, fill::zeros);
-    double s = 0;
-    // using zero indexing here to match with C++, note s + 1 -> s+2 in de_dnn call
+    // R_xlen_t n_vals = s_seq.length();
+    int n_vals = s_seq.length();
+    int n_obs = X_test.n_rows;
+    arma::mat out(n_obs, n_vals, fill::zeros);
 
-    while (search_for_s){
-        // Rcout << "s: " << s << std::endl;
-        // For a given s, get the de_dnn estimates for each test observation
-        List de_dnn_estimates = de_dnn_st(as<arma::mat>(X), Y, as<arma::mat>(X_test),
-                                       s + 2, bc_p, W0_);
+    // loop through and get the dnn estimates for each s value in sequence
+    for(int i = 0; i < n_vals; ++i) {
+        NumericVector s_val;
+        // Rcout << s_seq[i] << std::endl;
+        s_val = s_seq[i] + 1.0;
+        // Rcout << "X: " << X << std::endl;
+        // Rcout << "X_test: " << X_test << std::endl;
+        // Rcout << "Y: " << Y << std::endl;
+        // Rcout << "s_val: " << s_val << std::endl;
+        // Rcout << "bc_p: " << bc_p << std::endl;
+        // Rcout << "W0: " << W0_ << std::endl;
 
-        // This gives me an estimate for each test observation and is a n x 1 matrix
-        arma::vec de_dnn_est_vec = as<arma::vec>(de_dnn_estimates["estimates"]);
-        arma::mat candidate_results = de_dnn_est_vec;
-        // arma::mat candidate_results(n_obs, 1 );
-        candidate_results.reshape(n_obs, 1);
-        // candidate_results.col(0) = de_dnn_est_vec;
-        // Rcout << "got candidate estimates: " << candidate_results << std::endl;
-        // Might need to reshape this matrix?
+        arma::vec de_dnn_estimates = de_dnn_st(X, Y, X_test, s_val, c, W0_);
+        // Change de_dnn to output a matrix even if only 1 x 1
+        // arma::vec de_dnn_preds = as<colvec>(de_dnn_estimates["estimates"]);
+        arma::vec de_dnn_preds(n_obs);
+        // de_dnn_preds = as<arma::vec>(de_dnn_estimates["estimates"]);
+        de_dnn_preds = de_dnn_estimates;
+        // de_dnn_preds.attr("dim") = Dimension(1,n_obs);
+        // out.column(i) = NumericVector(de_dnn_preds.begin(), de_dnn_preds.end());
+        out.col(i) =  de_dnn_preds;
+        // Rcout << "issue not with out matrix"<< "\n";
+        // out[i] = List::create( Named("estimates") = de_dnn_estimates["estimates"],
+        //                        Named("s") = s_seq[i]);
 
-        // Now we add this column to our matrix if the matrix is empty
-        if (s == 0 | s == 1){
-            tuning_mat.col(s) = candidate_results;
-        } else {
-            // Before we do anything with the matrix we need to resize it to avoid
-            // dividing by zero
-            arma::mat resized_mat = tuning_mat;
-//
-//             IntegerVector non_zero_idx = Range(0, (s-1));
-//             Rcout << "non_zero_idx: " << non_zero_idx << std::endl;
-//             arma::mat resized_mat = tuning_mat.cols(as<uvec>(non_zero_idx));
-//
-            resized_mat.resize(n_obs, s);
-            // Rcout << "resized mat: " << resized_mat << std::endl;
-            // tuning_mat is an n x s matrix and we want to diff each of the rows
-            // arma::mat mat_row = estimate_matrix.row(i);
-            arma::mat out_diff = diff(resized_mat, 1, 1);
-            // if (s == 1){
-            //     IntegerVector idx = Range(0, (resized_mat.n_cols)-2);
-            // } else {
-            //     IntegerVector idx = Range(0, (resized_mat.n_cols)-2);
-            // }
-            IntegerVector idx = Range(0, (resized_mat.n_cols)-2);
-            // Rcout << "idx: " << idx << std::endl;
-            arma::mat out_denom = resized_mat.cols(as<uvec>(idx));
-            // Rcout << "out_denom: " << out_denom << std::endl;
-            arma::mat diff_ratio = diff(abs( out_diff / out_denom), 1, 1);
-            // Rcout << "diff_ratio: " << diff_ratio << std::endl;
-            // Now we go through each row and check if any of the columns are
-            // greater than -0.01
-            for(R_xlen_t i = 0; i < diff_ratio.n_rows; ++i) {
-                // Only loop through the columns if we haven't already found a
-                // suitable s
-                if(best_s(i) == 0){
-                    for(R_xlen_t j = 0; j < diff_ratio.n_cols; ++j) {
-                        if (diff_ratio(i, j) > -0.01){
-                            best_s(i) = j + 1 + 3; // is this the correct indexing soln?
-                        }
-                    }
-                }
-            }
-
-            // Check if we still have observations without an s
-            if (all(best_s)){
-                // then we are done!
-                search_for_s = false;
-            } else {
-                tuning_mat.col(s) = candidate_results;
-            }
-
-        }
-        // Rcout << "tuning_mat : " << tuning_mat << std::endl;
-        s += 1;
     }
-    return NumericVector(best_s.begin(), best_s.end());
-    // return best_s;
+    // Rcout << out << std::endl;
+    // which(diff(abs(diff(tuning) / tuning[1:t - 1])) > -0.01)[1] + 3
+    NumericVector s_choice = best_s(out);
+
+
+    return s_choice;
+    // return out;
+
+
 }
+
+// [[Rcpp::export]]
+void tuning_test(NumericVector s_seq,  arma::mat &X, NumericVector &Y,
+                    arma::mat &X_test, double bc_p,
+                    NumericVector W0_){
+    int n_vals = s_seq.length();
+    Rcout << n_vals << std::endl;
+    for(int i = 0; i < n_vals; ++i) {
+        Rcout << s_seq[i] << std::endl;
+        Rcout << s_seq[i] + 1.0 << std::endl;
+    }
+
+}
+
+
+// // [[Rcpp::export]]
+// NumericVector tuning_st(NumericMatrix X, NumericVector Y,
+//                      NumericMatrix X_test, double bc_p,
+//                      Nullable<NumericVector> W0_ = R_NilValue){
+//
+//     double n_obs = X_test.nrow();
+//     bool search_for_s = true;
+//     // make tuning matrix large and then resize it?
+//     arma::mat tuning_mat(n_obs, 50, fill::zeros);
+//     arma::vec best_s(n_obs, fill::zeros);
+//     double s = 0;
+//     // using zero indexing here to match with C++, note s + 1 -> s+2 in de_dnn call
+//
+//     while (search_for_s){
+//         // Rcout << "s: " << s << std::endl;
+//         // For a given s, get the de_dnn estimates for each test observation
+//         List de_dnn_estimates = de_dnn_st(as<arma::mat>(X), Y, as<arma::mat>(X_test),
+//                                        s + 2, bc_p, W0_);
+//
+//         // This gives me an estimate for each test observation and is a n x 1 matrix
+//         arma::vec de_dnn_est_vec = as<arma::vec>(de_dnn_estimates["estimates"]);
+//         arma::mat candidate_results = de_dnn_est_vec;
+//         // arma::mat candidate_results(n_obs, 1 );
+//         candidate_results.reshape(n_obs, 1);
+//         // candidate_results.col(0) = de_dnn_est_vec;
+//         // Rcout << "got candidate estimates: " << candidate_results << std::endl;
+//         // Might need to reshape this matrix?
+//
+//         // Now we add this column to our matrix if the matrix is empty
+//         if (s == 0 | s == 1){
+//             tuning_mat.col(s) = candidate_results;
+//         } else {
+//             // Before we do anything with the matrix we need to resize it to avoid
+//             // dividing by zero
+//             arma::mat resized_mat = tuning_mat;
+// //
+// //             IntegerVector non_zero_idx = Range(0, (s-1));
+// //             Rcout << "non_zero_idx: " << non_zero_idx << std::endl;
+// //             arma::mat resized_mat = tuning_mat.cols(as<uvec>(non_zero_idx));
+// //
+//             resized_mat.resize(n_obs, s);
+//             // Rcout << "resized mat: " << resized_mat << std::endl;
+//             // tuning_mat is an n x s matrix and we want to diff each of the rows
+//             // arma::mat mat_row = estimate_matrix.row(i);
+//             arma::mat out_diff = diff(resized_mat, 1, 1);
+//             // if (s == 1){
+//             //     IntegerVector idx = Range(0, (resized_mat.n_cols)-2);
+//             // } else {
+//             //     IntegerVector idx = Range(0, (resized_mat.n_cols)-2);
+//             // }
+//             IntegerVector idx = Range(0, (resized_mat.n_cols)-2);
+//             // Rcout << "idx: " << idx << std::endl;
+//             arma::mat out_denom = resized_mat.cols(as<uvec>(idx));
+//             // Rcout << "out_denom: " << out_denom << std::endl;
+//             arma::mat diff_ratio = diff(abs( out_diff / out_denom), 1, 1);
+//             // Rcout << "diff_ratio: " << diff_ratio << std::endl;
+//             // Now we go through each row and check if any of the columns are
+//             // greater than -0.01
+//             for(R_xlen_t i = 0; i < diff_ratio.n_rows; ++i) {
+//                 // Only loop through the columns if we haven't already found a
+//                 // suitable s
+//                 if(best_s(i) == 0){
+//                     for(R_xlen_t j = 0; j < diff_ratio.n_cols; ++j) {
+//                         if (diff_ratio(i, j) > -0.01){
+//                             best_s(i) = j + 1 + 3; // is this the correct indexing soln?
+//                         }
+//                     }
+//                 }
+//             }
+//
+//             // Check if we still have observations without an s
+//             if (all(best_s)){
+//                 // then we are done!
+//                 search_for_s = false;
+//             } else {
+//                 tuning_mat.col(s) = candidate_results;
+//             }
+//
+//         }
+//         // Rcout << "tuning_mat : " << tuning_mat << std::endl;
+//         s += 1;
+//     }
+//     return NumericVector(best_s.begin(), best_s.end());
+//     // return best_s;
+// }

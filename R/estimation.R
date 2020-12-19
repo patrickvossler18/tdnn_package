@@ -91,13 +91,13 @@ est_variance <- function(X, W, Y, X_test, W_0, s_choice_0, s_choice_1, ...){
 
         # split into groups
         trt_est <- td_dnn(X[W == 0, ],
-                          Y[W == 0],
+                          matrix(Y[W == 0]),
                           X_test = X_test,
                           s_choice = s_choice_1,
                           W_0 = W_0
         )
         ctrl_est <- td_dnn(X[W == 1, ],
-                           Y[W == 1],
+                           matrix(Y[W == 1]),
                            X_test = X_test,
                            s_choice = s_choice_0,
                            W_0 = W_0

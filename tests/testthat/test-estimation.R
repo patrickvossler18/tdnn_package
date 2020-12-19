@@ -47,9 +47,9 @@ Y =  (W - 0.5 ) * apply(X, MARGIN = 1, dgp_function, idx = impt_idx) + epsi
 
 Xtest = Xtest_fixed
 
-W0 = rep(0, p0)
-W0[impt_idx] = 1
-
+# W0 = rep(0, p0)
+# W0[impt_idx] = 1
+W0 = rep(1,p0)
 
 
 context("make sure that estimation function gives same output as original implementation")

@@ -69,7 +69,8 @@ struct TdnnEstimate : public Worker {
     // input constants
     const double n;
     const double p;
-    const double bc_p;
+    const double c;
+    const int d;
 
     // output matrix to write to
     RVector<double> estimates;
@@ -81,11 +82,11 @@ struct TdnnEstimate : public Worker {
                  NumericVector estimates,
                  const NumericVector s_sizes,
                  const NumericVector ord,
-                 double bc_p, double n, double p
+                 double c, double n, double p, int d
                  )
         : X(X), X_test(X_test),
           s_sizes(s_sizes), ord(ord), Y(Y), n(n),
-          p(p), bc_p(bc_p),estimates(estimates){}
+          p(p), c(c),estimates(estimates), d(d){}
 
     // function call operator that work for the specified range (begin/end)
     void operator()(std::size_t begin, std::size_t end) {
@@ -111,7 +112,10 @@ struct TdnnEstimate : public Worker {
             // arma::mat noise(int(n), 1);
             // double noise_val = R::rnorm(0, 1);
             // noise.fill(noise_val);
-            arma::vec noise = arma::randn<vec>(int(n));
+            // arma::vec noise = arma::randn<vec>(int(n));
+            arma::vec noise(n);
+            double noise_val = arma::randn<double>();
+            noise.fill(noise_val);
 
             arma::vec vec_eu_dis = conv_to<arma::vec>::from(EuDis);
             std::vector<double> eu_dis = conv_to<std::vector<double>>::from(vec_eu_dis);
@@ -142,18 +146,36 @@ struct TdnnEstimate : public Worker {
             arma::vec U_2_vec;
             rowvec weight_vec;
 
+            double w_1 = c/(c-1);
+            double w_2 = -1/(c-1);
+            double s_1 = s_sizes(i);
+            double s_2 = round(s_1 * pow(c, - double(d) / 2.0));
+
             // Weight vectors
+            // arma::vec weight_1(ord.length());
+            // for (int j = 0 ; j < ord.length() ; j++) {
+            //     weight_1(j) = nChoosek(ord(j), s_sizes(i) - 1.0);
+            // }
+            // weight_1 /=  nChoosek(n, s_sizes(i));
+            // weight_1.reshape(int(n), 1);
+            // arma::vec weight_2(ord.length());
+            // for (int k = 0 ; k < ord.length() ; k++) {
+            //     weight_2(k) = nChoosek(ord(k), ((s_sizes(i) * bc_p) - 1.0));
+            // }
+            // weight_2 /= nChoosek(n, (s_sizes(i) * bc_p));
+            // weight_2.reshape(int(n), 1);
             arma::vec weight_1(ord.length());
             for (int j = 0 ; j < ord.length() ; j++) {
-                weight_1(j) = nChoosek(ord(j), s_sizes(i) - 1.0);
+                weight_1(j) = nChoosek(ord(j), s_1 - 1.0);
             }
-            weight_1 /=  nChoosek(n, s_sizes(i));
+            weight_1 /=  nChoosek(n, s_1);
             weight_1.reshape(int(n), 1);
+
             arma::vec weight_2(ord.length());
             for (int k = 0 ; k < ord.length() ; k++) {
-                weight_2(k) = nChoosek(ord(k), ((s_sizes(i) * bc_p) - 1.0));
+                weight_2(k) = nChoosek(ord(k), (s_2 - 1.0));
             }
-            weight_2 /= nChoosek(n, (s_sizes(i) * bc_p));
+            weight_2 /= nChoosek(n, s_2);
             weight_2.reshape(int(n), 1);
 
 
@@ -176,17 +198,18 @@ struct TdnnEstimate : public Worker {
 
             // weight_vec = (reshape(ordered_Y, int(n), 1) % as<arma::mat>(weight_1)).t();
 
-            arma::mat A_mat(arma::vec{1, 1, 1, pow((1 / bc_p),(2 /   std::min(p, 3.0)) ) });
-            A_mat.reshape(2,2);
-            arma::mat A_mat_inv = A_mat.i();
-
-
-            arma::mat B_mat(arma::vec{1, 0});
-            B_mat.reshape(2, 1);
-
-            arma::mat Coefs = A_mat_inv * B_mat;
-
-            arma::vec U_vec = Coefs(0,0) * U_1_vec + Coefs(1,0) * U_2_vec;
+            // arma::mat A_mat(arma::vec{1, 1, 1, pow((1 / bc_p),(2 /   std::min(p, 3.0)) ) });
+            // A_mat.reshape(2,2);
+            // arma::mat A_mat_inv = A_mat.i();
+            //
+            //
+            // arma::mat B_mat(arma::vec{1, 0});
+            // B_mat.reshape(2, 1);
+            //
+            // arma::mat Coefs = A_mat_inv * B_mat;
+            //
+            // arma::vec U_vec = Coefs(0,0) * U_1_vec + Coefs(1,0) * U_2_vec;
+            arma::vec U_vec = w_1 * U_1_vec + w_2 * U_2_vec;
             // estimates.insert(i, sum(U_vec));
             estimates[i]=  sum(U_vec);
             // estimates.row(i) =  NumericVector(sum(U_vec));
@@ -200,14 +223,16 @@ struct TdnnEstimate : public Worker {
 // [[Rcpp::plugins(cpp11)]]
 // [[Rcpp::export]]
 List de_dnn( arma::mat X, arma::vec Y, arma::mat X_test,
-             NumericVector s_sizes, double bc_p,
+             NumericVector s_sizes, double c,
              Nullable<NumericVector> W0_ = R_NilValue){
+    int d = X.n_cols;
     // Handle case where W0 is not NULL:
     if (W0_.isNotNull()){
         NumericVector W0(W0_);
         // Now we need to filter X and X_test to only contain these columns
         X = matrix_subset_logical(X, as<arma::vec>(W0));
         X_test = matrix_subset_logical(X_test, as<arma::vec>(W0));
+        d = sum(W0);
     }
 
     // Infer n and p from our data after we've filtered for relevant features
@@ -231,7 +256,7 @@ List de_dnn( arma::mat X, arma::vec Y, arma::mat X_test,
                               estimates,
                               s_sizes,
                               ord,
-                              bc_p, n, p);
+                              c, n, p, d);
 
     parallelFor(0, X_test.n_rows, tdnnEstimate);
 
@@ -243,7 +268,7 @@ List de_dnn( arma::mat X, arma::vec Y, arma::mat X_test,
 
 // [[Rcpp::export]]
 NumericVector tuning(NumericMatrix X, NumericVector Y,
-                            NumericMatrix X_test, double bc_p,
+                            NumericMatrix X_test, double c,
                             Nullable<NumericVector> W0_ = R_NilValue){
 
     double n_obs = X_test.nrow();
@@ -255,12 +280,14 @@ NumericVector tuning(NumericMatrix X, NumericVector Y,
     // using zero indexing here to match with C++, note s + 1 -> s+2 in de_dnn call
 
     while (search_for_s){
-        // Rcout << "s: " << s << std::endl;
+        NumericVector s_val;
+        s_val = s + 2;
+        // Rcout << "s_val: " << s_val << std::endl;
         // For a given s, get the de_dnn estimates for each test observation
         List de_dnn_estimates = de_dnn(as<arma::mat>(X),
                                                 as<arma::vec>(Y),
                                                 as<arma::mat>(X_test),
-                                                s + 2, bc_p, W0_);
+                                                s_val, c, W0_);
 
         // This gives me an estimate for each test observation and is a n x 1 matrix
         arma::vec de_dnn_est_vec = as<arma::vec>(de_dnn_estimates["estimates"]);

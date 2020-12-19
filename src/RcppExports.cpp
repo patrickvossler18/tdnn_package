@@ -7,8 +7,8 @@
 using namespace Rcpp;
 
 // de_dnn_st
-List de_dnn_st(arma::mat X, NumericVector Y, arma::mat X_test, NumericVector s_sizes, double bc_p, Nullable<NumericVector> W0_);
-RcppExport SEXP _tdnn_de_dnn_st(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_sizesSEXP, SEXP bc_pSEXP, SEXP W0_SEXP) {
+arma::vec de_dnn_st(arma::mat X, NumericVector Y, arma::mat X_test, NumericVector s_sizes, double c, Nullable<NumericVector> W0_);
+RcppExport SEXP _tdnn_de_dnn_st(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_sizesSEXP, SEXP cSEXP, SEXP W0_SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -16,30 +16,57 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type Y(YSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type X_test(X_testSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type s_sizes(s_sizesSEXP);
-    Rcpp::traits::input_parameter< double >::type bc_p(bc_pSEXP);
+    Rcpp::traits::input_parameter< double >::type c(cSEXP);
     Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
-    rcpp_result_gen = Rcpp::wrap(de_dnn_st(X, Y, X_test, s_sizes, bc_p, W0_));
+    rcpp_result_gen = Rcpp::wrap(de_dnn_st(X, Y, X_test, s_sizes, c, W0_));
+    return rcpp_result_gen;
+END_RCPP
+}
+// best_s
+NumericVector best_s(arma::mat estimate_matrix);
+RcppExport SEXP _tdnn_best_s(SEXP estimate_matrixSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type estimate_matrix(estimate_matrixSEXP);
+    rcpp_result_gen = Rcpp::wrap(best_s(estimate_matrix));
     return rcpp_result_gen;
 END_RCPP
 }
 // tuning_st
-NumericVector tuning_st(NumericMatrix X, NumericVector Y, NumericMatrix X_test, double bc_p, Nullable<NumericVector> W0_);
-RcppExport SEXP _tdnn_tuning_st(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP bc_pSEXP, SEXP W0_SEXP) {
+NumericVector tuning_st(NumericVector s_seq, arma::mat& X, NumericVector& Y, arma::mat& X_test, double c, NumericVector W0_);
+RcppExport SEXP _tdnn_tuning_st(SEXP s_seqSEXP, SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP cSEXP, SEXP W0_SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type X_test(X_testSEXP);
-    Rcpp::traits::input_parameter< double >::type bc_p(bc_pSEXP);
-    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
-    rcpp_result_gen = Rcpp::wrap(tuning_st(X, Y, X_test, bc_p, W0_));
+    Rcpp::traits::input_parameter< NumericVector >::type s_seq(s_seqSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< NumericVector& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< double >::type c(cSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type W0_(W0_SEXP);
+    rcpp_result_gen = Rcpp::wrap(tuning_st(s_seq, X, Y, X_test, c, W0_));
     return rcpp_result_gen;
 END_RCPP
 }
+// tuning_test
+void tuning_test(NumericVector s_seq, arma::mat& X, NumericVector& Y, arma::mat& X_test, double bc_p, NumericVector W0_);
+RcppExport SEXP _tdnn_tuning_test(SEXP s_seqSEXP, SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP bc_pSEXP, SEXP W0_SEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type s_seq(s_seqSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< NumericVector& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< double >::type bc_p(bc_pSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type W0_(W0_SEXP);
+    tuning_test(s_seq, X, Y, X_test, bc_p, W0_);
+    return R_NilValue;
+END_RCPP
+}
 // de_dnn
-List de_dnn(arma::mat X, arma::vec Y, arma::mat X_test, NumericVector s_sizes, double bc_p, Nullable<NumericVector> W0_);
-RcppExport SEXP _tdnn_de_dnn(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_sizesSEXP, SEXP bc_pSEXP, SEXP W0_SEXP) {
+List de_dnn(arma::mat X, arma::vec Y, arma::mat X_test, NumericVector s_sizes, double c, Nullable<NumericVector> W0_);
+RcppExport SEXP _tdnn_de_dnn(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_sizesSEXP, SEXP cSEXP, SEXP W0_SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -47,31 +74,33 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type Y(YSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type X_test(X_testSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type s_sizes(s_sizesSEXP);
-    Rcpp::traits::input_parameter< double >::type bc_p(bc_pSEXP);
+    Rcpp::traits::input_parameter< double >::type c(cSEXP);
     Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
-    rcpp_result_gen = Rcpp::wrap(de_dnn(X, Y, X_test, s_sizes, bc_p, W0_));
+    rcpp_result_gen = Rcpp::wrap(de_dnn(X, Y, X_test, s_sizes, c, W0_));
     return rcpp_result_gen;
 END_RCPP
 }
 // tuning
-NumericVector tuning(NumericMatrix X, NumericVector Y, NumericMatrix X_test, double bc_p, Nullable<NumericVector> W0_);
-RcppExport SEXP _tdnn_tuning(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP bc_pSEXP, SEXP W0_SEXP) {
+NumericVector tuning(NumericMatrix X, NumericVector Y, NumericMatrix X_test, double c, Nullable<NumericVector> W0_);
+RcppExport SEXP _tdnn_tuning(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP cSEXP, SEXP W0_SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type Y(YSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type X_test(X_testSEXP);
-    Rcpp::traits::input_parameter< double >::type bc_p(bc_pSEXP);
+    Rcpp::traits::input_parameter< double >::type c(cSEXP);
     Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
-    rcpp_result_gen = Rcpp::wrap(tuning(X, Y, X_test, bc_p, W0_));
+    rcpp_result_gen = Rcpp::wrap(tuning(X, Y, X_test, c, W0_));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_tdnn_de_dnn_st", (DL_FUNC) &_tdnn_de_dnn_st, 6},
-    {"_tdnn_tuning_st", (DL_FUNC) &_tdnn_tuning_st, 5},
+    {"_tdnn_best_s", (DL_FUNC) &_tdnn_best_s, 1},
+    {"_tdnn_tuning_st", (DL_FUNC) &_tdnn_tuning_st, 6},
+    {"_tdnn_tuning_test", (DL_FUNC) &_tdnn_tuning_test, 6},
     {"_tdnn_de_dnn", (DL_FUNC) &_tdnn_de_dnn, 6},
     {"_tdnn_tuning", (DL_FUNC) &_tdnn_tuning, 5},
     {NULL, NULL, 0}
