@@ -1,4 +1,4 @@
-td_dnn <- function(X, Y, X_test, s_choice, W_0) {
+td_dnn <- function(X, Y, X_test, s_choice, W_0, c) {
   # Data checks before we doing anything else
   # Check X is a dataframe or matrix. If df, make it a matrix
   if (is.data.frame(X)) {
@@ -49,7 +49,7 @@ td_dnn <- function(X, Y, X_test, s_choice, W_0) {
     Y,
     X_test = X_test,
     s_sizes = s_choice,
-    bc_p = 2,
+    c = c,
     W0_ = W_0
   )$estimates
 
@@ -58,7 +58,7 @@ td_dnn <- function(X, Y, X_test, s_choice, W_0) {
     Y,
     X_test = X_test,
     s_sizes = s_choice + 1,
-    bc_p = 2,
+    c = c,
     W0_ = W_0
   )$estimates
 

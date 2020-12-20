@@ -4,20 +4,21 @@
 #' @param Y matrix of responses
 #' @param X_test matrix of test observations
 #' @param W_0 optional Boolean feature screening vector
-#' @param t max size of tuning sequence. Default is 50
+#' @param c tuning parameter for the ratio of weights s_1 and s_2
 #' @export
 est_reg_fn <- function(X,
                  Y,
                  X_test,
                  W_0 = NULL,
-                 t = 50) {
-    s_choice <- tuning(X, Y, X_test, 2, W0_ = W_0)
+                 c = 0.33) {
+    s_choice <- tuning(X, Y, X_test, c=c, W0_ = W_0)
 
     deDNN_pred <- td_dnn(X,
                          Y,
                          X_test = X_test,
                          s_choice = s_choice,
-                         W_0 = W_0)
+                         W_0 = W_0,
+                         c=c)
 
     list(deDNN_pred = deDNN_pred, s_choice = s_choice)
 }
@@ -42,9 +43,11 @@ est_effect <- function(X,
                        W,
                        Y,
                        X_test,
+                       c=0.33,
                        W_0,
                        estimate_var = F,
                        feature_screening= T,
+                       use_boot = F,
                        alpha=0.001,
                        ...) {
 
@@ -55,22 +58,35 @@ est_effect <- function(X,
   }
 
   effect_0 <-
-    est_reg_fn(X[W == 0, ], matrix(Y[W == 0]), X_test, W_0, t)
+    est_reg_fn(X[W == 0, ], matrix(Y[W == 0]), X_test, W_0, c)
   deDNN_pred_0 <- effect_0$deDNN_pred
   s_choice_0 <- effect_0$s_choice
 
   effect_1 <-
-    est_reg_fn(X[W == 1, ], matrix(Y[W == 1]), X_test, W_0, t)
+    est_reg_fn(X[W == 1, ], matrix(Y[W == 1]), X_test, W_0, c)
   deDNN_pred_1 <- effect_1$deDNN_pred
   s_choice_1 <- effect_1$s_choice
 
   deDNN_pred <- deDNN_pred_1 - deDNN_pred_0
 
   if( estimate_var){
-      boot_est <- est_variance(X, W, Y, X_test, W_0, s_choice_0, s_choice_1, ...)
+    boot_est <-
+      est_variance(X,
+                   W,
+                   Y,
+                   X_test,
+                   W_0,
+                   s_choice_0,
+                   s_choice_1,
+                   c,
+                   use_boot = use_boot,
+                   ...)
 
-     list(estimate = deDNN_pred,
-          variance =  mean((boot_est$t - deDNN_pred)^2))
+    list(estimate = deDNN_pred,
+         variance =  if (use_boot)
+           mean((boot_est$t - deDNN_pred) ^ 2)
+         else
+           mean((boot_est - deDNN_pred) ^ 2))
   } else{
       list(estimate = deDNN_pred)
   }
@@ -78,12 +94,12 @@ est_effect <- function(X,
 }
 
 
-est_variance <- function(X, W, Y, X_test, W_0, s_choice_0, s_choice_1, ...){
-
-    boot_data <- data.frame(X, W, Y)
-    d <- dim(X)[2]
-
-    boot_function_cpp <- function(dat, idx, s_choice_0, s_choice_1, W_0) {
+est_variance <- function(X, W, Y, X_test, W_0, s_choice_0, s_choice_1,
+                         c, use_boot=F, ...){
+    if(use_boot){
+      boot_data <- data.frame(X, W, Y)
+      d <- dim(X)[2]
+      boot_function_cpp <- function(dat, idx, s_choice_0, s_choice_1, W_0, c) {
         # subsample the indices and of those split in to treated and control groups
         X <- as.matrix(dat[idx, 1:d])
         W <- dat$W[idx]
@@ -94,24 +110,32 @@ est_variance <- function(X, W, Y, X_test, W_0, s_choice_0, s_choice_1, ...){
                           matrix(Y[W == 0]),
                           X_test = X_test,
                           s_choice = s_choice_1,
+                          c = c,
                           W_0 = W_0
         )
         ctrl_est <- td_dnn(X[W == 1, ],
                            matrix(Y[W == 1]),
                            X_test = X_test,
                            s_choice = s_choice_0,
+                           c = c,
                            W_0 = W_0
         )
         trt_est - ctrl_est
-    }
-    boot_estimates <- boot::boot(
+      }
+      boot_estimates <- boot::boot(
         data = boot_data,
         statistic = boot_function_cpp,
         s_choice_0 = s_choice_0,
         s_choice_1 = s_choice_1,
         W_0 = W_0,
+        c = c,
         ...
-    )
+      )
+    } else{
+      arguments <- list(...)
+      boot_estimates <- tdnn:::bootstrap_cpp(X,Xtest_fixed,Y, W, W0,s_choice_0,
+                                             s_choice_1, c, B=arguments$R)
+    }
     boot_estimates
 }
 

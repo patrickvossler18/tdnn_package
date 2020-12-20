@@ -274,7 +274,7 @@ NumericVector tuning(NumericMatrix X, NumericVector Y,
     double n_obs = X_test.nrow();
     bool search_for_s = true;
     // make tuning matrix large and then resize it?
-    arma::mat tuning_mat(n_obs, 50, fill::zeros);
+    arma::mat tuning_mat(n_obs, 100, fill::zeros);
     arma::vec best_s(n_obs, fill::zeros);
     double s = 0;
     // using zero indexing here to match with C++, note s + 1 -> s+2 in de_dnn call
@@ -354,4 +354,108 @@ NumericVector tuning(NumericMatrix X, NumericVector Y,
     }
     return NumericVector(best_s.begin(), best_s.end());
     // return best_s;
+}
+
+
+// rcpp in; rcpp out
+// [[Rcpp::export]]
+NumericMatrix submat_rcpp(NumericMatrix X, LogicalVector condition) {
+    int n=X.nrow(), k=X.ncol();
+    NumericMatrix out(sum(condition),k);
+    for (int i = 0, j = 0; i < n; i++) {
+        if(condition[i]) {
+            out(j,_) = X(i,_);
+            j = j+1;
+        }
+    }
+    return(out);
+}
+
+
+// [[Rcpp::export]]
+Rcpp::NumericMatrix matrix_subset_idx_rcpp(
+        Rcpp::NumericMatrix x, Rcpp::IntegerVector y) {
+
+    // Determine the number of observations
+    int n_rows_out = y.size();
+
+    // Create an output matrix
+    Rcpp::NumericMatrix out = Rcpp::no_init(n_rows_out,x.ncol() );
+
+    // Loop through each row and copy the data.
+    for(unsigned int z = 0; z < n_rows_out; ++z) {
+        out(z, Rcpp::_) = x(y[z], Rcpp::_);
+        // out(Rcpp::_, z) = x(Rcpp::_, y[z]);
+    }
+
+    return out;
+}
+
+
+// [[Rcpp::export]]
+NumericMatrix bootstrap_cpp(NumericMatrix X,
+                            NumericMatrix X_test,
+                            NumericMatrix Y,
+                            IntegerVector W,
+                            NumericVector W0,
+                            NumericVector s_choice_0,
+                            NumericVector s_choice_1,
+                            double c=0.33, int B =1000) {
+    // Preallocate storage for statistics
+    int n_test = X_test.nrow();
+    NumericMatrix boot_stat(B,n_test);
+    // NumericMatrix boot_stat();
+    // Rcout << boot_stat.ncol() << std::endl;
+    // Number of observations
+    int n = X.nrow();
+    // Perform bootstrap
+    for(int i =0; i < B; i++) {
+        NumericVector bstrap_idx = floor(runif(n,0, n));
+        // IntegerVector bstrap_idx = as<IntegerVector>(Rcpp::sample(n, n, replace=true));
+        NumericMatrix X_boot = matrix_subset_idx_rcpp(X, as<IntegerVector>(bstrap_idx));
+        IntegerVector W_boot = W[as<IntegerVector>(bstrap_idx)];
+        NumericMatrix Y_boot = matrix_subset_idx_rcpp(Y,as<IntegerVector>(bstrap_idx));
+        // NumericVector Y_boot = Y[as<IntegerVector>(bstrap_idx)];
+
+        // // Sample initial data
+        LogicalVector trt_idx = W_boot == 1;
+        LogicalVector ctl_idx = W_boot == 0;
+        //
+        NumericMatrix X_trt = submat_rcpp(X_boot, trt_idx);
+        // NumericMatrix X_test_trt = submat_rcpp(X_test_boot, trt_idx);
+        NumericMatrix Y_trt = matrix_subset_idx_rcpp(Y_boot,as<IntegerVector>(trt_idx));
+        //
+        NumericMatrix X_ctl = submat_rcpp(X_boot, ctl_idx);
+        // NumericMatrix X_test_ctl = submat_rcpp(X_test_boot, ctl_idx);
+        NumericMatrix Y_ctl = matrix_subset_idx_rcpp(Y_boot,as<IntegerVector>(ctl_idx));
+
+        NumericVector trt_est_a = de_dnn(as<arma::mat>(X_trt),
+                              as<arma::vec>(Y_trt),
+                              as<arma::mat>(X_test),
+                              s_choice_1, c, W0)["estimates"];
+
+        NumericVector trt_est_b = de_dnn(as<arma::mat>(X_trt),
+                              as<arma::vec>(Y_trt),
+                              as<arma::mat>(X_test),
+                              s_choice_1 + 1, c, W0)["estimates"];
+
+        NumericVector trt_est = (trt_est_a + trt_est_b) / 2.0;
+
+        NumericVector ctl_est_a = de_dnn(as<arma::mat>(X_ctl),
+                                         as<arma::vec>(Y_ctl),
+                                         as<arma::mat>(X_test),
+                                         s_choice_0, c, W0)["estimates"];
+
+        NumericVector ctl_est_b = de_dnn(as<arma::mat>(X_ctl),
+                                         as<arma::vec>(Y_ctl),
+                                         as<arma::mat>(X_test),
+                                         s_choice_0 + 1, c, W0)["estimates"];
+
+        NumericVector ctl_est = (ctl_est_a + ctl_est_b) / 2.0;
+
+        boot_stat(i, _) = trt_est - ctl_est;
+        // boot_stat(i, _) = 0;
+        }
+    // Return bootstrap results
+    return boot_stat;
 }

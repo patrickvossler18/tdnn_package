@@ -95,6 +95,49 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// submat_rcpp
+NumericMatrix submat_rcpp(NumericMatrix X, LogicalVector condition);
+RcppExport SEXP _tdnn_submat_rcpp(SEXP XSEXP, SEXP conditionSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    Rcpp::traits::input_parameter< LogicalVector >::type condition(conditionSEXP);
+    rcpp_result_gen = Rcpp::wrap(submat_rcpp(X, condition));
+    return rcpp_result_gen;
+END_RCPP
+}
+// matrix_subset_idx_rcpp
+Rcpp::NumericMatrix matrix_subset_idx_rcpp(Rcpp::NumericMatrix x, Rcpp::IntegerVector y);
+RcppExport SEXP _tdnn_matrix_subset_idx_rcpp(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type x(xSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(matrix_subset_idx_rcpp(x, y));
+    return rcpp_result_gen;
+END_RCPP
+}
+// bootstrap_cpp
+NumericMatrix bootstrap_cpp(NumericMatrix X, NumericMatrix X_test, NumericMatrix Y, IntegerVector W, NumericVector W0, NumericVector s_choice_0, NumericVector s_choice_1, double c, int B);
+RcppExport SEXP _tdnn_bootstrap_cpp(SEXP XSEXP, SEXP X_testSEXP, SEXP YSEXP, SEXP WSEXP, SEXP W0SEXP, SEXP s_choice_0SEXP, SEXP s_choice_1SEXP, SEXP cSEXP, SEXP BSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type W(WSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type W0(W0SEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type s_choice_0(s_choice_0SEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type s_choice_1(s_choice_1SEXP);
+    Rcpp::traits::input_parameter< double >::type c(cSEXP);
+    Rcpp::traits::input_parameter< int >::type B(BSEXP);
+    rcpp_result_gen = Rcpp::wrap(bootstrap_cpp(X, X_test, Y, W, W0, s_choice_0, s_choice_1, c, B));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_tdnn_de_dnn_st", (DL_FUNC) &_tdnn_de_dnn_st, 6},
@@ -103,6 +146,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_tdnn_tuning_test", (DL_FUNC) &_tdnn_tuning_test, 6},
     {"_tdnn_de_dnn", (DL_FUNC) &_tdnn_de_dnn, 6},
     {"_tdnn_tuning", (DL_FUNC) &_tdnn_tuning, 5},
+    {"_tdnn_submat_rcpp", (DL_FUNC) &_tdnn_submat_rcpp, 2},
+    {"_tdnn_matrix_subset_idx_rcpp", (DL_FUNC) &_tdnn_matrix_subset_idx_rcpp, 2},
+    {"_tdnn_bootstrap_cpp", (DL_FUNC) &_tdnn_bootstrap_cpp, 9},
     {NULL, NULL, 0}
 };
 

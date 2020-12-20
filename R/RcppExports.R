@@ -25,3 +25,15 @@ tuning <- function(X, Y, X_test, c, W0_ = NULL) {
     .Call(`_tdnn_tuning`, X, Y, X_test, c, W0_)
 }
 
+submat_rcpp <- function(X, condition) {
+    .Call(`_tdnn_submat_rcpp`, X, condition)
+}
+
+matrix_subset_idx_rcpp <- function(x, y) {
+    .Call(`_tdnn_matrix_subset_idx_rcpp`, x, y)
+}
+
+bootstrap_cpp <- function(X, X_test, Y, W, W0, s_choice_0, s_choice_1, c = 0.33, B = 1000L) {
+    .Call(`_tdnn_bootstrap_cpp`, X, X_test, Y, W, W0, s_choice_0, s_choice_1, c, B)
+}
+
