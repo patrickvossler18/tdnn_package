@@ -6,6 +6,78 @@
 
 using namespace Rcpp;
 
+// calcPWD
+Rcpp::NumericMatrix calcPWD(const Rcpp::NumericMatrix& x);
+RcppExport SEXP _tdnn_calcPWD(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(calcPWD(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sweep
+NumericMatrix sweep(NumericMatrix x, NumericVector y, int margin);
+RcppExport SEXP _tdnn_sweep(SEXP xSEXP, SEXP ySEXP, SEXP marginSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type x(xSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< int >::type margin(marginSEXP);
+    rcpp_result_gen = Rcpp::wrap(sweep(x, y, margin));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Astar
+NumericMatrix Astar(NumericMatrix d);
+RcppExport SEXP _tdnn_Astar(SEXP dSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type d(dSEXP);
+    rcpp_result_gen = Rcpp::wrap(Astar(d));
+    return rcpp_result_gen;
+END_RCPP
+}
+// BCDCOR
+List BCDCOR(NumericMatrix x, NumericMatrix y);
+RcppExport SEXP _tdnn_BCDCOR(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type x(xSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(BCDCOR(x, y));
+    return rcpp_result_gen;
+END_RCPP
+}
+// dcor_t_test
+double dcor_t_test(NumericMatrix x, NumericMatrix y);
+RcppExport SEXP _tdnn_dcor_t_test(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type x(xSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(dcor_t_test(x, y));
+    return rcpp_result_gen;
+END_RCPP
+}
+// feature_screening
+Rcpp::NumericVector feature_screening(NumericMatrix x, NumericMatrix y, double alpha);
+RcppExport SEXP _tdnn_feature_screening(SEXP xSEXP, SEXP ySEXP, SEXP alphaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type x(xSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type y(ySEXP);
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
+    rcpp_result_gen = Rcpp::wrap(feature_screening(x, y, alpha));
+    return rcpp_result_gen;
+END_RCPP
+}
 // de_dnn_st
 arma::vec de_dnn_st(arma::mat X, NumericVector Y, arma::mat X_test, NumericVector s_sizes, double c, Nullable<NumericVector> W0_);
 RcppExport SEXP _tdnn_de_dnn_st(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_sizesSEXP, SEXP cSEXP, SEXP W0_SEXP) {
@@ -140,6 +212,12 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_tdnn_calcPWD", (DL_FUNC) &_tdnn_calcPWD, 1},
+    {"_tdnn_sweep", (DL_FUNC) &_tdnn_sweep, 3},
+    {"_tdnn_Astar", (DL_FUNC) &_tdnn_Astar, 1},
+    {"_tdnn_BCDCOR", (DL_FUNC) &_tdnn_BCDCOR, 2},
+    {"_tdnn_dcor_t_test", (DL_FUNC) &_tdnn_dcor_t_test, 2},
+    {"_tdnn_feature_screening", (DL_FUNC) &_tdnn_feature_screening, 3},
     {"_tdnn_de_dnn_st", (DL_FUNC) &_tdnn_de_dnn_st, 6},
     {"_tdnn_best_s", (DL_FUNC) &_tdnn_best_s, 1},
     {"_tdnn_tuning_st", (DL_FUNC) &_tdnn_tuning_st, 6},

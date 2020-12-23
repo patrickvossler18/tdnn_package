@@ -30,7 +30,7 @@ X = matrix(runif(n0 * p0), n0, p0)
 epsi = matrix(rnorm(n0) , n0, 1)
 W <- rbinom(n0, 1, 0.5) #treatment condition
 
-
+c = 0.33
 
 Xtest_fixed = matrix(fixed_test_vector, 1, p0)
 
@@ -54,20 +54,20 @@ W0[impt_idx] = 1
 context("fixed s, fixed test pt")
 test_that("single-threaded version of de_dnn gives same estimate as R version for fixed s and single fixed test point",
           {
-              expect_equal(tdnn:::de_dnn_st(X,Y,Xtest,s_sizes = 2, bc_p=2,W0_=W0)$estimates,
-              de.dnn(data.frame(X, Y),X.test = Xtest,s.size = 2,bc.p = 2,W0 = W0))
+              expect_equal(as.numeric(tdnn:::de_dnn_st(X,Y,Xtest,s_sizes = 2,W0_=W0, c = c)),
+              de.dnn(data.frame(X, Y),X.test = Xtest,s.size = 2,W0 = W0, c=c))
           })
 
 test_that("multi-threaded version of de_dnn gives same estimate as R version for fixed s and single fixed test point",
           {
-              expect_equal(tdnn:::de_dnn(X,Y,Xtest,s_sizes = 2, bc_p=2,W0_=W0)$estimates,
-                           de.dnn(data.frame(X, Y),X.test = Xtest,s.size = 2,bc.p = 2,W0 = W0))
+              expect_equal(tdnn:::de_dnn(X,Y,Xtest,s_sizes = 2, W0_=W0, c = c)$estimates,
+                           de.dnn(data.frame(X, Y),X.test = Xtest,s.size = 2,W0 = W0, c = c))
           })
 test_that("td_dnn using multi-threading gives same estimate as R version for single test point",
           {
               expect_equal(
-                  tdnn:::td_dnn(X, Y, Xtest,2,W0),
-                  td.dnn(data.frame(X, Y),Xtest, 2, W0)
+                  tdnn:::td_dnn(X, Y, Xtest,2,W0, c = c),
+                  td.dnn(data.frame(X, Y),Xtest, 2, W0, c = c)
               )
           })
 
@@ -78,10 +78,10 @@ test_that("greedy version of tuning algo matches original R implementation's cho
               tuning_mat = matrix(0, t, 1)
               Dataset = data.frame(X, Y)
               for (s in seq(1, t, 1)) {
-                  tuning_mat[s] = de.dnn(Dataset, X.test = Xtest, s.size = s + 1, W0 = W0)
+                  tuning_mat[s] = de.dnn(Dataset, X.test = Xtest, s.size = s + 1, W0 = W0, c = c)
               }
               orig_s <- which(diff(abs(diff(tuning_mat) / tuning_mat[1:t - 1])) > -0.01)[1] + 3
-              greedy_s <- tuning( X, Y, Xtest,bc_p = 2, W0_=W0)
+              greedy_s <- tuning( X, Y, Xtest, W0_=W0, c = c)
               expect_equal(greedy_s, orig_s)
           })
 
@@ -89,21 +89,19 @@ context("multi-threaded de_dnn same as single-threaded de_dnn")
 test_that(
     "multi-threaded de_dnn gives same estimates as single-threaded de_dnn for vector of test inputs",
     {
-        a <- tdnn:::de_dnn_st(
+        a <- as.numeric(tdnn:::de_dnn_st(
             X,
             Y,
             X_test = Xtest_random,
             s_sizes = rep(2, nrow(Xtest_random)),
-            bc_p = 2,
-            W0_ = W0
-        )$estimates
+            W0_ = W0, c = c
+        ))
         b <- de_dnn(
             X,
             Y,
             X_test = Xtest_random,
             s_sizes = rep(2, nrow(Xtest_random)),
-            bc_p = 2,
-            W0_ = W0
+            W0_ = W0, c = c
         )$estimates
         expect_equal(b, a)
     }

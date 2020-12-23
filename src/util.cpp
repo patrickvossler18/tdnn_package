@@ -38,9 +38,16 @@ NumericVector seq_cpp(double lo, double hi) {
 }
 
 arma::mat matrix_subset_logical(arma::mat x,
-                                arma::vec y) {
+                                arma::vec y, int mrgn) {
     // Assumes that y is 0/1 coded.
     // find() retrieves the integer index when y is equivalent 1.
+    arma::mat ret_mat;
     uvec subset_vec = find(y == 1) ;
-    return x.cols(find(y == 1) );
+    if( mrgn == 1){
+        ret_mat =  x.cols(find(y == 1) );
+    } else{
+        ret_mat = x.rows(find(y==1));
+    }
+    return ret_mat;
+
 }

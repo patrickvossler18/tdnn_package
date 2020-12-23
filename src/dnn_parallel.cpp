@@ -1,61 +1,4 @@
-// #include <RcppParallel.h>
-// #include <math.h>// #include <RcppParallel.h>
-// #include <math.h>
 #include "util.h"
-
-// [[Rcpp::depends(RcppParallel)]]
-// [[Rcpp::depends(RcppArmadillo)]]
-// using namespace Rcpp;
-// using namespace RcppParallel;
-// using namespace arma;
-// using namespace std;
-
-// double nChoosek(double n, double k)
-// {
-//     if (k == 0) return 1.0;
-//
-//     /*
-//      Extra computation saving for large R,
-//      using property:
-//      N choose R = N choose (N-R)
-//      */
-//     // if (k > n / 2.0) return nChoosek(n, n - k);
-//
-//     double res = 1.0;
-//
-//     for (double i = 1.0; i <= k; ++i)
-//     {
-//         res *= n - i + 1.0;
-//         res /= i;
-//     }
-//
-//     return res;
-// }
-//
-// NumericVector seq_cpp(double lo, double hi) {
-//     double n = hi - lo + 1;
-//
-//     // Create a new integer vector, sequence, of size n
-//     NumericVector sequence(n);
-//
-//     for(int i = 0; i < n; i++) {
-//         // Set the ith element of sequence to lo plus i
-//         sequence[i] = lo + i;
-//     }
-//
-//     // Return
-//     return sequence;
-// }
-
-
-// arma::mat matrix_subset_logical(arma::mat x,
-//                                 arma::vec y) {
-//     // Assumes that y is 0/1 coded.
-//     // find() retrieves the integer index when y is equivalent 1.
-//     uvec subset_vec = find(y == 1) ;
-//     return x.cols(find(y == 1) );
-// }
-
 
 struct TdnnEstimate : public Worker {
 
@@ -100,9 +43,7 @@ struct TdnnEstimate : public Worker {
             arma::mat X_dis;
             arma::mat EuDis;
 
-            // arma::mat X_test_row =  as<arma::mat>(NumericMatrix(1, X_test.ncol(),X_test(i,_).begin()));
             arma::mat X_test_row =  X_test.row(i);
-            // Rcout << "i: " << i << " row: "<< X_test_row << "\n";
             all_rows = single_vec * X_test_row;
 
             X_dis = X - all_rows;
@@ -152,18 +93,6 @@ struct TdnnEstimate : public Worker {
             double s_2 = round(s_1 * pow(c, - double(d) / 2.0));
 
             // Weight vectors
-            // arma::vec weight_1(ord.length());
-            // for (int j = 0 ; j < ord.length() ; j++) {
-            //     weight_1(j) = nChoosek(ord(j), s_sizes(i) - 1.0);
-            // }
-            // weight_1 /=  nChoosek(n, s_sizes(i));
-            // weight_1.reshape(int(n), 1);
-            // arma::vec weight_2(ord.length());
-            // for (int k = 0 ; k < ord.length() ; k++) {
-            //     weight_2(k) = nChoosek(ord(k), ((s_sizes(i) * bc_p) - 1.0));
-            // }
-            // weight_2 /= nChoosek(n, (s_sizes(i) * bc_p));
-            // weight_2.reshape(int(n), 1);
             arma::vec weight_1(ord.length());
             for (int j = 0 ; j < ord.length() ; j++) {
                 weight_1(j) = nChoosek(ord(j), s_1 - 1.0);
@@ -178,42 +107,12 @@ struct TdnnEstimate : public Worker {
             weight_2 /= nChoosek(n, s_2);
             weight_2.reshape(int(n), 1);
 
-
-            // U_1_vec = reshape(ordered_Y,1,int(n)) * weight_1;
-            // U_2_vec = reshape(ordered_Y,1,int(n)) * weight_2;
-
             U_1_vec = reshape(ordered_Y,1,int(n)) * conv_to<arma::mat>::from(weight_1);
             U_2_vec = reshape(ordered_Y,1,int(n)) * conv_to<arma::mat>::from(weight_2);
 
-
-            // NumericVector weight_1 = choose(ord, s_sizes(i) - 1.0) / nChoosek(n, s_sizes(i));
-            // weight_1.attr("dim") = Dimension(n,1);
-            //
-            // NumericVector weight_2 = choose(ord, (s_sizes(i) * bc_p) - 1.0) / nChoosek(n, (s_sizes(i) * bc_p));
-            // weight_2.attr("dim") = Dimension(n,1);
-            //
-            // U_1_vec = reshape(ordered_Y,1,int(n)) * as<arma::mat>(weight_1);
-            // U_2_vec = reshape(ordered_Y,1,int(n)) * as<arma::mat>(weight_2);
-
-
-            // weight_vec = (reshape(ordered_Y, int(n), 1) % as<arma::mat>(weight_1)).t();
-
-            // arma::mat A_mat(arma::vec{1, 1, 1, pow((1 / bc_p),(2 /   std::min(p, 3.0)) ) });
-            // A_mat.reshape(2,2);
-            // arma::mat A_mat_inv = A_mat.i();
-            //
-            //
-            // arma::mat B_mat(arma::vec{1, 0});
-            // B_mat.reshape(2, 1);
-            //
-            // arma::mat Coefs = A_mat_inv * B_mat;
-            //
-            // arma::vec U_vec = Coefs(0,0) * U_1_vec + Coefs(1,0) * U_2_vec;
             arma::vec U_vec = w_1 * U_1_vec + w_2 * U_2_vec;
             // estimates.insert(i, sum(U_vec));
             estimates[i]=  sum(U_vec);
-            // estimates.row(i) =  NumericVector(sum(U_vec));
-            // weight_mat.row(i) = NumericVector(weight_vec.begin(), weight_vec.end());
         }
     }
 
@@ -265,6 +164,20 @@ List de_dnn( arma::mat X, arma::vec Y, arma::mat X_test,
     return out;
 }
 
+arma::mat matrix_subset_idx(const arma::mat& x,
+                            const arma::uvec& y) {
+
+    // y must be an integer between 0 and columns - 1
+    // Allows for repeated draws from same columns.
+    return x.cols( y );
+}
+
+
+arma::uvec seq_int(long int a, long int b){
+    long int d = std::abs(b-a)+1;
+
+    return conv_to<arma::uvec>::from(arma::linspace(a, b, d));
+}
 
 // [[Rcpp::export]]
 NumericVector tuning(NumericMatrix X, NumericVector Y,
@@ -292,25 +205,49 @@ NumericVector tuning(NumericMatrix X, NumericVector Y,
         // This gives me an estimate for each test observation and is a n x 1 matrix
         arma::vec de_dnn_est_vec = as<arma::vec>(de_dnn_estimates["estimates"]);
         arma::mat candidate_results = de_dnn_est_vec;
+        // arma::mat candidate_results = as<arma::mat>(de_dnn_estimates["estimates"]);
         // arma::mat candidate_results(n_obs, 1 );
         candidate_results.reshape(n_obs, 1);
-        // candidate_results.col(0) = de_dnn_est_vec;
-        // Rcout << "got candidate estimates: " << candidate_results << std::endl;
-        // Might need to reshape this matrix?
+
+
 
         // Now we add this column to our matrix if the matrix is empty
         if (s == 0 | s == 1){
             tuning_mat.col(s) = candidate_results;
+        } else if (s > tuning_mat.n_cols){
+            Rcout << "s s > tuning_mat.n_cols" << std::endl;
+            // if s > ncol tuning_mat, then we will choose best s from the existing choices for each row that hasn't found a best s yet and break out of the while loop
+            arma::uvec s_vec = seq_int(0, int(s)-1);
+            arma::mat resized_mat = matrix_subset_idx(tuning_mat, s_vec);
+
+            arma::mat out_diff = diff(resized_mat, 1, 1);
+            IntegerVector idx = Range(0, (resized_mat.n_cols)-2);
+            arma::mat out_denom = resized_mat.cols(as<uvec>(idx));
+            arma::mat diff_ratio = diff(abs( out_diff / out_denom), 1, 1);
+
+            for(R_xlen_t i = 0; i < diff_ratio.n_rows; ++i) {
+                // Only loop through the columns if we haven't already found a
+                // suitable s
+                if(best_s(i) == 0){
+                    for(R_xlen_t j = 0; j < diff_ratio.n_cols; ++j) {
+                        if (diff_ratio(i, j) > -0.01){
+                            best_s(i) = j + 1 + 3;
+                            break; // if we've found the column that satisfies our condition, break and move to next row.
+                        }
+                    }
+                }
+            }
+            break; // break out of our while loop to avoid going past number of columns in tuning_mat
         } else {
             // Before we do anything with the matrix we need to resize it to avoid
             // dividing by zero
-            arma::mat resized_mat = tuning_mat;
-            //
-            //             IntegerVector non_zero_idx = Range(0, (s-1));
-            //             Rcout << "non_zero_idx: " << non_zero_idx << std::endl;
-            //             arma::mat resized_mat = tuning_mat.cols(as<uvec>(non_zero_idx));
-            //
-            resized_mat.resize(n_obs, s);
+            // arma::mat resized_mat = tuning_mat;
+            // resized_mat.resize(n_obs, s);
+
+            // instead of resizing the matrix, just select columns 0-s
+            arma::uvec s_vec = seq_int(0, int(s)-1);
+            arma::mat resized_mat = matrix_subset_idx(tuning_mat, s_vec);
+            // Rcout << resized_mat << std::endl;
             // Rcout << "resized mat: " << resized_mat << std::endl;
             // tuning_mat is an n x s matrix and we want to diff each of the rows
             // arma::mat mat_row = estimate_matrix.row(i);
@@ -334,7 +271,8 @@ NumericVector tuning(NumericMatrix X, NumericVector Y,
                 if(best_s(i) == 0){
                     for(R_xlen_t j = 0; j < diff_ratio.n_cols; ++j) {
                         if (diff_ratio(i, j) > -0.01){
-                            best_s(i) = j + 1 + 3; // is this the correct indexing soln?
+                            best_s(i) = j + 1 + 3;
+                            break; // if we've found the column that satisfies our condition, break and move to next row.
                         }
                     }
                 }
@@ -408,49 +346,64 @@ NumericMatrix bootstrap_cpp(NumericMatrix X,
     // Rcout << boot_stat.ncol() << std::endl;
     // Number of observations
     int n = X.nrow();
+    // bstrap_idx = bstrap_idx - 1;
+    // if (bstrap_idx_.isNotNull()){
+    //     NumericVector bstrap_idx(bstrap_idx_);
+    //     bstrap_idx = bstrap_idx - 1;
+    // }
+
     // Perform bootstrap
     for(int i =0; i < B; i++) {
-        NumericVector bstrap_idx = floor(runif(n,0, n));
-        // IntegerVector bstrap_idx = as<IntegerVector>(Rcpp::sample(n, n, replace=true));
-        NumericMatrix X_boot = matrix_subset_idx_rcpp(X, as<IntegerVector>(bstrap_idx));
-        IntegerVector W_boot = W[as<IntegerVector>(bstrap_idx)];
-        NumericMatrix Y_boot = matrix_subset_idx_rcpp(Y,as<IntegerVector>(bstrap_idx));
+        Rcout << i << std::endl;
+
+        // NumericMatrix X_boot(n);
+        // NumericMatrix Y_boot(n);
+        // NumericMatrix W_boot(n);
+
+        // IntegerVector bstrap_idx = as<IntegerVector>(Rcpp::sample(n, n, true));
+        // if (bstrap_idx_.isNull()){
+            NumericVector bstrap_idx = floor(runif(n,0, n));
+            NumericMatrix X_boot = matrix_subset_idx_rcpp(X, as<IntegerVector>(bstrap_idx));
+            IntegerVector W_boot = W[as<IntegerVector>(bstrap_idx)];
+            NumericMatrix Y_boot = matrix_subset_idx_rcpp(Y,as<IntegerVector>(bstrap_idx));
+        // } else{
+            // NumericMatrix X_boot = matrix_subset_idx_rcpp(X, as<IntegerVector>(bstrap_idx));
+            // IntegerVector W_boot = W[as<IntegerVector>(bstrap_idx)];
+            // NumericMatrix Y_boot = matrix_subset_idx_rcpp(Y,as<IntegerVector>(bstrap_idx));
+        // }
+
         // NumericVector Y_boot = Y[as<IntegerVector>(bstrap_idx)];
 
         // // Sample initial data
         LogicalVector trt_idx = W_boot == 1;
         LogicalVector ctl_idx = W_boot == 0;
-        //
-        NumericMatrix X_trt = submat_rcpp(X_boot, trt_idx);
-        // NumericMatrix X_test_trt = submat_rcpp(X_test_boot, trt_idx);
-        NumericMatrix Y_trt = matrix_subset_idx_rcpp(Y_boot,as<IntegerVector>(trt_idx));
-        //
-        NumericMatrix X_ctl = submat_rcpp(X_boot, ctl_idx);
-        // NumericMatrix X_test_ctl = submat_rcpp(X_test_boot, ctl_idx);
-        NumericMatrix Y_ctl = matrix_subset_idx_rcpp(Y_boot,as<IntegerVector>(ctl_idx));
 
-        NumericVector trt_est_a = de_dnn(as<arma::mat>(X_trt),
-                              as<arma::vec>(Y_trt),
+        arma::mat X_trt = matrix_subset_logical(as<arma::mat>(X_boot),as<arma::vec>(as<IntegerVector>(trt_idx)), 2);
+        arma::mat Y_trt = matrix_subset_logical(as<arma::mat>(Y_boot),as<arma::vec>(as<IntegerVector>(trt_idx)), 2);
+
+        arma::mat X_ctl = matrix_subset_logical(as<arma::mat>(X_boot),as<arma::vec>(as<IntegerVector>(ctl_idx)), 2);
+        arma::mat Y_ctl = matrix_subset_logical(as<arma::mat>(Y_boot),as<arma::vec>(as<IntegerVector>(ctl_idx)), 2);
+
+        NumericVector trt_est_a = de_dnn(X_trt,
+                              conv_to<arma::vec>::from(Y_trt),
                               as<arma::mat>(X_test),
                               s_choice_1, c, W0)["estimates"];
-
-        NumericVector trt_est_b = de_dnn(as<arma::mat>(X_trt),
-                              as<arma::vec>(Y_trt),
+        NumericVector s_choice_1_p1 = s_choice_1 + 1.0;
+        NumericVector trt_est_b = de_dnn(X_trt,
+                              conv_to<arma::vec>::from(Y_trt),
                               as<arma::mat>(X_test),
-                              s_choice_1 + 1, c, W0)["estimates"];
-
+                              s_choice_1_p1, c, W0)["estimates"];
         NumericVector trt_est = (trt_est_a + trt_est_b) / 2.0;
 
-        NumericVector ctl_est_a = de_dnn(as<arma::mat>(X_ctl),
-                                         as<arma::vec>(Y_ctl),
+        NumericVector ctl_est_a = de_dnn(X_ctl,
+                                         conv_to<arma::vec>::from(Y_ctl),
                                          as<arma::mat>(X_test),
                                          s_choice_0, c, W0)["estimates"];
-
-        NumericVector ctl_est_b = de_dnn(as<arma::mat>(X_ctl),
-                                         as<arma::vec>(Y_ctl),
+        NumericVector s_choice_0_p1 = s_choice_0 + 1.0;
+        NumericVector ctl_est_b = de_dnn(X_ctl,
+                                         conv_to<arma::vec>::from(Y_ctl),
                                          as<arma::mat>(X_test),
-                                         s_choice_0 + 1, c, W0)["estimates"];
-
+                                         s_choice_0_p1, c, W0)["estimates"];
         NumericVector ctl_est = (ctl_est_a + ctl_est_b) / 2.0;
 
         boot_stat(i, _) = trt_est - ctl_est;

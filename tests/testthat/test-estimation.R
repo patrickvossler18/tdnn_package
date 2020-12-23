@@ -21,7 +21,7 @@ dgp_function = function(x,idx){
 baseline_function = function(x){
     x[3]^2 + x[7]
 }
-
+c = 0.8
 n0 = 1000
 p0 = d
 n = n0
@@ -47,31 +47,31 @@ Y =  (W - 0.5 ) * apply(X, MARGIN = 1, dgp_function, idx = impt_idx) + epsi
 
 Xtest = Xtest_fixed
 
-# W0 = rep(0, p0)
-# W0[impt_idx] = 1
-W0 = rep(1,p0)
+W0 = rep(0, p0)
+W0[impt_idx] = 1
+# W0 = rep(1,p0)
 
 
 context("make sure that estimation function gives same output as original implementation")
 
 test_that("est_effect gives same estimate as est_effect_old",{
-    cpp_version <- est_effect(X, W, Y, Xtest, W0,feature_screening = F)$estimate
-    r_version <- est_effect_old(X, W, Y, W0, Xtest)$deDNN_pred
+    cpp_version <- tdnn::est_effect(X, W, Y, Xtest, W0,feature_screening = F, c = c, estimate_var = F)$estimate
+    r_version <- est_effect_old(X, W, Y, W0, Xtest,c = c)$deDNN_pred
     expect_equal(cpp_version, r_version)
 })
 
 
 context("tuning functions should all give the same choice of s")
 test_that("greedy, single-threaded, and original implementation all give the same s value",{
-    normal <- tdnn:::tuning_st(X, Y, Xtest, 2, W0_=W0)
-    greedy <- tuning( X, Y, Xtest, 2, W0_=W0)
+    normal <- tdnn:::tuning_st(seq(1,50,1),X, Y, Xtest, W0_=W0,c = c)
+    greedy <- tuning( X, Y, Xtest, W0_=W0,c=c)
 
     t = 50
     tuning_mat = matrix(0, t, 1)
     Dataset = data.frame(X, Y)
     for (s in seq(1, t, 1)) {
-        tuning_mat[s] = de.dnn(Dataset, X.test = Xtest, s.size = s + 1, W0 = W0)
+        tuning_mat[s] = de.dnn(Dataset, X.test = Xtest, s.size = s + 1, W0 = W0, c = c)
     }
     base_r <- which(diff(abs(diff(tuning_mat) / tuning_mat[1:t - 1])) > -0.01)[1] + 3
-    expect_condition(all_equal(normal, greedy, base_r))
+    expect_true(all.equal(normal, greedy, base_r))
 })

@@ -10,8 +10,14 @@ est_reg_fn <- function(X,
                  Y,
                  X_test,
                  W_0 = NULL,
-                 c = 0.33) {
-    s_choice <- tuning(X, Y, X_test, c=c, W0_ = W_0)
+                 c = 0.33,
+                 tuning_method = "greedy") {
+    if(tuning_method == "greedy"){
+      s_choice <- tuning(X, Y, X_test, c=c, W0_ = W_0)
+    } else if( tuning_method == "sequence"){
+      s_choice <- tuning_st(seq(1,50,1),X, Y, X_test, c=c, W0_ = W_0)
+    }
+
 
     deDNN_pred <- td_dnn(X,
                          Y,
@@ -45,6 +51,7 @@ est_effect <- function(X,
                        X_test,
                        c=0.33,
                        W_0,
+                       tuning_method = "greedy",
                        estimate_var = F,
                        feature_screening= T,
                        use_boot = F,
@@ -58,12 +65,12 @@ est_effect <- function(X,
   }
 
   effect_0 <-
-    est_reg_fn(X[W == 0, ], matrix(Y[W == 0]), X_test, W_0, c)
+    est_reg_fn(X[W == 0, ], matrix(Y[W == 0]), X_test, W_0, c, tuning_method)
   deDNN_pred_0 <- effect_0$deDNN_pred
   s_choice_0 <- effect_0$s_choice
 
   effect_1 <-
-    est_reg_fn(X[W == 1, ], matrix(Y[W == 1]), X_test, W_0, c)
+    est_reg_fn(X[W == 1, ], matrix(Y[W == 1]), X_test, W_0, c, tuning_method)
   deDNN_pred_1 <- effect_1$deDNN_pred
   s_choice_1 <- effect_1$s_choice
 
@@ -106,15 +113,15 @@ est_variance <- function(X, W, Y, X_test, W_0, s_choice_0, s_choice_1,
         Y <- dat$Y[idx]
 
         # split into groups
-        trt_est <- td_dnn(X[W == 0, ],
-                          matrix(Y[W == 0]),
+        trt_est <- td_dnn(X[W == 1, ],
+                          matrix(Y[W == 1]),
                           X_test = X_test,
                           s_choice = s_choice_1,
                           c = c,
                           W_0 = W_0
         )
-        ctrl_est <- td_dnn(X[W == 1, ],
-                           matrix(Y[W == 1]),
+        ctrl_est <- td_dnn(X[W == 0, ],
+                           matrix(Y[W == 0]),
                            X_test = X_test,
                            s_choice = s_choice_0,
                            c = c,
@@ -133,7 +140,7 @@ est_variance <- function(X, W, Y, X_test, W_0, s_choice_0, s_choice_1,
       )
     } else{
       arguments <- list(...)
-      boot_estimates <- tdnn:::bootstrap_cpp(X,Xtest_fixed,Y, W, W0,s_choice_0,
+      boot_estimates <- bootstrap_cpp(X, X_test,Y, W, W_0,s_choice_0,
                                              s_choice_1, c, B=arguments$R)
     }
     boot_estimates
@@ -142,8 +149,9 @@ est_variance <- function(X, W, Y, X_test, W_0, s_choice_0, s_choice_1,
 
 screen_features <- function(X, Y, alpha){
   if(is.null(alpha)){alpha = 0.001}
-  p0 <- ncol(X)
-  sapply(1:p0, function(i){
-      as.numeric(energy::dcor.test(X[, i], Y)$p.value < alpha/p0)
-  })
+  feature_screening(X, Y, alpha)
+  # p0 <- ncol(X)
+  # sapply(1:p0, function(i){
+  #     as.numeric(energy::dcor.test(X[, i], Y)$p.value < alpha/p0)
+  # })
 }
