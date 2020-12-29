@@ -19,52 +19,6 @@ Rcpp::NumericMatrix calcPWD (const Rcpp::NumericMatrix & x){
 }
 
 
-arma::mat calcPWD_arma (const arma::mat & x){
-    unsigned int outrows = x.n_rows, i = 0, j = 0;
-    double d;
-    // Rcpp::NumericMatrix out(outrows,outrows);
-    arma::mat out(outrows,outrows);
-
-    for (i = 0; i < outrows - 1; i++){
-        // Rcpp::NumericVector v1 = x.row(i);
-        arma::vec v1 = x.row(i);
-        for (j = i + 1; j < outrows ; j ++){
-            d = std::sqrt(arma::sum(arma::pow(v1-x.row(j), 2.0)));
-            out(j,i)=d;
-            out(i,j)=d;
-        }
-    }
-
-    return out;
-}
-
-
-arma::mat sweep_arma(arma::mat x, arma::mat y, int margin){
-    int n = x.n_rows;
-    int m = x.n_cols;
-
-    arma::mat res(n, m);
-    int i, j;
-    if (margin == 1){
-        // sweep over rows
-        for (j = 0; j < m; j++){
-            for (i = 0; i < n; i++){
-                res(i, j) = x(i, j) - y[i];
-            }
-        }
-    }
-    if (margin == 2){
-        // sweep over columns
-        for (i = 0; i < n; i++){
-            for (j = 0; j < m; j++){
-                res(i, j) = x(i, j) - y[j];
-            }
-        }
-    }
-    return res;
-}
-
-
 NumericMatrix sweep(NumericMatrix x, NumericVector y, int margin){
     int n = x.nrow();
     int m = x.ncol();
@@ -152,7 +106,7 @@ double dcor_t_test(NumericMatrix x, NumericMatrix y){
     return 1- pval;
 }
 
-
+// [[Rcpp::export]]
 Rcpp::NumericVector feature_screening(NumericMatrix x, NumericMatrix y, double alpha=0.001){
 
     int n = x.nrow();
@@ -172,7 +126,9 @@ Rcpp::NumericVector feature_screening(NumericMatrix x, NumericMatrix y, double a
     return res;
 }
 
-arma::vec rowMeans_arma( arma::mat& d){
+// MULTI-THREADED VERSION
+
+arma::vec rowMeans_arma( arma::mat & d){
     int nRows = d.n_rows;
     arma::vec out(nRows);
 
@@ -186,7 +142,53 @@ arma::vec rowMeans_arma( arma::mat& d){
 
 
 
-arma::mat Astar_parallel(arma::mat d){
+arma::mat calcPWD_arma (const arma::mat & x){
+    unsigned int outrows = x.n_rows, i = 0, j = 0;
+    double d;
+    arma::mat out(outrows,outrows);
+
+    for (i = 0; i < outrows - 1; i++){
+        arma::vec v1 = x.row(i);
+        for (j = i + 1; j < outrows ; j ++){
+            d = std::sqrt(arma::sum(arma::pow(v1-x.row(j), 2.0)));
+            out(j,i)=d;
+            out(i,j)=d;
+        }
+    }
+
+    return out;
+}
+
+
+arma::mat sweep_arma( const arma::mat & x, const arma::mat & y, int margin){
+    int n = x.n_rows;
+    int m = x.n_cols;
+
+    arma::mat res(n, m);
+    int i, j;
+    if (margin == 1){
+        // sweep over rows
+        for (j = 0; j < m; j++){
+            for (i = 0; i < n; i++){
+                res(i, j) = x(i, j) - y[i];
+            }
+        }
+    }
+    if (margin == 2){
+        // sweep over columns
+        for (i = 0; i < n; i++){
+            for (j = 0; j < m; j++){
+                res(i, j) = x(i, j) - y[j];
+            }
+        }
+    }
+    return res;
+}
+
+
+
+
+arma::mat Astar_parallel(arma::mat & d){
     int n = d.n_rows;
     arma::vec m = rowMeans_arma(d);
 
@@ -208,7 +210,7 @@ arma::mat Astar_parallel(arma::mat d){
 
 
 
-std::tuple<double,int> BCDCOR_parallel(arma::mat x, arma::mat y){
+std::tuple<double,int> BCDCOR_parallel(arma::mat & x, arma::mat & y){
     arma::mat x_dist = calcPWD_arma(x);
     arma::mat y_dist = calcPWD_arma(y);
     int n = x_dist.n_rows;
@@ -299,8 +301,8 @@ struct FeatureScreening : public Worker {
 
     RVector<double> res;
 
-    FeatureScreening( const arma::mat x,
-                      const arma::mat y,
+    FeatureScreening( const arma::mat& x,
+                      const arma::mat& y,
                       const double alpha,
                       const int n,
                       const double p,

@@ -75,3 +75,6 @@ test_that("greedy, single-threaded, and original implementation all give the sam
     base_r <- which(diff(abs(diff(tuning_mat) / tuning_mat[1:t - 1])) > -0.01)[1] + 3
     expect_true(all.equal(normal, greedy, base_r))
 })
+
+
+# TO-DO: Add tests that check that we throw errors when given improper data

@@ -9,10 +9,14 @@ est_effect(
   W,
   Y,
   X_test,
-  W_0,
+  c = 0.8,
+  W_0 = NULL,
+  tuning_method = "greedy",
   estimate_var = F,
   feature_screening = T,
+  use_boot = F,
   alpha = 0.001,
+  B = 1000,
   ...
 )
 }
@@ -25,16 +29,28 @@ est_effect(
 
 \item{X_test}{Matrix of test observations}
 
-\item{W_0}{Optional boolean feature screening vector}
+\item{c}{Parameter that controls the size of the ratio of \eqn{s_1} and \eqn{s_2} through the equation
+\eqn{s_2 = s_1 \cdot c^{d/2}}. Default value is 0.80}
 
-\item{estimate_var}{Boolean for estimating variance using bootstrap}
+\item{W_0}{Optional integer vector with 1 corresponding to columns that should be used to estimate the treatment effect. Default value is NULL}
 
-\item{feature_screening}{Boolean for performing feature screening step
-using the energy package's (Rizzo and Szekely, 2019) `dcor.test`}
+\item{tuning_method}{Choose the method used to choose the subsample size \eqn{s} ("greedy", "sequence").
+The default is the "greedy" method which stops as soon as a sign change in the difference of the estimates is detected,
+ while the "sequence" method calculates an estimate for each of the different s values
+  (a sequence from 1 to 50) and then finds the s which causes a change in the sign of the derivative.}
+
+\item{estimate_var}{Boolean for estimating variance using bootstrap. Default value is False.}
+
+\item{feature_screening}{Boolean for performing feature screening step. Default value is True. If W_0 is NULL and feature_screening is False, all columns of X are used.
+using the energy package's (Rizzo and Szekely, 2019) `dcor.test`.}
+
+\item{use_boot}{Boolean for whether to use the C++ bootstrap implemented by this package or the boot function from the boot package.}
 
 \item{alpha}{Threshold value for multiple testing correction used in the feature screening step}
 
-\item{...}{Extra arguments to be passed to boot when estimating variance (e.g. ncpus, parallel, R)}
+\item{B}{Number of bootstrap replicates used for calculating confidence intervals using the C++ bootstrap implemented by this package. Default B = 1000}
+
+\item{...}{Extra arguments to be passed to the boot function when estimating variance (e.g. ncpus, parallel, R)}
 }
 \description{
 Estimate a treatment effect using the two-scale DNN estimator

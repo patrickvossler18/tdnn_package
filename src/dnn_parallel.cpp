@@ -20,8 +20,8 @@ struct TdnnEstimate : public Worker {
 
     // initialize from Rcpp input and output matrixes (the RMatrix class
     // can be automatically converted to from the Rcpp matrix type)
-    TdnnEstimate(const arma::mat X, const arma::vec Y,
-                 const arma::mat X_test,
+    TdnnEstimate(const arma::mat & X, const arma::vec & Y,
+                 const arma::mat & X_test,
                  NumericVector estimates,
                  const NumericVector s_sizes,
                  const NumericVector ord,
@@ -164,20 +164,7 @@ List de_dnn( arma::mat X, arma::vec Y, arma::mat X_test,
     return out;
 }
 
-arma::mat matrix_subset_idx(const arma::mat& x,
-                            const arma::uvec& y) {
 
-    // y must be an integer between 0 and columns - 1
-    // Allows for repeated draws from same columns.
-    return x.cols( y );
-}
-
-
-arma::uvec seq_int(long int a, long int b){
-    long int d = std::abs(b-a)+1;
-
-    return conv_to<arma::uvec>::from(arma::linspace(a, b, d));
-}
 
 // [[Rcpp::export]]
 NumericVector tuning(NumericMatrix X, NumericVector Y,
@@ -186,7 +173,6 @@ NumericVector tuning(NumericMatrix X, NumericVector Y,
 
     double n_obs = X_test.nrow();
     bool search_for_s = true;
-    // make tuning matrix large and then resize it?
     arma::mat tuning_mat(n_obs, 100, fill::zeros);
     arma::vec best_s(n_obs, fill::zeros);
     double s = 0;
@@ -195,7 +181,6 @@ NumericVector tuning(NumericMatrix X, NumericVector Y,
     while (search_for_s){
         NumericVector s_val;
         s_val = s + 2;
-        // Rcout << "s_val: " << s_val << std::endl;
         // For a given s, get the de_dnn estimates for each test observation
         List de_dnn_estimates = de_dnn(as<arma::mat>(X),
                                                 as<arma::vec>(Y),
@@ -205,8 +190,6 @@ NumericVector tuning(NumericMatrix X, NumericVector Y,
         // This gives me an estimate for each test observation and is a n x 1 matrix
         arma::vec de_dnn_est_vec = as<arma::vec>(de_dnn_estimates["estimates"]);
         arma::mat candidate_results = de_dnn_est_vec;
-        // arma::mat candidate_results = as<arma::mat>(de_dnn_estimates["estimates"]);
-        // arma::mat candidate_results(n_obs, 1 );
         candidate_results.reshape(n_obs, 1);
 
 
@@ -239,30 +222,15 @@ NumericVector tuning(NumericMatrix X, NumericVector Y,
             }
             break; // break out of our while loop to avoid going past number of columns in tuning_mat
         } else {
-            // Before we do anything with the matrix we need to resize it to avoid
-            // dividing by zero
-            // arma::mat resized_mat = tuning_mat;
-            // resized_mat.resize(n_obs, s);
 
             // instead of resizing the matrix, just select columns 0-s
             arma::uvec s_vec = seq_int(0, int(s)-1);
             arma::mat resized_mat = matrix_subset_idx(tuning_mat, s_vec);
-            // Rcout << resized_mat << std::endl;
-            // Rcout << "resized mat: " << resized_mat << std::endl;
             // tuning_mat is an n x s matrix and we want to diff each of the rows
-            // arma::mat mat_row = estimate_matrix.row(i);
             arma::mat out_diff = diff(resized_mat, 1, 1);
-            // if (s == 1){
-            //     IntegerVector idx = Range(0, (resized_mat.n_cols)-2);
-            // } else {
-            //     IntegerVector idx = Range(0, (resized_mat.n_cols)-2);
-            // }
             IntegerVector idx = Range(0, (resized_mat.n_cols)-2);
-            // Rcout << "idx: " << idx << std::endl;
             arma::mat out_denom = resized_mat.cols(as<uvec>(idx));
-            // Rcout << "out_denom: " << out_denom << std::endl;
             arma::mat diff_ratio = diff(abs( out_diff / out_denom), 1, 1);
-            // Rcout << "diff_ratio: " << diff_ratio << std::endl;
             // Now we go through each row and check if any of the columns are
             // greater than -0.01
             for(R_xlen_t i = 0; i < diff_ratio.n_rows; ++i) {
@@ -287,47 +255,12 @@ NumericVector tuning(NumericMatrix X, NumericVector Y,
             }
 
         }
-        // Rcout << "tuning_mat : " << tuning_mat << std::endl;
         s += 1;
     }
     return NumericVector(best_s.begin(), best_s.end());
     // return best_s;
 }
 
-
-// rcpp in; rcpp out
-// [[Rcpp::export]]
-NumericMatrix submat_rcpp(NumericMatrix X, LogicalVector condition) {
-    int n=X.nrow(), k=X.ncol();
-    NumericMatrix out(sum(condition),k);
-    for (int i = 0, j = 0; i < n; i++) {
-        if(condition[i]) {
-            out(j,_) = X(i,_);
-            j = j+1;
-        }
-    }
-    return(out);
-}
-
-
-// [[Rcpp::export]]
-Rcpp::NumericMatrix matrix_subset_idx_rcpp(
-        Rcpp::NumericMatrix x, Rcpp::IntegerVector y) {
-
-    // Determine the number of observations
-    int n_rows_out = y.size();
-
-    // Create an output matrix
-    Rcpp::NumericMatrix out = Rcpp::no_init(n_rows_out,x.ncol() );
-
-    // Loop through each row and copy the data.
-    for(unsigned int z = 0; z < n_rows_out; ++z) {
-        out(z, Rcpp::_) = x(y[z], Rcpp::_);
-        // out(Rcpp::_, z) = x(Rcpp::_, y[z]);
-    }
-
-    return out;
-}
 
 
 // [[Rcpp::export]]
@@ -338,41 +271,19 @@ NumericMatrix bootstrap_cpp(NumericMatrix X,
                             NumericVector W0,
                             NumericVector s_choice_0,
                             NumericVector s_choice_1,
-                            double c=0.33, int B =1000) {
+                            double c=0.33,
+                            int B =1000) {
     // Preallocate storage for statistics
     int n_test = X_test.nrow();
     NumericMatrix boot_stat(B,n_test);
-    // NumericMatrix boot_stat();
-    // Rcout << boot_stat.ncol() << std::endl;
-    // Number of observations
     int n = X.nrow();
-    // bstrap_idx = bstrap_idx - 1;
-    // if (bstrap_idx_.isNotNull()){
-    //     NumericVector bstrap_idx(bstrap_idx_);
-    //     bstrap_idx = bstrap_idx - 1;
-    // }
 
     // Perform bootstrap
     for(int i =0; i < B; i++) {
-        Rcout << i << std::endl;
-
-        // NumericMatrix X_boot(n);
-        // NumericMatrix Y_boot(n);
-        // NumericMatrix W_boot(n);
-
-        // IntegerVector bstrap_idx = as<IntegerVector>(Rcpp::sample(n, n, true));
-        // if (bstrap_idx_.isNull()){
-            NumericVector bstrap_idx = floor(runif(n,0, n));
-            NumericMatrix X_boot = matrix_subset_idx_rcpp(X, as<IntegerVector>(bstrap_idx));
-            IntegerVector W_boot = W[as<IntegerVector>(bstrap_idx)];
-            NumericMatrix Y_boot = matrix_subset_idx_rcpp(Y,as<IntegerVector>(bstrap_idx));
-        // } else{
-            // NumericMatrix X_boot = matrix_subset_idx_rcpp(X, as<IntegerVector>(bstrap_idx));
-            // IntegerVector W_boot = W[as<IntegerVector>(bstrap_idx)];
-            // NumericMatrix Y_boot = matrix_subset_idx_rcpp(Y,as<IntegerVector>(bstrap_idx));
-        // }
-
-        // NumericVector Y_boot = Y[as<IntegerVector>(bstrap_idx)];
+        NumericVector bstrap_idx = floor(runif(n,0, n));
+        NumericMatrix X_boot = matrix_subset_idx_rcpp(X, as<IntegerVector>(bstrap_idx));
+        IntegerVector W_boot = W[as<IntegerVector>(bstrap_idx)];
+        NumericMatrix Y_boot = matrix_subset_idx_rcpp(Y,as<IntegerVector>(bstrap_idx));
 
         // // Sample initial data
         LogicalVector trt_idx = W_boot == 1;
@@ -407,8 +318,6 @@ NumericMatrix bootstrap_cpp(NumericMatrix X,
         NumericVector ctl_est = (ctl_est_a + ctl_est_b) / 2.0;
 
         boot_stat(i, _) = trt_est - ctl_est;
-        // boot_stat(i, _) = 0;
         }
-    // Return bootstrap results
     return boot_stat;
 }
