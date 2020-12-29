@@ -149,7 +149,8 @@ est_variance <- function(X, W, Y, X_test, W_0, s_choice_0, s_choice_1,
 
 screen_features <- function(X, Y, alpha){
   if(is.null(alpha)){alpha = 0.001}
-  feature_screening(X, Y, alpha)
+  feature_screening_parallel(X, Y, alpha)
+  # feature_screening(X, Y, alpha)
   # p0 <- ncol(X)
   # sapply(1:p0, function(i){
   #     as.numeric(energy::dcor.test(X[, i], Y)$p.value < alpha/p0)
