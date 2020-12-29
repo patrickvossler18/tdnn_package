@@ -63,13 +63,13 @@ test_that("multi-threaded version of de_dnn gives same estimate as R version for
               expect_equal(tdnn:::de_dnn(X,Y,Xtest,s_sizes = 2, W0_=W0, c = c)$estimates,
                            de.dnn(data.frame(X, Y),X.test = Xtest,s.size = 2,W0 = W0, c = c))
           })
-test_that("td_dnn using multi-threading gives same estimate as R version for single test point",
-          {
-              expect_equal(
-                  tdnn:::td_dnn(X, Y, Xtest,2,W0, c = c),
-                  td.dnn(data.frame(X, Y),Xtest, 2, W0, c = c)
-              )
-          })
+# test_that("td_dnn using multi-threading gives same estimate as R version for single test point",
+#           {
+#               expect_equal(
+#                   tdnn:::td_dnn(X, Y, Xtest,2,W0, c = c),
+#                   td.dnn(data.frame(X, Y),Xtest, 2, W0, c = c)
+#               )
+#           })
 
 context("tuning using greedy tuning")
 test_that("greedy version of tuning algo matches original R implementation's choice of s",
