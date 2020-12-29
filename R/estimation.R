@@ -207,6 +207,11 @@ est_effect <- function(X,
 
   deDNN_pred <- deDNN_pred_1 - deDNN_pred_0
 
+  results_list = list()
+
+  results_list[["estimate"]] <- deDNN_pred
+  results_list[["s_vector"]] <- c(s_choice_0=s_choice_0, s_choice_1=s_choice_0)
+
   if( estimate_var){
     boot_est <-
       est_variance(X,
@@ -220,15 +225,16 @@ est_effect <- function(X,
                    B=B,
                    use_boot = use_boot,
                    ...)
+    if (use_boot){
+      variance <- mean((boot_est$t - deDNN_pred) ^ 2)
+    } else{
+      variance <- mean((boot_est - deDNN_pred) ^ 2)
+    }
 
-    list(estimate = deDNN_pred,
-         variance =  if (use_boot)
-           mean((boot_est$t - deDNN_pred) ^ 2)
-         else
-           mean((boot_est - deDNN_pred) ^ 2))
-  } else{
-      list(estimate = deDNN_pred)
+    results_list[["variance"]] <- variance
   }
+
+  results_list
 
 }
 
@@ -278,12 +284,10 @@ est_variance <- function(X, W, Y, X_test, W_0, s_choice_0, s_choice_1,
 }
 
 
-screen_features <- function(X, Y, alpha){
-  if(is.null(alpha)){alpha = 0.001}
+screen_features <- function(X, Y, alpha) {
+  if (is.null(alpha)) {
+    alpha = 0.001
+  }
+
   feature_screening_parallel(X, Y, alpha)
-  # feature_screening(X, Y, alpha)
-  # p0 <- ncol(X)
-  # sapply(1:p0, function(i){
-  #     as.numeric(energy::dcor.test(X[, i], Y)$p.value < alpha/p0)
-  # })
 }
