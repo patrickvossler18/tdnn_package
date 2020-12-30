@@ -1,11 +1,11 @@
 Package: tdnn
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Two-Scale Distributional Nearest Neighbors
 Version: 0.1.0
 Authors@R: c(
     person("Patrick", "Vossler", email = "pvossler@usc.edu", role = "cre"))
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: A package for estimating regression functions and treatment effects
+    using the two-scale distributional nearest neighbors framework.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -14,6 +14,7 @@ Suggests:
 Imports:
     glue,
     boot,
+    strex,
     energy,
     RcppParallel,
     RcppArmadillo,

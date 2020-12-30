@@ -62,9 +62,9 @@ test_that("est_effect gives same estimate as est_effect_old", {
 
 
 context("tuning functions should all give the same choice of s")
-test_that("greedy, single-threaded, and original implementation all give the same s value", {
+test_that("early_stopping, single-threaded, and original implementation all give the same s value", {
   normal <- tdnn:::tuning_st(seq(1, 50, 1), X, Y, Xtest, W0_ = W0, c = c)
-  greedy <- tuning(X, Y, Xtest, W0_ = W0, c = c)
+  early_stopping <- tuning(X, Y, Xtest, W0_ = W0, c = c)
 
   t <- 50
   tuning_mat <- matrix(0, t, 1)
@@ -73,7 +73,7 @@ test_that("greedy, single-threaded, and original implementation all give the sam
     tuning_mat[s] <- de.dnn(Dataset, X.test = Xtest, s.size = s + 1, W0 = W0, c = c)
   }
   base_r <- which(diff(abs(diff(tuning_mat) / tuning_mat[1:t - 1])) > -0.01)[1] + 3
-  expect_true(all.equal(normal, greedy, base_r))
+  expect_true(all.equal(normal, early_stopping, base_r))
 })
 
 
@@ -81,7 +81,89 @@ context(
   "throw informative errors if we get data in the wrong format instead of ambiguous Rcpp errors"
 )
 
-test_that("we show a warning if X is a df instead of a matrix", {
+test_that("we show a warning if X is a df instead of a matrix for est_reg_fn", {
+  X_df <- data.frame(X)
+  expect_warning(
+    tdnn::est_reg_fn(X_df,
+                     Y,
+                     Xtest,
+                     W0)
+  )
+})
+
+test_that("throw error if given non-numeric columns in X matrix for est_reg_fn", {
+  X_chr <- mapply(X, FUN = as.character)
+  expect_error(
+    tdnn::est_reg_fn(X_chr,
+                     Y,
+                     Xtest,
+                     W0)
+  )
+})
+
+
+test_that("throw error if Y is not a matrix for est_reg_fn", {
+  expect_error(
+    tdnn::est_reg_fn(X,
+                     as.numeric(Y),
+                     Xtest,
+                     W0)
+  )
+})
+
+test_that("throw error if X test is not a matrix for est_reg_fn", {
+  expect_error(
+    tdnn::est_reg_fn(X,
+                     Y,
+                     as.numeric(Xtest),
+                     W0)
+  )
+})
+
+test_that("throw error if W_0 is not an integer vector of ones and zeros for est_reg_fn.", {
+  W_0_wrong <- W0
+  W_0_wrong[2] <- 3L
+  expect_error(
+    tdnn::est_reg_fn(X,
+                     Y,
+                     Xtest,
+                     W_0_wrong)
+  )
+})
+
+
+test_that("throw error if the number of columns of X doesn't match X_test for est_reg_fn.", {
+  Xtest_wrong <- matrix(rnorm((ncol(X) - 1) * 10), (ncol(X) - 1), 10)
+  expect_error(
+    tdnn::est_reg_fn(X,
+                     Y,
+                     Xtest_wrong,
+                     W0)
+  )
+})
+
+test_that("throw error if the number of rows of X don't match the length of Y for est_reg_fn.", {
+  expect_error(
+    tdnn::est_reg_fn(X,
+                     Y[0:(nrow(X) - 1)],
+                     Xtest,
+                     W0)
+  )
+})
+
+
+test_that("throw error if the length of W doesn't match ncol(X)", {
+  expect_error(
+    tdnn::est_reg_fn(X,
+                     Y,
+                     Xtest,
+                     W0[0:(ncol(X) - 1)])
+  )
+})
+
+
+##### est_effect #####
+test_that("we show a warning if X is a df instead of a matrix for est_effect", {
   X_df <- data.frame(X)
   expect_warning(
     tdnn::est_effect(

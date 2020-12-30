@@ -6,8 +6,8 @@
 #' @param W_0 Optional integer vector with 1 corresponding to columns that should be used to estimate the treatment effect. Default value is NULL
 #' @param c Parameter that controls the size of the ratio of \eqn{s_1} and \eqn{s_2} through the equation
 #' \eqn{s_2 = s_1 \cdot c^{d/2}}. Default value is 0.80
-#' @param tuning_method Choose the method used to choose the subsample size \eqn{s} ("greedy", "sequence").
-#'  The default is the "greedy" method which stops as soon as a sign change in the difference of the estimates is detected,
+#' @param tuning_method Choose the method used to choose the subsample size \eqn{s} ("early stopping", "sequence").
+#'  The default is the "early stopping" method which stops as soon as a sign change in the difference of the estimates is detected,
 #'   while the "sequence" method calculates an estimate for each of the different s values
 #'    (a sequence from 1 to 50) and then finds the s which causes a change in the sign of the derivative.
 #' @export
@@ -16,7 +16,7 @@ est_reg_fn <- function(X,
                        X_test,
                        W_0 = NULL,
                        c = 0.80,
-                       tuning_method = "greedy") {
+                       tuning_method = "early stopping") {
   # Data checks before we doing anything else
   # Check X is a dataframe or matrix. If df, make it a matrix
   if (is.data.frame(X)) {
@@ -27,8 +27,9 @@ est_reg_fn <- function(X,
   # Need all numeric columns for X matrix.
   # This might not be a necessary check since R coerces to numeric for matrix?
   if (!all(sapply(X, is.numeric))) {
-    non_num_cols <- which(!(sapply(X, is.numeric)))
-    stop(glue::glue("Found non-numeric columns. Column indices: {non_num_cols}"))
+    non_num_cols <- unname(which(!(sapply(X, is.numeric))))
+    stop(glue::glue("Found non-numeric columns. Column indices: {toString(non_num_cols)}"))
+
   }
 
   if (!is.matrix(Y)) {
@@ -66,10 +67,12 @@ est_reg_fn <- function(X,
     if (is.logical(W_0)) W_0 <- as.numeric(W_0)
   }
 
+  # Do argument matching for tuning method
+  matched_tuning_method <- strex::match_arg(tuning_method, c("early stopping", "sequence"))
 
-  if (tuning_method == "greedy") {
+  if (matched_tuning_method == "early stopping") {
     s_choice <- tuning(X, Y, X_test, c = c, W0_ = W_0)
-  } else if (tuning_method == "sequence") {
+  } else if (matched_tuning_method == "sequence") {
     s_choice <- tuning_st(seq(1, 50, 1), X, Y, X_test, c = c, W0_ = W_0)
   }
   a_pred <- de_dnn(
@@ -105,8 +108,8 @@ est_reg_fn <- function(X,
 #' @param W_0 Optional integer vector with 1 corresponding to columns that should be used to estimate the treatment effect. Default value is NULL
 #' @param c Parameter that controls the size of the ratio of \eqn{s_1} and \eqn{s_2} through the equation
 #' \eqn{s_2 = s_1 \cdot c^{d/2}}. Default value is 0.80
-#' @param tuning_method Choose the method used to choose the subsample size \eqn{s} ("greedy", "sequence").
-#'  The default is the "greedy" method which stops as soon as a sign change in the difference of the estimates is detected,
+#' @param tuning_method Choose the method used to choose the subsample size \eqn{s} ("early stopping", "sequence").
+#'  The default is the "early stopping" method which stops as soon as a sign change in the difference of the estimates is detected,
 #'   while the "sequence" method calculates an estimate for each of the different s values
 #'    (a sequence from 1 to 50) and then finds the s which causes a change in the sign of the derivative.
 #' @param estimate_var Boolean for estimating variance using bootstrap. Default value is False.
@@ -117,7 +120,7 @@ est_reg_fn <- function(X,
 #' @param B Number of bootstrap replicates used for calculating confidence intervals using the C++ bootstrap implemented by this package. Default B = 1000
 #' @param ... Extra arguments to be passed to the boot function when estimating variance (e.g. ncpus, parallel, R)
 #'
-#' @importFrom glue glue
+#' @importFrom glue strex
 #' @export
 est_effect <- function(X,
                        W,
@@ -125,7 +128,7 @@ est_effect <- function(X,
                        X_test,
                        c = 0.8,
                        W_0 = NULL,
-                       tuning_method = "greedy",
+                       tuning_method = "early stopping",
                        estimate_var = F,
                        feature_screening = T,
                        use_boot = F,
@@ -210,7 +213,7 @@ est_effect <- function(X,
   results_list <- list()
 
   results_list[["estimate"]] <- deDNN_pred
-  results_list[["s_vector"]] <- c(s_choice_0 = s_choice_0, s_choice_1 = s_choice_0)
+  results_list[["s_choice"]] <- c(s_choice_0 = s_choice_0, s_choice_1 = s_choice_0)
 
   if (estimate_var) {
     boot_est <-

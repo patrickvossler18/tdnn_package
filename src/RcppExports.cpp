@@ -6,19 +6,6 @@
 
 using namespace Rcpp;
 
-// feature_screening
-Rcpp::NumericVector feature_screening(NumericMatrix x, NumericMatrix y, double alpha);
-RcppExport SEXP _tdnn_feature_screening(SEXP xSEXP, SEXP ySEXP, SEXP alphaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type x(xSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type y(ySEXP);
-    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    rcpp_result_gen = Rcpp::wrap(feature_screening(x, y, alpha));
-    return rcpp_result_gen;
-END_RCPP
-}
 // pt_raw
 double pt_raw(double tstat, double df);
 RcppExport SEXP _tdnn_pt_raw(SEXP tstatSEXP, SEXP dfSEXP) {
@@ -166,7 +153,6 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_tdnn_feature_screening", (DL_FUNC) &_tdnn_feature_screening, 3},
     {"_tdnn_pt_raw", (DL_FUNC) &_tdnn_pt_raw, 2},
     {"_tdnn_dcor_t_test_parallel", (DL_FUNC) &_tdnn_dcor_t_test_parallel, 2},
     {"_tdnn_feature_screening_parallel", (DL_FUNC) &_tdnn_feature_screening_parallel, 3},
