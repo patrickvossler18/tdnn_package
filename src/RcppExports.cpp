@@ -19,6 +19,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// pt_raw
+double pt_raw(double tstat, double df);
+RcppExport SEXP _tdnn_pt_raw(SEXP tstatSEXP, SEXP dfSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type tstat(tstatSEXP);
+    Rcpp::traits::input_parameter< double >::type df(dfSEXP);
+    rcpp_result_gen = Rcpp::wrap(pt_raw(tstat, df));
+    return rcpp_result_gen;
+END_RCPP
+}
 // dcor_t_test_parallel
 double dcor_t_test_parallel(arma::mat x, arma::mat y);
 RcppExport SEXP _tdnn_dcor_t_test_parallel(SEXP xSEXP, SEXP ySEXP) {
@@ -155,6 +167,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_tdnn_feature_screening", (DL_FUNC) &_tdnn_feature_screening, 3},
+    {"_tdnn_pt_raw", (DL_FUNC) &_tdnn_pt_raw, 2},
     {"_tdnn_dcor_t_test_parallel", (DL_FUNC) &_tdnn_dcor_t_test_parallel, 2},
     {"_tdnn_feature_screening_parallel", (DL_FUNC) &_tdnn_feature_screening_parallel, 3},
     {"_tdnn_de_dnn_st", (DL_FUNC) &_tdnn_de_dnn_st, 6},

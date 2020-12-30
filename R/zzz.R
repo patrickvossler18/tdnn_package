@@ -1,4 +1,4 @@
-.onUnload <- function (libpath) {
-    library.dynam.unload("tdnn", libpath)
-    invisible()
+.onUnload <- function(libpath) {
+  library.dynam.unload("tdnn", libpath)
+  invisible()
 }

@@ -253,6 +253,7 @@ double beta_inc(double X, double A, double B){
     return A1 / A;
 }
 
+// [[Rcpp::export]]
 double pt_raw(double tstat, double df){
     double A = df/ 2;
     double S = A + 0.5;

@@ -12,11 +12,11 @@
 #'    (a sequence from 1 to 50) and then finds the s which causes a change in the sign of the derivative.
 #' @export
 est_reg_fn <- function(X,
-                 Y,
-                 X_test,
-                 W_0 = NULL,
-                 c = 0.33,
-                 tuning_method = "greedy") {
+                       Y,
+                       X_test,
+                       W_0 = NULL,
+                       c = 0.33,
+                       tuning_method = "greedy") {
   # Data checks before we doing anything else
   # Check X is a dataframe or matrix. If df, make it a matrix
   if (is.data.frame(X)) {
@@ -53,46 +53,46 @@ est_reg_fn <- function(X,
     failed_checks <- which(!(dimension_checks))
     fail_messages <- sapply(failed_checks, function(x) {
       switch(EXPR=x,
-             glue::glue("nrow of X ({dim(X)[1]}) does not equal length of Y: {length(Y)}"),
-             glue::glue("ncol of X ({dim(X)[2]}) does not equal length of W_0: {length(W_0)}"),
-             glue::glue("ncol of X ({dim(X)[2]}) does not equal ncol of X_test: {dim(X_test)[2]}")
+        glue::glue("nrow of X ({dim(X)[1]}) does not equal length of Y: {length(Y)}"),
+        glue::glue("ncol of X ({dim(X)[2]}) does not equal length of W_0: {length(W_0)}"),
+        glue::glue("ncol of X ({dim(X)[2]}) does not equal ncol of X_test: {dim(X_test)[2]}")
       )
     })
     stop(glue::glue("Dimensions don't match: \n {toString(fail_messages)}"))
   }
 
-  if(!is.null(W_0)){
+  if (!is.null(W_0)) {
     stopifnot("The elements of W_0 must be either 0 or 1" = all(W_0 %in% 0:1))
-    if (is.logical(W_0)) W_0 = as.numeric(W_0)
+    if (is.logical(W_0)) W_0 <- as.numeric(W_0)
   }
 
 
-    if(tuning_method == "greedy"){
-      s_choice <- tuning(X, Y, X_test, c=c, W0_ = W_0)
-    } else if( tuning_method == "sequence"){
-      s_choice <- tuning_st(seq(1,50,1),X, Y, X_test, c=c, W0_ = W_0)
-    }
-    a_pred <- de_dnn(
-      X,
-      Y,
-      X_test = X_test,
-      s_sizes = s_choice,
-      c = c,
-      W0_ = W_0
-    )$estimates
+  if (tuning_method == "greedy") {
+    s_choice <- tuning(X, Y, X_test, c = c, W0_ = W_0)
+  } else if (tuning_method == "sequence") {
+    s_choice <- tuning_st(seq(1, 50, 1), X, Y, X_test, c = c, W0_ = W_0)
+  }
+  a_pred <- de_dnn(
+    X,
+    Y,
+    X_test = X_test,
+    s_sizes = s_choice,
+    c = c,
+    W0_ = W_0
+  )$estimates
 
-    b_pred <- de_dnn(
-      X,
-      Y,
-      X_test = X_test,
-      s_sizes = s_choice + 1,
-      c = c,
-      W0_ = W_0
-    )$estimates
+  b_pred <- de_dnn(
+    X,
+    Y,
+    X_test = X_test,
+    s_sizes = s_choice + 1,
+    c = c,
+    W0_ = W_0
+  )$estimates
 
-    deDNN_pred <- (a_pred + b_pred) / 2
+  deDNN_pred <- (a_pred + b_pred) / 2
 
-    list(deDNN_pred = deDNN_pred, s_choice = s_choice)
+  list(deDNN_pred = deDNN_pred, s_choice = s_choice)
 }
 
 
@@ -123,13 +123,13 @@ est_effect <- function(X,
                        W,
                        Y,
                        X_test,
-                       c=0.8,
-                       W_0=NULL,
+                       c = 0.8,
+                       W_0 = NULL,
                        tuning_method = "greedy",
                        estimate_var = F,
-                       feature_screening= T,
+                       feature_screening = T,
                        use_boot = F,
-                       alpha=0.001,
+                       alpha = 0.001,
                        B = 1000,
                        ...) {
 
@@ -169,9 +169,9 @@ est_effect <- function(X,
     failed_checks <- which(!(dimension_checks))
     fail_messages <- sapply(failed_checks, function(x) {
       switch(EXPR=x,
-             glue::glue("nrow of X ({dim(X)[1]}) does not equal length of Y: {length(Y)}"),
-             glue::glue("ncol of X ({dim(X)[2]}) does not equal length of W_0: {length(W_0)}"),
-             glue::glue("ncol of X ({dim(X)[2]}) does not equal ncol of X_test: {dim(X_test)[2]}")
+        glue::glue("nrow of X ({dim(X)[1]}) does not equal length of Y: {length(Y)}"),
+        glue::glue("ncol of X ({dim(X)[2]}) does not equal length of W_0: {length(W_0)}"),
+        glue::glue("ncol of X ({dim(X)[2]}) does not equal ncol of X_test: {dim(X_test)[2]}")
       )
     })
     stop(glue::glue("Dimensions don't match: \n {toString(fail_messages)}"))
@@ -179,17 +179,17 @@ est_effect <- function(X,
 
   # Check if W_0 is null and feature screening is false.
   # If we are given a feature screening vector and feature_screening is true, we will always use the vector supplied by the user
-  if(feature_screening){
-    if(!is.null(W_0)){
+  if (feature_screening) {
+    if (!is.null(W_0)) {
       message("Using user supplied feature screening vector")
       stopifnot("The elements of W_0 must be either 0 or 1" = all(W_0 %in% 0:1))
-      if (is.logical(W_0)) W_0 = as.numeric(W_0)
-    } else{
-      W_0 <- screen_features(X, Y, alpha=alpha)
+      if (is.logical(W_0)) W_0 <- as.numeric(W_0)
+    } else {
+      W_0 <- screen_features(X, Y, alpha = alpha)
     }
-  } else if(!is.null(W_0)){
+  } else if (!is.null(W_0)) {
     stopifnot("The elements of W_0 must be either 0 or 1" = all(W_0 %in% 0:1))
-    if (is.logical(W_0)) W_0 = as.numeric(W_0)
+    if (is.logical(W_0)) W_0 <- as.numeric(W_0)
   }
 
 
@@ -207,86 +207,88 @@ est_effect <- function(X,
 
   deDNN_pred <- deDNN_pred_1 - deDNN_pred_0
 
-  results_list = list()
+  results_list <- list()
 
   results_list[["estimate"]] <- deDNN_pred
-  results_list[["s_vector"]] <- c(s_choice_0=s_choice_0, s_choice_1=s_choice_0)
+  results_list[["s_vector"]] <- c(s_choice_0 = s_choice_0, s_choice_1 = s_choice_0)
 
-  if( estimate_var){
+  if (estimate_var) {
     boot_est <-
       est_variance(X,
-                   W,
-                   Y,
-                   X_test,
-                   W_0,
-                   s_choice_0,
-                   s_choice_1,
-                   c,
-                   B=B,
-                   use_boot = use_boot,
-                   ...)
-    if (use_boot){
-      variance <- mean((boot_est$t - deDNN_pred) ^ 2)
-    } else{
-      variance <- mean((boot_est - deDNN_pred) ^ 2)
+        W,
+        Y,
+        X_test,
+        W_0,
+        s_choice_0,
+        s_choice_1,
+        c,
+        B = B,
+        use_boot = use_boot,
+        ...
+      )
+    if (use_boot) {
+      variance <- mean((boot_est$t - deDNN_pred)^2)
+    } else {
+      variance <- mean((boot_est - deDNN_pred)^2)
     }
 
     results_list[["variance"]] <- variance
   }
 
   results_list
-
 }
 
 
 est_variance <- function(X, W, Y, X_test, W_0, s_choice_0, s_choice_1,
-                         c, B, use_boot=F, ...){
-    if(use_boot){
-      boot_data <- data.frame(X, W, Y)
-      d <- dim(X)[2]
-      boot_function_cpp <- function(dat, idx, s_choice_0, s_choice_1, W_0, c) {
-        # subsample the indices and of those split in to treated and control groups
-        X <- as.matrix(dat[idx, 1:d])
-        W <- dat$W[idx]
-        Y <- dat$Y[idx]
+                         c, B, use_boot = F, ...) {
+  if (use_boot) {
+    boot_data <- data.frame(X, W, Y)
+    d <- dim(X)[2]
+    boot_function_cpp <- function(dat, idx, s_choice_0, s_choice_1, W_0, c) {
+      # subsample the indices and of those split in to treated and control groups
+      X <- as.matrix(dat[idx, 1:d])
+      W <- dat$W[idx]
+      Y <- dat$Y[idx]
 
-        # split into groups
-        trt_est <- td_dnn(X[W == 1, ],
-                          matrix(Y[W == 1]),
-                          X_test = X_test,
-                          s_choice = s_choice_1,
-                          c = c,
-                          W_0 = W_0
-        )
-        ctrl_est <- td_dnn(X[W == 0, ],
-                           matrix(Y[W == 0]),
-                           X_test = X_test,
-                           s_choice = s_choice_0,
-                           c = c,
-                           W_0 = W_0
-        )
-        trt_est - ctrl_est
-      }
-      boot_estimates <- boot::boot(
-        data = boot_data,
-        statistic = boot_function_cpp,
-        s_choice_0 = s_choice_0,
-        s_choice_1 = s_choice_1,
-        W_0 = W_0,
+      # split into groups
+      trt_est <- td_dnn(X[W == 1, ],
+        matrix(Y[W == 1]),
+        X_test = X_test,
+        s_choice = s_choice_1,
         c = c,
-        ...
+        W_0 = W_0
       )
-    } else{
-      boot_estimates <- bootstrap_cpp(X, X_test,Y, W, W_0,s_choice_0,
-                                             s_choice_1, c, B=B)
+      ctrl_est <- td_dnn(X[W == 0, ],
+        matrix(Y[W == 0]),
+        X_test = X_test,
+        s_choice = s_choice_0,
+        c = c,
+        W_0 = W_0
+      )
+      trt_est - ctrl_est
     }
-    boot_estimates
+    boot_estimates <- boot::boot(
+      data = boot_data,
+      statistic = boot_function_cpp,
+      s_choice_0 = s_choice_0,
+      s_choice_1 = s_choice_1,
+      W_0 = W_0,
+      c = c,
+      ...
+    )
+  } else {
+    boot_estimates <- bootstrap_cpp(X, X_test, Y, W, W_0, s_choice_0,
+      s_choice_1, c,
+      B = B
+    )
+  }
+  boot_estimates
 }
 
 
 screen_features <- function(X, Y, alpha) {
   if (is.null(alpha)) {
-    alpha = 0.001
+    alpha <- 0.001
   }
 
   feature_screening_parallel(X, Y, alpha)

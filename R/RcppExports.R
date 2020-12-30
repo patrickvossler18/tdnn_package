@@ -5,6 +5,10 @@ feature_screening <- function(x, y, alpha = 0.001) {
     .Call(`_tdnn_feature_screening`, x, y, alpha)
 }
 
+pt_raw <- function(tstat, df) {
+    .Call(`_tdnn_pt_raw`, tstat, df)
+}
+
 dcor_t_test_parallel <- function(x, y) {
     .Call(`_tdnn_dcor_t_test_parallel`, x, y)
 }
