@@ -29,7 +29,7 @@ struct TdnnEstimate : public Worker {
                  )
         : X(X), X_test(X_test),
           s_sizes(s_sizes), ord(ord), Y(Y), n(n),
-          p(p), c(c),estimates(estimates), d(d){}
+          p(p), c(c), d(d), estimates(estimates){}
 
     // function call operator that work for the specified range (begin/end)
     void operator()(std::size_t begin, std::size_t end) {
@@ -179,8 +179,11 @@ NumericVector tuning(NumericMatrix X, NumericVector Y,
     // using zero indexing here to match with C++, note s + 1 -> s+2 in de_dnn call
 
     while (search_for_s){
-        NumericVector s_val;
-        s_val = s + 2;
+        // s_val needs to be a vector of the same length as X_test
+        double s_fill = s + 2;
+        NumericVector s_val(int(n_obs), s_fill);
+        // s_val = s + 2;
+
         // For a given s, get the de_dnn estimates for each test observation
         List de_dnn_estimates = de_dnn(as<arma::mat>(X),
                                                 as<arma::vec>(Y),
@@ -198,7 +201,6 @@ NumericVector tuning(NumericMatrix X, NumericVector Y,
         if (s == 0 | s == 1){
             tuning_mat.col(s) = candidate_results;
         } else if (s > tuning_mat.n_cols){
-            Rcout << "s s > tuning_mat.n_cols" << std::endl;
             // if s > ncol tuning_mat, then we will choose best s from the existing choices for each row that hasn't found a best s yet and break out of the while loop
             arma::uvec s_vec = seq_int(0, int(s)-1);
             arma::mat resized_mat = matrix_subset_idx(tuning_mat, s_vec);

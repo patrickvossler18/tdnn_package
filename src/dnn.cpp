@@ -41,6 +41,7 @@ arma::vec de_dnn_st( arma::mat X, NumericVector Y, arma::mat X_test,
 
     // Go through each X_test observation
     for (int i = 0; i < X_test.n_rows; i++){
+
         arma::mat single_vec(int(n),1);
         single_vec.fill(1.0);
         arma::mat all_cols(int(p),1);
@@ -256,9 +257,11 @@ NumericVector tuning_st(NumericVector s_seq,  arma::mat &X, NumericVector &Y,
 
     // loop through and get the dnn estimates for each s value in sequence
     for(int i = 0; i < n_vals; ++i) {
-        NumericVector s_val;
-        // Rcout << s_seq[i] << std::endl;
-        s_val = s_seq[i] + 1.0;
+        double s_fill = s_seq[i] + 1.0;
+        NumericVector s_val(n_obs, s_fill);
+        // Rcout << s_val << std::endl;
+        // s_val = s_seq[i] + 1.0;
+
         // Rcout << "X: " << X << std::endl;
         // Rcout << "X_test: " << X_test << std::endl;
         // Rcout << "Y: " << Y << std::endl;
