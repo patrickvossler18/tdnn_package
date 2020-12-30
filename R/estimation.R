@@ -15,7 +15,7 @@ est_reg_fn <- function(X,
                        Y,
                        X_test,
                        W_0 = NULL,
-                       c = 0.33,
+                       c = 0.80,
                        tuning_method = "greedy") {
   # Data checks before we doing anything else
   # Check X is a dataframe or matrix. If df, make it a matrix
