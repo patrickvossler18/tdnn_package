@@ -9,16 +9,14 @@ Description: A package for estimating nonparametric regression functions and tre
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Suggests: 
-    testthat
-Imports:
-    glue,
-    boot,
-    strex,
-    energy,
-    RcppParallel,
-    RcppArmadillo,
-    Rcpp
+Suggests: testthat
+Imports: glue, boot, strex, energy, RcppParallel, RcppArmadillo, Rcpp,
+        parallel
 RoxygenNote: 7.1.1
-LinkingTo: Rcpp, RcppArmadillo, RcppParallel
+LinkingTo: Rcpp, RcppArmadillo, RcppParallel, RcppProgress, RcppEigen,
+        BH
 SystemRequirements: GNU make
+NeedsCompilation: yes
+Packaged: 2021-08-30 22:44:22 UTC; patrick
+Author: Patrick Vossler [cre]
+Maintainer: Patrick Vossler <pvossler@usc.edu>

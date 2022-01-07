@@ -51,11 +51,17 @@ W0 <- rep(0, p0)
 W0[impt_idx] <- 1
 # W0 = rep(1,p0)
 
+# euclidean distance matrix
+eu_dist_mat <- tdnn:::make_pdist_mat(X,Xtest,W0)
+eu_dist_mat_rnd <- tdnn:::make_pdist_mat(X,Xtest_random,W0)
+# d is # of features after screening
+d <- sum(W0)
+
 
 context("make sure that estimation function gives same output as original implementation")
 
 test_that("est_effect gives same estimate as est_effect_old", {
-  cpp_version <- tdnn::est_effect(X, W, Y, Xtest, W0, feature_screening = F, c = c, estimate_var = F)$estimate
+  cpp_version <- as.numeric(tdnn::est_effect(X, W, Y, Xtest, W0, feature_screening = F, c = c, estimate_var = F)$estimate)
   r_version <- est_effect_old(X, W, Y, W0, Xtest, c = c)$deDNN_pred
   expect_equal(cpp_version, r_version)
 })
@@ -63,8 +69,9 @@ test_that("est_effect gives same estimate as est_effect_old", {
 
 context("tuning functions should all give the same choice of s")
 test_that("early_stopping, single-threaded, and original implementation all give the same s value", {
-  normal <- tdnn:::tuning_st(seq(1, 50, 1), X, Y, Xtest, W0_ = W0, c = c)
-  early_stopping <- tuning(X, Y, Xtest, W0_ = W0, c = c)
+  normal <- as.numeric(tdnn:::tuning_st(seq(1, 50, 1), eu_dist_mat, Y, c = c, n = nrow(X),
+                             n_test_obs = nrow(Xtest), W0_ = W0,d = d))
+  early_stopping <- tdnn:::tuning(X, Y, Xtest, W0_ = W0, c = c)
 
   t <- 50
   tuning_mat <- matrix(0, t, 1)

@@ -1,12 +1,25 @@
 #ifndef UTIL_H    // To make sure you don't declare the function more than once by including the header multiple times.
 #define UTIL_H
 
-#include <math.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
+
 #include <RcppArmadillo.h>
 #include <RcppParallel.h>
+#include <progress.hpp>
+#include <progress_bar.hpp>
+#include <math.h>
+#include "pdist.h"
+#include "convert_mat.h"
+#include "kd_tree.h"
 
+// [[Rcpp::plugins(openmp)]]
+// [[Rcpp::depends(RcppProgress)]]
 // [[Rcpp::depends(RcppParallel)]]
 // [[Rcpp::depends(RcppArmadillo)]]
+
 using namespace Rcpp;
 using namespace RcppParallel;
 using namespace arma;
@@ -22,5 +35,24 @@ Rcpp::NumericMatrix matrix_subset_idx_rcpp( Rcpp::NumericMatrix x, Rcpp::Integer
 arma::uvec seq_int(long int a, long int b);
 
 arma::mat matrix_subset_idx(const arma::mat& x, const arma::uvec& y);
+
+arma::mat matrix_row_subset_idx(const arma::mat& x, const arma::uvec& y);
+
+arma::vec vector_subset_idx(const arma::vec& x, const arma::uvec& y);
+
+arma::mat weight_mat_lfac(int n, const arma::vec& ord, const arma::vec& s_vec);
+
+arma::mat weight_mat_lfac_s_2_filter(int n, const arma::vec& ord, const arma::vec& s_vec, double n_prop, bool is_s_2);
+
+arma::vec round_modified(const arma::vec& x);
+arma::vec arma_round(const arma::vec& x);
+
+arma::vec rowMeans_arma(const arma::mat& x);
+
+arma::vec colSums_arma(const arma::mat& x);
+
+arma::vec select_mat_elements(const arma::mat& x,const arma::uvec& row_idx, const arma::uvec& col_idx);
+
+arma::uvec r_like_order(const arma::vec& x, const arma::vec& y);
 
 #endif

@@ -2,167 +2,514 @@
 // Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 #include <RcppArmadillo.h>
+#include <RcppEigen.h>
 #include <Rcpp.h>
 
 using namespace Rcpp;
 
-// pt_raw
-double pt_raw(double tstat, double df);
-RcppExport SEXP _tdnn_pt_raw(SEXP tstatSEXP, SEXP dfSEXP) {
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
+// de_dnn_st_boot
+arma::vec de_dnn_st_boot(const arma::mat& X, const arma::mat& Y, const arma::mat& X_test, const arma::vec& s_sizes, const arma::vec& ord, double c, double n_prop);
+RcppExport SEXP _tdnn_de_dnn_st_boot(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_sizesSEXP, SEXP ordSEXP, SEXP cSEXP, SEXP n_propSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type tstat(tstatSEXP);
-    Rcpp::traits::input_parameter< double >::type df(dfSEXP);
-    rcpp_result_gen = Rcpp::wrap(pt_raw(tstat, df));
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type s_sizes(s_sizesSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type ord(ordSEXP);
+    Rcpp::traits::input_parameter< double >::type c(cSEXP);
+    Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
+    rcpp_result_gen = Rcpp::wrap(de_dnn_st_boot(X, Y, X_test, s_sizes, ord, c, n_prop));
     return rcpp_result_gen;
 END_RCPP
 }
-// dcor_t_test_parallel
-double dcor_t_test_parallel(arma::mat x, arma::mat y);
-RcppExport SEXP _tdnn_dcor_t_test_parallel(SEXP xSEXP, SEXP ySEXP) {
+// bootstrap_cpp_mt
+NumericMatrix bootstrap_cpp_mt(const arma::mat& X, const arma::mat& Y, const arma::mat& X_test, const arma::vec& s_choice, const double c, const double n_prop, const int B, Nullable<NumericVector> W0_);
+RcppExport SEXP _tdnn_bootstrap_cpp_mt(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_choiceSEXP, SEXP cSEXP, SEXP n_propSEXP, SEXP BSEXP, SEXP W0_SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type y(ySEXP);
-    rcpp_result_gen = Rcpp::wrap(dcor_t_test_parallel(x, y));
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type s_choice(s_choiceSEXP);
+    Rcpp::traits::input_parameter< const double >::type c(cSEXP);
+    Rcpp::traits::input_parameter< const double >::type n_prop(n_propSEXP);
+    Rcpp::traits::input_parameter< const int >::type B(BSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
+    rcpp_result_gen = Rcpp::wrap(bootstrap_cpp_mt(X, Y, X_test, s_choice, c, n_prop, B, W0_));
     return rcpp_result_gen;
 END_RCPP
 }
-// feature_screening_parallel
-Rcpp::NumericVector feature_screening_parallel(arma::mat x, arma::mat y, double alpha);
-RcppExport SEXP _tdnn_feature_screening_parallel(SEXP xSEXP, SEXP ySEXP, SEXP alphaSEXP) {
+// make_pdist_mat
+arma::mat make_pdist_mat(const arma::mat& X, const arma::mat& X_test, Nullable<NumericVector> W0_);
+RcppExport SEXP _tdnn_make_pdist_mat(SEXP XSEXP, SEXP X_testSEXP, SEXP W0_SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type y(ySEXP);
-    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    rcpp_result_gen = Rcpp::wrap(feature_screening_parallel(x, y, alpha));
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
+    rcpp_result_gen = Rcpp::wrap(make_pdist_mat(X, X_test, W0_));
+    return rcpp_result_gen;
+END_RCPP
+}
+// make_ordered_Y_mat
+arma::mat make_ordered_Y_mat(const arma::mat& X, const arma::mat& Y, const arma::mat& X_test, bool debug);
+RcppExport SEXP _tdnn_make_ordered_Y_mat(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP debugSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< bool >::type debug(debugSEXP);
+    rcpp_result_gen = Rcpp::wrap(make_ordered_Y_mat(X, Y, X_test, debug));
+    return rcpp_result_gen;
+END_RCPP
+}
+// de_dnn_st_tuning
+arma::mat de_dnn_st_tuning(const arma::mat& X, const arma::mat& Y, const arma::mat& X_test, const arma::vec& s_sizes, double c, double n_prop, Nullable<NumericVector> W0_);
+RcppExport SEXP _tdnn_de_dnn_st_tuning(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_sizesSEXP, SEXP cSEXP, SEXP n_propSEXP, SEXP W0_SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type s_sizes(s_sizesSEXP);
+    Rcpp::traits::input_parameter< double >::type c(cSEXP);
+    Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
+    rcpp_result_gen = Rcpp::wrap(de_dnn_st_tuning(X, Y, X_test, s_sizes, c, n_prop, W0_));
+    return rcpp_result_gen;
+END_RCPP
+}
+// de_dnn_st_mat_mult
+arma::vec de_dnn_st_mat_mult(const arma::mat& X, const arma::mat& Y, const arma::mat& X_test, const arma::vec& s_sizes, double c, double n_prop, Nullable<NumericVector> W0_, bool debug);
+RcppExport SEXP _tdnn_de_dnn_st_mat_mult(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_sizesSEXP, SEXP cSEXP, SEXP n_propSEXP, SEXP W0_SEXP, SEXP debugSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type s_sizes(s_sizesSEXP);
+    Rcpp::traits::input_parameter< double >::type c(cSEXP);
+    Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
+    Rcpp::traits::input_parameter< bool >::type debug(debugSEXP);
+    rcpp_result_gen = Rcpp::wrap(de_dnn_st_mat_mult(X, Y, X_test, s_sizes, c, n_prop, W0_, debug));
+    return rcpp_result_gen;
+END_RCPP
+}
+// de_dnn_st_loop
+arma::vec de_dnn_st_loop(const arma::mat& X, const arma::mat& Y, const arma::mat& X_test, const arma::vec& s_sizes, double c, double n_prop, Nullable<NumericVector> W0_, bool debug);
+RcppExport SEXP _tdnn_de_dnn_st_loop(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_sizesSEXP, SEXP cSEXP, SEXP n_propSEXP, SEXP W0_SEXP, SEXP debugSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type s_sizes(s_sizesSEXP);
+    Rcpp::traits::input_parameter< double >::type c(cSEXP);
+    Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
+    Rcpp::traits::input_parameter< bool >::type debug(debugSEXP);
+    rcpp_result_gen = Rcpp::wrap(de_dnn_st_loop(X, Y, X_test, s_sizes, c, n_prop, W0_, debug));
     return rcpp_result_gen;
 END_RCPP
 }
 // de_dnn_st
-arma::vec de_dnn_st(arma::mat X, NumericVector Y, arma::mat X_test, NumericVector s_sizes, double c, Nullable<NumericVector> W0_);
-RcppExport SEXP _tdnn_de_dnn_st(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_sizesSEXP, SEXP cSEXP, SEXP W0_SEXP) {
+arma::vec de_dnn_st(const arma::mat& eu_dist_mat, const arma::mat& X, const arma::mat& Y, const arma::mat& X_test, const arma::vec& s_sizes, double c, int d, int n, bool debug);
+RcppExport SEXP _tdnn_de_dnn_st(SEXP eu_dist_matSEXP, SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_sizesSEXP, SEXP cSEXP, SEXP dSEXP, SEXP nSEXP, SEXP debugSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type X_test(X_testSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type s_sizes(s_sizesSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type eu_dist_mat(eu_dist_matSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type s_sizes(s_sizesSEXP);
     Rcpp::traits::input_parameter< double >::type c(cSEXP);
-    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
-    rcpp_result_gen = Rcpp::wrap(de_dnn_st(X, Y, X_test, s_sizes, c, W0_));
+    Rcpp::traits::input_parameter< int >::type d(dSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< bool >::type debug(debugSEXP);
+    rcpp_result_gen = Rcpp::wrap(de_dnn_st(eu_dist_mat, X, Y, X_test, s_sizes, c, d, n, debug));
     return rcpp_result_gen;
 END_RCPP
 }
 // best_s
-NumericVector best_s(arma::mat estimate_matrix);
+NumericVector best_s(const arma::mat& estimate_matrix);
 RcppExport SEXP _tdnn_best_s(SEXP estimate_matrixSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type estimate_matrix(estimate_matrixSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type estimate_matrix(estimate_matrixSEXP);
     rcpp_result_gen = Rcpp::wrap(best_s(estimate_matrix));
     return rcpp_result_gen;
 END_RCPP
 }
 // tuning_st
-NumericVector tuning_st(NumericVector s_seq, arma::mat& X, NumericVector& Y, arma::mat& X_test, double c, NumericVector W0_);
-RcppExport SEXP _tdnn_tuning_st(SEXP s_seqSEXP, SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP cSEXP, SEXP W0_SEXP) {
+arma::vec tuning_st(const NumericVector& s_seq, const arma::mat& eu_dist_mat, const arma::mat& X, const arma::mat& Y, const arma::mat& X_test, double c, int d, int n, int n_test_obs, NumericVector W0_, bool debug, bool verbose);
+RcppExport SEXP _tdnn_tuning_st(SEXP s_seqSEXP, SEXP eu_dist_matSEXP, SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP cSEXP, SEXP dSEXP, SEXP nSEXP, SEXP n_test_obsSEXP, SEXP W0_SEXP, SEXP debugSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type s_seq(s_seqSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type X(XSEXP);
-    Rcpp::traits::input_parameter< NumericVector& >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type s_seq(s_seqSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type eu_dist_mat(eu_dist_matSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_test(X_testSEXP);
     Rcpp::traits::input_parameter< double >::type c(cSEXP);
+    Rcpp::traits::input_parameter< int >::type d(dSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type n_test_obs(n_test_obsSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type W0_(W0_SEXP);
-    rcpp_result_gen = Rcpp::wrap(tuning_st(s_seq, X, Y, X_test, c, W0_));
+    Rcpp::traits::input_parameter< bool >::type debug(debugSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(tuning_st(s_seq, eu_dist_mat, X, Y, X_test, c, d, n, n_test_obs, W0_, debug, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
-// tuning_test
-void tuning_test(NumericVector s_seq, arma::mat& X, NumericVector& Y, arma::mat& X_test, double bc_p, NumericVector W0_);
-RcppExport SEXP _tdnn_tuning_test(SEXP s_seqSEXP, SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP bc_pSEXP, SEXP W0_SEXP) {
+// tuning_es
+arma::vec tuning_es(const arma::mat& eu_dist_mat, const arma::mat& X, const arma::mat& Y, const arma::mat& X_test, double c, int d, int n, int n_test_obs, Nullable<NumericVector> W0_, bool debug, bool verbose);
+RcppExport SEXP _tdnn_tuning_es(SEXP eu_dist_matSEXP, SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP cSEXP, SEXP dSEXP, SEXP nSEXP, SEXP n_test_obsSEXP, SEXP W0_SEXP, SEXP debugSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type s_seq(s_seqSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type X(XSEXP);
-    Rcpp::traits::input_parameter< NumericVector& >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type X_test(X_testSEXP);
-    Rcpp::traits::input_parameter< double >::type bc_p(bc_pSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type W0_(W0_SEXP);
-    tuning_test(s_seq, X, Y, X_test, bc_p, W0_);
-    return R_NilValue;
+    Rcpp::traits::input_parameter< const arma::mat& >::type eu_dist_mat(eu_dist_matSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< double >::type c(cSEXP);
+    Rcpp::traits::input_parameter< int >::type d(dSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type n_test_obs(n_test_obsSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
+    Rcpp::traits::input_parameter< bool >::type debug(debugSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(tuning_es(eu_dist_mat, X, Y, X_test, c, d, n, n_test_obs, W0_, debug, verbose));
+    return rcpp_result_gen;
 END_RCPP
 }
-// de_dnn
-List de_dnn(arma::mat X, arma::vec Y, arma::mat X_test, NumericVector s_sizes, double c, Nullable<NumericVector> W0_);
-RcppExport SEXP _tdnn_de_dnn(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_sizesSEXP, SEXP cSEXP, SEXP W0_SEXP) {
+// est_reg_fn_rcpp
+List est_reg_fn_rcpp(const arma::mat& X, const arma::mat& Y, const arma::mat& X_test, double c, Nullable<NumericVector> W0_, String tuning_method, bool verbose);
+RcppExport SEXP _tdnn_est_reg_fn_rcpp(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP cSEXP, SEXP W0_SEXP, SEXP tuning_methodSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< double >::type c(cSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
+    Rcpp::traits::input_parameter< String >::type tuning_method(tuning_methodSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(est_reg_fn_rcpp(X, Y, X_test, c, W0_, tuning_method, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
+// tuning_st_loop
+arma::vec tuning_st_loop(const NumericVector& s_seq, const arma::mat& X, const arma::mat& X_test, const arma::mat& Y, double c, double n_prop, Nullable<NumericVector> W0_, bool debug, bool verbose);
+RcppExport SEXP _tdnn_tuning_st_loop(SEXP s_seqSEXP, SEXP XSEXP, SEXP X_testSEXP, SEXP YSEXP, SEXP cSEXP, SEXP n_propSEXP, SEXP W0_SEXP, SEXP debugSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericVector& >::type s_seq(s_seqSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< double >::type c(cSEXP);
+    Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
+    Rcpp::traits::input_parameter< bool >::type debug(debugSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(tuning_st_loop(s_seq, X, X_test, Y, c, n_prop, W0_, debug, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
+// tuning_st_mat_mult
+arma::vec tuning_st_mat_mult(const NumericVector& s_seq, const arma::mat& X, const arma::mat& X_test, const arma::mat& Y, double c, double n_prop, Nullable<NumericVector> W0_, bool debug, bool verbose);
+RcppExport SEXP _tdnn_tuning_st_mat_mult(SEXP s_seqSEXP, SEXP XSEXP, SEXP X_testSEXP, SEXP YSEXP, SEXP cSEXP, SEXP n_propSEXP, SEXP W0_SEXP, SEXP debugSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericVector& >::type s_seq(s_seqSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< double >::type c(cSEXP);
+    Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
+    Rcpp::traits::input_parameter< bool >::type debug(debugSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(tuning_st_mat_mult(s_seq, X, X_test, Y, c, n_prop, W0_, debug, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
+// tuning_es_loop
+arma::vec tuning_es_loop(const arma::mat& X, const arma::mat& Y, const arma::mat& X_test, double c, int d, double n_prop, Nullable<NumericVector> W0_, bool debug, bool verbose);
+RcppExport SEXP _tdnn_tuning_es_loop(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP cSEXP, SEXP dSEXP, SEXP n_propSEXP, SEXP W0_SEXP, SEXP debugSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< double >::type c(cSEXP);
+    Rcpp::traits::input_parameter< int >::type d(dSEXP);
+    Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
+    Rcpp::traits::input_parameter< bool >::type debug(debugSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(tuning_es_loop(X, Y, X_test, c, d, n_prop, W0_, debug, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
+// est_reg_fn_st_loop
+arma::vec est_reg_fn_st_loop(const arma::mat& X, const arma::mat& Y, const arma::mat& X_test, double c, double n_prop, String tuning_method, Nullable<NumericVector> W0_, bool verbose);
+RcppExport SEXP _tdnn_est_reg_fn_st_loop(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP cSEXP, SEXP n_propSEXP, SEXP tuning_methodSEXP, SEXP W0_SEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< double >::type c(cSEXP);
+    Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
+    Rcpp::traits::input_parameter< String >::type tuning_method(tuning_methodSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(est_reg_fn_st_loop(X, Y, X_test, c, n_prop, tuning_method, W0_, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
+// tdnn
+arma::vec tdnn(arma::mat X, arma::vec Y, arma::mat X_test, arma::vec s_sizes, arma::vec s_sizes_1, double c, double n_prop, Nullable<NumericVector> W0_);
+RcppExport SEXP _tdnn_tdnn(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_sizesSEXP, SEXP s_sizes_1SEXP, SEXP cSEXP, SEXP n_propSEXP, SEXP W0_SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type Y(YSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type X_test(X_testSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type s_sizes(s_sizesSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type s_sizes(s_sizesSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type s_sizes_1(s_sizes_1SEXP);
     Rcpp::traits::input_parameter< double >::type c(cSEXP);
+    Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
     Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
-    rcpp_result_gen = Rcpp::wrap(de_dnn(X, Y, X_test, s_sizes, c, W0_));
+    rcpp_result_gen = Rcpp::wrap(tdnn(X, Y, X_test, s_sizes, s_sizes_1, c, n_prop, W0_));
+    return rcpp_result_gen;
+END_RCPP
+}
+// de_dnn
+arma::vec de_dnn(arma::mat X, arma::vec Y, arma::mat X_test, arma::vec s_sizes, double c, double n_prop, Nullable<NumericVector> W0_);
+RcppExport SEXP _tdnn_de_dnn(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_sizesSEXP, SEXP cSEXP, SEXP n_propSEXP, SEXP W0_SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type s_sizes(s_sizesSEXP);
+    Rcpp::traits::input_parameter< double >::type c(cSEXP);
+    Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
+    rcpp_result_gen = Rcpp::wrap(de_dnn(X, Y, X_test, s_sizes, c, n_prop, W0_));
     return rcpp_result_gen;
 END_RCPP
 }
 // tuning
-NumericVector tuning(NumericMatrix X, NumericVector Y, NumericMatrix X_test, double c, Nullable<NumericVector> W0_);
-RcppExport SEXP _tdnn_tuning(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP cSEXP, SEXP W0_SEXP) {
+NumericVector tuning(arma::mat X, arma::vec Y, arma::mat X_test, double c, double n_prop, Nullable<NumericVector> W0_);
+RcppExport SEXP _tdnn_tuning(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP cSEXP, SEXP n_propSEXP, SEXP W0_SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type X_test(X_testSEXP);
     Rcpp::traits::input_parameter< double >::type c(cSEXP);
+    Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
     Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
-    rcpp_result_gen = Rcpp::wrap(tuning(X, Y, X_test, c, W0_));
+    rcpp_result_gen = Rcpp::wrap(tuning(X, Y, X_test, c, n_prop, W0_));
+    return rcpp_result_gen;
+END_RCPP
+}
+// tuning_est
+List tuning_est(arma::mat X, arma::vec Y, arma::mat X_test, double c, double n_prop, Nullable<NumericVector> W0_);
+RcppExport SEXP _tdnn_tuning_est(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP cSEXP, SEXP n_propSEXP, SEXP W0_SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< double >::type c(cSEXP);
+    Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
+    rcpp_result_gen = Rcpp::wrap(tuning_est(X, Y, X_test, c, n_prop, W0_));
+    return rcpp_result_gen;
+END_RCPP
+}
+// bootstrap_reg_fn
+arma::mat bootstrap_reg_fn(const arma::mat& X, const arma::mat& Y, const arma::mat& X_test, arma::vec s_choice, double c, double n_prop, Nullable<NumericVector> W_0, int B, bool verbose);
+RcppExport SEXP _tdnn_bootstrap_reg_fn(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_choiceSEXP, SEXP cSEXP, SEXP n_propSEXP, SEXP W_0SEXP, SEXP BSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type s_choice(s_choiceSEXP);
+    Rcpp::traits::input_parameter< double >::type c(cSEXP);
+    Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W_0(W_0SEXP);
+    Rcpp::traits::input_parameter< int >::type B(BSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(bootstrap_reg_fn(X, Y, X_test, s_choice, c, n_prop, W_0, B, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
 // bootstrap_cpp
-NumericMatrix bootstrap_cpp(NumericMatrix X, NumericMatrix X_test, NumericMatrix Y, IntegerVector W, NumericVector W0, NumericVector s_choice_0, NumericVector s_choice_1, double c, int B);
-RcppExport SEXP _tdnn_bootstrap_cpp(SEXP XSEXP, SEXP X_testSEXP, SEXP YSEXP, SEXP WSEXP, SEXP W0SEXP, SEXP s_choice_0SEXP, SEXP s_choice_1SEXP, SEXP cSEXP, SEXP BSEXP) {
+arma::mat bootstrap_cpp(const arma::mat& X, const arma::mat& Y, const arma::vec& W, const arma::mat& X_test, arma::vec s_choice_0, arma::vec s_choice_1, double c, double n_prop, Nullable<NumericVector> W_0, int B, bool verbose);
+RcppExport SEXP _tdnn_bootstrap_cpp(SEXP XSEXP, SEXP YSEXP, SEXP WSEXP, SEXP X_testSEXP, SEXP s_choice_0SEXP, SEXP s_choice_1SEXP, SEXP cSEXP, SEXP n_propSEXP, SEXP W_0SEXP, SEXP BSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type X_test(X_testSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type W(WSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type W0(W0SEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type s_choice_0(s_choice_0SEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type s_choice_1(s_choice_1SEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type W(WSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type s_choice_0(s_choice_0SEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type s_choice_1(s_choice_1SEXP);
     Rcpp::traits::input_parameter< double >::type c(cSEXP);
+    Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W_0(W_0SEXP);
     Rcpp::traits::input_parameter< int >::type B(BSEXP);
-    rcpp_result_gen = Rcpp::wrap(bootstrap_cpp(X, X_test, Y, W, W0, s_choice_0, s_choice_1, c, B));
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(bootstrap_cpp(X, Y, W, X_test, s_choice_0, s_choice_1, c, n_prop, W_0, B, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
+// est_reg_fn_mt_rcpp
+List est_reg_fn_mt_rcpp(const arma::mat& X, const arma::mat& Y, const arma::mat& X_test, double c, double n_prop, bool verbose, bool old, Nullable<NumericVector> W0_);
+RcppExport SEXP _tdnn_est_reg_fn_mt_rcpp(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP cSEXP, SEXP n_propSEXP, SEXP verboseSEXP, SEXP oldSEXP, SEXP W0_SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< double >::type c(cSEXP);
+    Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    Rcpp::traits::input_parameter< bool >::type old(oldSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
+    rcpp_result_gen = Rcpp::wrap(est_reg_fn_mt_rcpp(X, Y, X_test, c, n_prop, verbose, old, W0_));
+    return rcpp_result_gen;
+END_RCPP
+}
+// get_1nn_reg
+arma::vec get_1nn_reg(arma::mat X, arma::mat X_test, arma::mat Y, int k);
+RcppExport SEXP _tdnn_get_1nn_reg(SEXP XSEXP, SEXP X_testSEXP, SEXP YSEXP, SEXP kSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_1nn_reg(X, X_test, Y, k));
+    return rcpp_result_gen;
+END_RCPP
+}
+// fastPdist
+arma::mat fastPdist(const arma::mat& Ar, const arma::mat& Br);
+RcppExport SEXP _tdnn_fastPdist(SEXP ArSEXP, SEXP BrSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type Ar(ArSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Br(BrSEXP);
+    rcpp_result_gen = Rcpp::wrap(fastPdist(Ar, Br));
+    return rcpp_result_gen;
+END_RCPP
+}
+// weight_mat_lfac_s_2_filter
+arma::mat weight_mat_lfac_s_2_filter(int n, const arma::vec& ord, const arma::vec& s_vec, double n_prop, bool is_s_2);
+RcppExport SEXP _tdnn_weight_mat_lfac_s_2_filter(SEXP nSEXP, SEXP ordSEXP, SEXP s_vecSEXP, SEXP n_propSEXP, SEXP is_s_2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type ord(ordSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type s_vec(s_vecSEXP);
+    Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
+    Rcpp::traits::input_parameter< bool >::type is_s_2(is_s_2SEXP);
+    rcpp_result_gen = Rcpp::wrap(weight_mat_lfac_s_2_filter(n, ord, s_vec, n_prop, is_s_2));
+    return rcpp_result_gen;
+END_RCPP
+}
+// round_modified
+arma::vec round_modified(const arma::vec& x);
+RcppExport SEXP _tdnn_round_modified(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(round_modified(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// arma_round
+arma::vec arma_round(const arma::vec& x);
+RcppExport SEXP _tdnn_arma_round(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(arma_round(x));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_tdnn_pt_raw", (DL_FUNC) &_tdnn_pt_raw, 2},
-    {"_tdnn_dcor_t_test_parallel", (DL_FUNC) &_tdnn_dcor_t_test_parallel, 2},
-    {"_tdnn_feature_screening_parallel", (DL_FUNC) &_tdnn_feature_screening_parallel, 3},
-    {"_tdnn_de_dnn_st", (DL_FUNC) &_tdnn_de_dnn_st, 6},
+    {"_tdnn_de_dnn_st_boot", (DL_FUNC) &_tdnn_de_dnn_st_boot, 7},
+    {"_tdnn_bootstrap_cpp_mt", (DL_FUNC) &_tdnn_bootstrap_cpp_mt, 8},
+    {"_tdnn_make_pdist_mat", (DL_FUNC) &_tdnn_make_pdist_mat, 3},
+    {"_tdnn_make_ordered_Y_mat", (DL_FUNC) &_tdnn_make_ordered_Y_mat, 4},
+    {"_tdnn_de_dnn_st_tuning", (DL_FUNC) &_tdnn_de_dnn_st_tuning, 7},
+    {"_tdnn_de_dnn_st_mat_mult", (DL_FUNC) &_tdnn_de_dnn_st_mat_mult, 8},
+    {"_tdnn_de_dnn_st_loop", (DL_FUNC) &_tdnn_de_dnn_st_loop, 8},
+    {"_tdnn_de_dnn_st", (DL_FUNC) &_tdnn_de_dnn_st, 9},
     {"_tdnn_best_s", (DL_FUNC) &_tdnn_best_s, 1},
-    {"_tdnn_tuning_st", (DL_FUNC) &_tdnn_tuning_st, 6},
-    {"_tdnn_tuning_test", (DL_FUNC) &_tdnn_tuning_test, 6},
-    {"_tdnn_de_dnn", (DL_FUNC) &_tdnn_de_dnn, 6},
-    {"_tdnn_tuning", (DL_FUNC) &_tdnn_tuning, 5},
-    {"_tdnn_bootstrap_cpp", (DL_FUNC) &_tdnn_bootstrap_cpp, 9},
+    {"_tdnn_tuning_st", (DL_FUNC) &_tdnn_tuning_st, 12},
+    {"_tdnn_tuning_es", (DL_FUNC) &_tdnn_tuning_es, 11},
+    {"_tdnn_est_reg_fn_rcpp", (DL_FUNC) &_tdnn_est_reg_fn_rcpp, 7},
+    {"_tdnn_tuning_st_loop", (DL_FUNC) &_tdnn_tuning_st_loop, 9},
+    {"_tdnn_tuning_st_mat_mult", (DL_FUNC) &_tdnn_tuning_st_mat_mult, 9},
+    {"_tdnn_tuning_es_loop", (DL_FUNC) &_tdnn_tuning_es_loop, 9},
+    {"_tdnn_est_reg_fn_st_loop", (DL_FUNC) &_tdnn_est_reg_fn_st_loop, 8},
+    {"_tdnn_tdnn", (DL_FUNC) &_tdnn_tdnn, 8},
+    {"_tdnn_de_dnn", (DL_FUNC) &_tdnn_de_dnn, 7},
+    {"_tdnn_tuning", (DL_FUNC) &_tdnn_tuning, 6},
+    {"_tdnn_tuning_est", (DL_FUNC) &_tdnn_tuning_est, 6},
+    {"_tdnn_bootstrap_reg_fn", (DL_FUNC) &_tdnn_bootstrap_reg_fn, 9},
+    {"_tdnn_bootstrap_cpp", (DL_FUNC) &_tdnn_bootstrap_cpp, 11},
+    {"_tdnn_est_reg_fn_mt_rcpp", (DL_FUNC) &_tdnn_est_reg_fn_mt_rcpp, 8},
+    {"_tdnn_get_1nn_reg", (DL_FUNC) &_tdnn_get_1nn_reg, 4},
+    {"_tdnn_fastPdist", (DL_FUNC) &_tdnn_fastPdist, 2},
+    {"_tdnn_weight_mat_lfac_s_2_filter", (DL_FUNC) &_tdnn_weight_mat_lfac_s_2_filter, 5},
+    {"_tdnn_round_modified", (DL_FUNC) &_tdnn_round_modified, 1},
+    {"_tdnn_arma_round", (DL_FUNC) &_tdnn_arma_round, 1},
     {NULL, NULL, 0}
 };
 

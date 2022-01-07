@@ -53,7 +53,16 @@ context("our dcor t-test implementation should give the same results as the ener
 
 test_that("for each column of X, our dcor t-test should match the energy version", {
   expect_equal(
-    tdnn:::feature_screening_parallel(X, Y),
+    tdnn:::dcorT_parallel(X, as.matrix(Y), alpha = 0.001),
+    sapply(1:p0, function(i) {
+      as.numeric(energy::dcorT.test(X[, i], Y)$p.value < 0.001 / p0)
+    })
+  )
+})
+
+test_that("for each column of X, our dcor t-test using multiple cores should match the energy version", {
+  expect_equal(
+    tdnn:::dcorT_parallel(X, as.matrix(Y), alpha = 0.001, n_cores = 2),
     sapply(1:p0, function(i) {
       as.numeric(energy::dcorT.test(X[, i], Y)$p.value < 0.001 / p0)
     })
@@ -61,6 +70,6 @@ test_that("for each column of X, our dcor t-test should match the energy version
 })
 
 
-test_that("manual implementation of pt matches the R implementation", {
-  expect_equal(tdnn:::pt_raw(2, 10), pt(2, 10))
-})
+# test_that("manual implementation of pt matches the R implementation", {
+#   expect_equal(tdnn:::pt_raw(2, 10), pt(2, 10))
+# })

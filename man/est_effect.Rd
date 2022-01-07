@@ -11,12 +11,15 @@ est_effect(
   X_test,
   c = 0.8,
   W_0 = NULL,
-  tuning_method = "greedy",
+  tuning_method = "early stopping",
   estimate_var = F,
   feature_screening = T,
   use_boot = F,
   alpha = 0.001,
   B = 1000,
+  n_threads = 4,
+  n_cores_feature_screen = NULL,
+  verbose = FALSE,
   ...
 )
 }
@@ -34,8 +37,8 @@ est_effect(
 
 \item{W_0}{Optional integer vector with 1 corresponding to columns that should be used to estimate the treatment effect. Default value is NULL}
 
-\item{tuning_method}{Choose the method used to choose the subsample size \eqn{s} ("greedy", "sequence").
-The default is the "greedy" method which stops as soon as a sign change in the difference of the estimates is detected,
+\item{tuning_method}{Choose the method used to choose the subsample size \eqn{s} ("early stopping", "sequence").
+The default is the "early stopping" method which stops as soon as a sign change in the difference of the estimates is detected,
  while the "sequence" method calculates an estimate for each of the different s values
   (a sequence from 1 to 50) and then finds the s which causes a change in the sign of the derivative.}
 
@@ -49,6 +52,12 @@ using the energy package's (Rizzo and Szekely, 2019) `dcor.test`.}
 \item{alpha}{Threshold value for multiple testing correction used in the feature screening step}
 
 \item{B}{Number of bootstrap replicates used for calculating confidence intervals using the C++ bootstrap implemented by this package. Default B = 1000}
+
+\item{n_threads}{Number of threads used for parallel C++ code. Default is 4 threads}
+
+\item{n_cores_feature_screen}{Number of cores used for feature screening. Default is NULL and if the argument is NULL, only one core is used.}
+
+\item{verbose}{Control verbosity of the status of the calculations involved in the function. Set to false by default.}
 
 \item{...}{Extra arguments to be passed to the boot function when estimating variance (e.g. ncpus, parallel, R)}
 }

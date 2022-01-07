@@ -87,3 +87,141 @@ arma::mat matrix_subset_idx(const arma::mat& x,
     return x.cols( y );
 }
 
+arma::mat matrix_row_subset_idx(const arma::mat& x,
+                            const arma::uvec& y) {
+
+    // y must be an integer between 0 and columns - 1
+    // Allows for repeated draws from same columns.
+    return x.rows( y );
+}
+
+arma::vec select_mat_elements(const arma::mat& x,
+                                const arma::uvec& row_idx,
+                                const arma::uvec& col_idx) {
+    arma::vec out(x.n_rows);
+    // assumes both idx vectors are the same length
+    for(int i=0; i < row_idx.size(); i++){
+        out(i) = x(row_idx(i), col_idx(i));
+    }
+    return out;
+}
+
+arma::vec vector_subset_idx(const arma::vec& x,
+                            const arma::uvec& y) {
+
+    // y must be an integer between 0 and columns - 1
+    // Allows for repeated draws from same columns.
+    return x.elem( y );
+}
+
+
+arma::uvec r_like_order(const arma::vec& x, const arma::vec& y){
+    std::vector<double> eu_dis = conv_to<std::vector<double>>::from(x);
+    std::vector<double> noise_vec = conv_to<std::vector<double>>::from(y);
+    int n = y.size();
+
+    vector<int> index(n, 0);
+    for (int i = 0 ; i != index.size() ; i++) {
+        index[i] = i;
+    }
+    std::stable_sort(index.begin(), index.end(),
+                     [&](const int& a, const int& b) {
+                         if (eu_dis[a] != eu_dis[b]){
+                             return eu_dis[a] < eu_dis[b];
+                         }
+                         return noise_vec[a] < noise_vec[b];
+                     }
+    );
+
+    return(conv_to<arma::uvec>::from(index));
+}
+
+
+// [[Rcpp::export]]
+arma::mat weight_mat_lfac_s_2_filter(int n, const arma::vec& ord, const arma::vec& s_vec, double n_prop, bool is_s_2){
+    arma::mat out(n, s_vec.size());
+
+    // for the s_val of each test observation...
+    for(int i=0; i < s_vec.size(); i++){
+        // Rcout << i<< std::endl;
+        arma::vec weight_vec(n);
+        double s_val = arma::as_scalar(s_vec[i]);
+
+        // if s_val is > n/2 then we're just going to use 1-NN
+        if((is_s_2) & (s_val > (double(n) *  n_prop))){
+            // Rcout << "s_val > n * n_prop" << std::endl;
+            weight_vec.zeros();
+            out.col(i) = weight_vec;
+
+        } else{
+            // use fact that lfactorial(x) = lgamma(x+1)
+            arma::vec n_ord = arma::lgamma( ((double(n)- ord) + 1.0) ); // first term
+            arma::vec n_ord_s = arma::lgamma( ((double(n) - ord - s_val + 1.0) + 1.0) ); // last term
+            double n_s_1 = lgamma((double(n) - s_val) + 1.0);
+            double lfact_n = lgamma(double(n) + 1.0);
+
+            weight_vec = arma::exp(n_ord + n_s_1 - lfact_n - n_ord_s);
+
+            out.col(i) = weight_vec * s_val;
+        }
+    }
+    return(out);
+}
+
+arma::mat weight_mat_lfac(int n, const arma::vec& ord, const arma::vec& s_vec){
+    arma::mat out(n, s_vec.size());
+
+    // for the s_val of each test observation...
+    for(int i=0; i < s_vec.size(); i++){
+        arma::vec weight_vec(n);
+        double s_val = arma::as_scalar(s_vec[i]);
+        // use fact that lfactorial(x) = lgamma(x+1)
+        arma::vec n_ord = arma::lgamma( ((double(n)- ord) + 1.0) ); // first term
+        arma::vec n_ord_s = arma::lgamma( ((double(n) - ord - s_val + 1.0) + 1.0) ); // last term
+        double n_s_1 = lgamma((double(n) - s_val) + 1.0);
+        double lfact_n = lgamma(double(n) + 1.0);
+
+        weight_vec = arma::exp(n_ord + n_s_1 - lfact_n - n_ord_s);
+
+        out.col(i) = weight_vec * s_val;
+    }
+    return out;
+}
+
+// [[Rcpp::export]]
+arma::vec round_modified(const arma::vec& x){
+    NumericVector x_rcpp = as<NumericVector>(wrap(x));
+    x_rcpp = Rcpp::round(x_rcpp, 0);
+    return as<arma::vec>(wrap(x_rcpp));
+}
+
+// [[Rcpp::export]]
+arma::vec arma_round(const arma::vec& x){
+    return arma::round(x);
+}
+
+
+arma::vec rowMeans_arma(const arma::mat& x) {
+    int nr = x.n_rows;
+    // NumericVector ans(nc);
+    arma::vec ans(nr);
+    for (int j = 0; j < nr; j++) {
+        arma::vec col_tmp = x.row(j);
+        double mean = arma::mean(col_tmp);
+        ans(j) = mean;
+    }
+    return ans;
+}
+
+arma::vec colSums_arma(const arma::mat& x) {
+    int nc = x.n_cols;
+    // NumericVector ans(nc);
+    arma::vec ans(nc);
+    for (int j = 0; j < nc; j++) {
+        arma::vec col_tmp = x.col(j);
+        double sum = arma::sum(col_tmp);
+        ans(j) = sum;
+    }
+    return ans;
+}
+

@@ -4,7 +4,15 @@
 \alias{est_reg_fn}
 \title{Estimate a regression function using the two-scale DNN estimator}
 \usage{
-est_reg_fn(X, Y, X_test, W_0 = NULL, c = 0.33, tuning_method = "greedy")
+est_reg_fn(
+  X,
+  Y,
+  X_test,
+  W_0 = NULL,
+  c = 0.8,
+  tuning_method = "early stopping",
+  verbose = F
+)
 }
 \arguments{
 \item{X}{matrix of covariates}
@@ -18,10 +26,12 @@ est_reg_fn(X, Y, X_test, W_0 = NULL, c = 0.33, tuning_method = "greedy")
 \item{c}{Parameter that controls the size of the ratio of \eqn{s_1} and \eqn{s_2} through the equation
 \eqn{s_2 = s_1 \cdot c^{d/2}}. Default value is 0.80}
 
-\item{tuning_method}{Choose the method used to choose the subsample size \eqn{s} ("greedy", "sequence").
-The default is the "greedy" method which stops as soon as a sign change in the difference of the estimates is detected,
+\item{tuning_method}{Choose the method used to choose the subsample size \eqn{s} ("early stopping", "sequence").
+The default is the "early stopping" method which stops as soon as a sign change in the difference of the estimates is detected,
  while the "sequence" method calculates an estimate for each of the different s values
   (a sequence from 1 to 50) and then finds the s which causes a change in the sign of the derivative.}
+
+\item{verbose}{Print which step the method is currently calculating in the console.}
 }
 \description{
 Estimate a regression function using the two-scale DNN estimator
