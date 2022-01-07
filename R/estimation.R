@@ -24,7 +24,6 @@
 #'
 #' @importFrom glue glue
 #' @importFrom strex match_arg
-#' @export
 est_effect <- function(X,
                        W,
                        Y,

@@ -128,13 +128,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // de_dnn_st
-arma::vec de_dnn_st(const arma::mat& eu_dist_mat, const arma::mat& X, const arma::mat& Y, const arma::mat& X_test, const arma::vec& s_sizes, double c, int d, int n, bool debug);
-RcppExport SEXP _tdnn_de_dnn_st(SEXP eu_dist_matSEXP, SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_sizesSEXP, SEXP cSEXP, SEXP dSEXP, SEXP nSEXP, SEXP debugSEXP) {
+arma::vec de_dnn_st(const arma::mat& eu_dist_mat, const arma::mat& Y, const arma::mat& X_test, const arma::vec& s_sizes, double c, int d, int n, bool debug);
+RcppExport SEXP _tdnn_de_dnn_st(SEXP eu_dist_matSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_sizesSEXP, SEXP cSEXP, SEXP dSEXP, SEXP nSEXP, SEXP debugSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::mat& >::type eu_dist_mat(eu_dist_matSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type X_test(X_testSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type s_sizes(s_sizesSEXP);
@@ -142,7 +141,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type d(dSEXP);
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     Rcpp::traits::input_parameter< bool >::type debug(debugSEXP);
-    rcpp_result_gen = Rcpp::wrap(de_dnn_st(eu_dist_mat, X, Y, X_test, s_sizes, c, d, n, debug));
+    rcpp_result_gen = Rcpp::wrap(de_dnn_st(eu_dist_mat, Y, X_test, s_sizes, c, d, n, debug));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -489,7 +488,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_tdnn_de_dnn_st_tuning", (DL_FUNC) &_tdnn_de_dnn_st_tuning, 7},
     {"_tdnn_de_dnn_st_mat_mult", (DL_FUNC) &_tdnn_de_dnn_st_mat_mult, 8},
     {"_tdnn_de_dnn_st_loop", (DL_FUNC) &_tdnn_de_dnn_st_loop, 8},
-    {"_tdnn_de_dnn_st", (DL_FUNC) &_tdnn_de_dnn_st, 9},
+    {"_tdnn_de_dnn_st", (DL_FUNC) &_tdnn_de_dnn_st, 8},
     {"_tdnn_best_s", (DL_FUNC) &_tdnn_best_s, 1},
     {"_tdnn_tuning_st", (DL_FUNC) &_tdnn_tuning_st, 12},
     {"_tdnn_tuning_es", (DL_FUNC) &_tdnn_tuning_es, 11},

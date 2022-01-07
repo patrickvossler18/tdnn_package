@@ -6,6 +6,7 @@
 #' @param W_0 Optional integer vector with 1 corresponding to columns that should be used to estimate the treatment effect. Default value is NULL
 #' @param c Parameter that controls the size of the ratio of \eqn{s_1} and \eqn{s_2} through the equation
 #' \eqn{s_2 = s_1 \cdot c^{d/2}}. Default value is 0.80
+#' @param n_prop How large of a value relative to the sample size before we just use 1-NN to give us an estimate.
 #' @param tuning_method Choose the method used to choose the subsample size \eqn{s} ("early stopping", "sequence").
 #'  The default is the "early stopping" method which stops as soon as a sign change in the difference of the estimates is detected,
 #'   while the "sequence" method calculates an estimate for each of the different s values
@@ -15,7 +16,7 @@
 #' @importFrom glue glue
 #' @importFrom strex match_arg
 #' @export
-est_reg_fn <- function(X,
+tdnn_reg <- function(X,
                        Y,
                        X_test,
                        W_0 = NULL,
@@ -36,19 +37,16 @@ est_reg_fn <- function(X,
     }
 
     # Need all numeric columns for X matrix.
-    # This might not be a necessary check since R coerces to numeric for matrix?
-    # if (!all(sapply(X, is.numeric))) {
-    #   non_num_cols <- unname(which(!(sapply(X, is.numeric))))
-    #   stop(glue::glue("Found non-numeric columns. Column indices: {toString(non_num_cols)}"))
-    #
-    # }
+    if(!is.numeric(X)){
+        stop(glue::glue("X is {glue::glue_collapse(class(X),', ')} but needs to be a matrix"))
+    }
 
     if (!is.matrix(Y)) {
-        stop(glue("Y is of class {class(Y)[1]}, but needs to be a matrix"))
+        stop(glue("Y is {glue::glue_collapse(class(Y),', ')} but needs to be a matrix"))
     }
 
     if (!is.matrix(X_test)) {
-        stop(glue("X_test is of class {class(X_test)[1]}, but needs to be a matrix"))
+        stop(glue("X_test is {glue::glue_collapse(class(X_test),', ')} but needs to be a matrix"))
     }
 
     # Check that dimensions match up for X, Y, X_test, and W_0

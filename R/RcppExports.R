@@ -29,8 +29,8 @@ de_dnn_st_loop <- function(X, Y, X_test, s_sizes, c, n_prop, W0_ = NULL, debug =
     .Call(`_tdnn_de_dnn_st_loop`, X, Y, X_test, s_sizes, c, n_prop, W0_, debug)
 }
 
-de_dnn_st <- function(eu_dist_mat, X, Y, X_test, s_sizes, c, d, n, debug = FALSE) {
-    .Call(`_tdnn_de_dnn_st`, eu_dist_mat, X, Y, X_test, s_sizes, c, d, n, debug)
+de_dnn_st <- function(eu_dist_mat, Y, X_test, s_sizes, c, d, n, debug = FALSE) {
+    .Call(`_tdnn_de_dnn_st`, eu_dist_mat, Y, X_test, s_sizes, c, d, n, debug)
 }
 
 best_s <- function(estimate_matrix) {

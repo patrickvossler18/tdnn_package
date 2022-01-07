@@ -12,7 +12,7 @@ LazyData: true
 Suggests: testthat
 Imports: glue, boot, strex, energy, RcppParallel, RcppArmadillo, Rcpp,
         parallel
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 LinkingTo: Rcpp, RcppArmadillo, RcppParallel, RcppProgress, RcppEigen,
         BH
 SystemRequirements: GNU make

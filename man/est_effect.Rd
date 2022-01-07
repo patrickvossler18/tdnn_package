@@ -18,6 +18,7 @@ est_effect(
   alpha = 0.001,
   B = 1000,
   n_threads = 4,
+  n_prop = 0.5,
   n_cores_feature_screen = NULL,
   verbose = FALSE,
   ...

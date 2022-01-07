@@ -57,14 +57,14 @@ d <- sum(W0)
 context("fixed s, fixed test pt")
 test_that("single-threaded version of de_dnn gives same estimate as R version for fixed s and single fixed test point", {
   expect_equal(
-    as.numeric(tdnn:::de_dnn_st(eu_dist_mat, Y, s_sizes = 2, c = c, d=d, n = nrow(X), debug=F)),
+    as.numeric(tdnn:::de_dnn_st_loop(X, Y, Xtest, s_sizes = 2, W0_ = W0, c = c, n_prop = 0.5)),
     de.dnn(data.frame(X, Y), X.test = Xtest, s.size = 2, W0 = W0, c = c)
   )
 })
 
 test_that("multi-threaded version of de_dnn gives same estimate as R version for fixed s and single fixed test point", {
   expect_equal(
-    as.numeric(tdnn:::de_dnn(X, Y, Xtest, s_sizes = 2, W0_ = W0, c = c)),
+    as.numeric(tdnn:::de_dnn(X, Y, Xtest, s_sizes = 2, W0_ = W0, c = c, n_prop = 0.5)),
     de.dnn(data.frame(X, Y), X.test = Xtest, s.size = 2, W0 = W0, c = c)
   )
 })
@@ -85,26 +85,33 @@ test_that("early stopping version of tuning algo matches original R implementati
     tuning_mat[s] <- de.dnn(Dataset, X.test = Xtest, s.size = s + 1, W0 = W0, c = c)
   }
   orig_s <- which(diff(abs(diff(tuning_mat) / tuning_mat[1:t - 1])) > -0.01)[1] + 3
-  early_stopping_s <- tuning(X, Y, Xtest, W0_ = W0, c = c)
+  early_stopping_s <- tdnn:::tuning(X, Y, Xtest, W0_ = W0, c = c, n_prop=0.5)
   expect_equal(early_stopping_s, orig_s)
 })
 
 context("multi-threaded de_dnn same as single-threaded de_dnn")
 test_that(
-  "multi-threaded de_dnn gives same estimates as single-threaded de_dnn for vector of test inputs",
+  "multi-threaded de_dnn gives same estimates as single-threaded de_dnn for matrix of test inputs",
   {
-    a <- as.numeric(tdnn:::de_dnn_st(eu_dist_mat_rnd ,Y,
-      s_sizes = rep(2, nrow(Xtest_random)),
-      c = c,
-      d = d,n = nrow(X), debug=F
-    ))
-    b <- as.numeric(de_dnn(
-      X,
-      Y,
-      X_test = Xtest_random,
-      s_sizes = rep(2, nrow(Xtest_random)),
-      W0_ = W0, c = c
-    ))
+      a <-
+          as.numeric(tdnn:::de_dnn_st_loop(
+              X,
+              Y,
+              Xtest_random,
+              s_sizes = rep(2, nrow(Xtest_random)),
+              W0_ = W0,
+              c = c,
+              n_prop = 0.5
+          ))
+     b <- as.numeric(tdnn:::de_dnn(
+         X,
+         Y,
+         X_test = Xtest_random,
+         s_sizes = rep(2, nrow(Xtest_random)),
+         W0_ = W0,
+         c = c,
+         n_prop = 0.5
+     ))
     expect_equal(b, a)
   }
 )
@@ -113,25 +120,9 @@ test_that(
 test_that(
   "multi-threaded and single-threaded tuning match for matrix of test inputs",
   {
-    expect_equal(
-      as.numeric(tdnn:::tuning_st(seq(1, 50, 1), eu_dist_mat_rnd, matrix(Y),
-                       c = c, n = nrow(X),
-                       n_test_obs = nrow(Xtest_random), W0_ = W0,d = d)),
-      tdnn:::tuning(X, matrix(Y), Xtest_random, c = c, W0_ = W0)
-    )
+      a <- as.numeric(tdnn:::tuning_es_loop(X, matrix(Y),Xtest_random,c = c, W0_ = W0, n_prop=0.5, d=d))
+      b <- tdnn:::tuning(X, matrix(Y), Xtest_random, c = c, W0_ = W0, n_prop=0.5)
+    expect_equal(a, b)
   }
 )
 
-
-test_that(
-  "single-thread and multi-thread de_dnn functions give same estimates for matrix of test inputs",
-  {
-    expect_equal(
-      as.numeric(tdnn:::de_dnn_st(eu_dist_mat_rnd, Y,
-                                  s_sizes = rep(2, nrow(Xtest_random)), c = c,
-                                  n = nrow(X),
-                                  d = d)),
-      as.numeric(tdnn:::de_dnn(X, Y, Xtest_random, s_sizes = rep(2, nrow(Xtest_random)), W0_ = W0, c = c))
-    )
-  }
-)
