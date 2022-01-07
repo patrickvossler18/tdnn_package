@@ -28,47 +28,6 @@ arma::mat order_y_cols(const arma::mat& Y, const arma::mat& eu_dis, const arma::
     return Y_sort;
 }
 
-// // [[Rcpp::export]]
-// arma::uvec r_like_order(const arma::vec& x, const arma::vec& y){
-//     std::vector<double> eu_dis = conv_to<std::vector<double>>::from(x);
-//     std::vector<double> noise_vec = conv_to<std::vector<double>>::from(y);
-//     int n = y.size();
-//
-//     vector<int> index(n, 0);
-//     for (int i = 0 ; i != index.size() ; i++) {
-//         index[i] = i;
-//     }
-//     std::stable_sort(index.begin(), index.end(),
-//          [&](const int& a, const int& b) {
-//              if (eu_dis[a] != eu_dis[b]){
-//                  return eu_dis[a] < eu_dis[b];
-//              }
-//              return noise_vec[a] < noise_vec[b];
-//          }
-//     );
-//
-//     return(conv_to<arma::uvec>::from(index));
-// }
-
-
-
-// arma::vec colSums_arma(const arma::mat& x) {
-//     int nc = x.n_cols;
-//     // NumericVector ans(nc);
-//     arma::vec ans(nc);
-//     for (int j = 0; j < nc; j++) {
-//         arma::vec col_tmp = x.col(j);
-//         double sum = arma::sum(col_tmp);
-//         ans(j) = sum;
-//     }
-//     return ans;
-// }
-
-// arma::vec round_modified(const arma::vec& x){
-//     NumericVector x_rcpp = as<NumericVector>(wrap(x));
-//     x_rcpp = Rcpp::round(x_rcpp, 0);
-//     return as<arma::vec>(wrap(x_rcpp));
-// }
 
 arma::mat make_weight_mat(int n, arma::vec ord, arma::vec s_vec){
     arma::mat out(n, s_vec.size());
@@ -86,24 +45,6 @@ arma::mat make_weight_mat(int n, arma::vec ord, arma::vec s_vec){
     return out;
 }
 
-// // [[Rcpp::export]]
-// arma::mat weight_mat_lfac(int n, arma::vec ord, arma::vec s_vec){
-//     arma::mat out(n, s_vec.size());
-//     for(int i=0; i < s_vec.size(); i++){
-//         arma::vec weight_vec(n);
-//         double s_val = arma::as_scalar(s_vec[i]);
-//         // use fact that lfactorial(x) = lgamma(x+1)
-//         arma::vec n_ord = arma::lgamma( ((double(n)- ord) + 1.0) ); // first term
-//         arma::vec n_ord_s = arma::lgamma( ((double(n) - ord - s_val + 1.0) + 1.0) ); // last term
-//         double n_s_1 = lgamma((double(n) - s_val) + 1.0);
-//         double lfact_n = lgamma(double(n) + 1.0);
-//
-//         weight_vec = arma::exp(n_ord + n_s_1 - lfact_n - n_ord_s);
-//
-//         out.col(i) = weight_vec * s_val;
-//     }
-//     return out;
-// }
 
 
 // [[Rcpp::export]]
@@ -377,55 +318,27 @@ arma::vec de_dnn_st_loop( const arma::mat& X, const arma::mat &Y, const arma::ma
         // all_rows = single_vec * X_test_row;
         arma::mat all_rows = arma::repmat(X_test_row,int(n),1);
 
-        X_dis = X - all_rows;
+        X_dis = X_subset - all_rows;
 
         EuDis = (pow(X_dis, 2)) * all_cols;
-        Rcout << "EuDis: "<< EuDis << std::endl;
-        // arma::mat noise(int(n), 1);
-        // double noise_val = R::rnorm(0, 1);
-        // noise.fill(noise_val);
-        // arma::vec noise = arma::randn<vec>(int(n));
+
+        // Rcout << "EuDis: "<< EuDis << std::endl;
         arma::vec noise(n);
         double noise_val = arma::randn<double>();
         noise.fill(noise_val);
 
-        // Using R function solution
-        // Function order_vec("order");
-        // NumericVector sort_idx = order_vec(EuDis, noise);
-        // sort_idx = sort_idx - 1;
-        // Rcout << "sort_idx: " << sort_idx << std::endl;
-        // arma::uvec index = as<arma::uvec>(sort_idx);
+
 
         arma::vec vec_eu_dis = conv_to<arma::vec>::from(EuDis);
         arma::uvec index = r_like_order(vec_eu_dis, noise);
-
-        // arma::vec vec_eu_dis = conv_to<arma::vec>::from(EuDis);
-        // std::vector<double> eu_dis = conv_to<std::vector<double>>::from(vec_eu_dis);
-        // std::vector<double> noise_vec = conv_to<std::vector<double>>::from(noise);
-        //
-        // vector<int> index(int(n), 0);
-        // for (int i = 0 ; i != index.size() ; i++) {
-        //     index[i] = i;
-        // }
-        // sort(index.begin(), index.end(),
-        //      [&](const int& a, const int& b) {
-        //          if (eu_dis[a] != eu_dis[b]){
-        //              return eu_dis[a] < eu_dis[b];
-        //          }
-        //          return noise_vec[a] < noise_vec[b];
-        //      }
-        // );
-        // arma::vec ordered_Y;
-        // arma::mat ordered_Y_vec = conv_to<arma::mat>::from(Y).rows(conv_to<arma::uvec>::from(index));
-
 
         arma::vec ordered_Y;
         arma::mat ordered_Y_vec = conv_to<arma::mat>::from(Y).rows(index);
         // // Rcout << ordered_Y_vec[order_vec];
         ordered_Y = ordered_Y_vec;
-        Rcout << "ordered_Y: " << ordered_Y << std::endl;
+        // Rcout << "ordered_Y: " << ordered_Y << std::endl;
 
-        // TempD = data.frame(EuDis, Y, noise)[order(EuDis, noise), ]
+
         arma::vec U_1_vec(ordered_Y.n_rows);
         arma::vec U_2_vec(ordered_Y.n_rows);
         rowvec weight_vec(ordered_Y.n_rows);
@@ -437,15 +350,15 @@ arma::vec de_dnn_st_loop( const arma::mat& X, const arma::mat &Y, const arma::ma
 
         // Rcout << "weight_mat_s_1: " << weight_mat_s_1 << std::endl;
         U_1_vec = reshape(ordered_Y,1,int(n)) * weight_mat_s_1.col(i);
-        Rcout << "U_1: " << U_1_vec << std::endl;
+        // Rcout << "U_1: " << U_1_vec << std::endl;
         if(arma::accu(weight_mat_s_2.col(i)) == 0){
             // in this case s_2 is too large so we will get the 1-NN to use as the estimate
             // Rcout << "big s_2, using 1-NN: " << s_2(i) << std::endl;
             U_2_vec = get_1nn_reg(X, X_test_row, Y, 1);
-            Rcout << "U_2_vec: " << U_2_vec << std::endl;
+            // Rcout << "U_2_vec: " << U_2_vec << std::endl;
         } else {
             U_2_vec = reshape(ordered_Y,1,int(n)) * weight_mat_s_2.col(i); // might need to convert this to mat?
-            Rcout << "U_2_vec: " << U_2_vec << std::endl;
+            // Rcout << "U_2_vec: " << U_2_vec << std::endl;
         }
 
         arma::vec U_vec = w_1 * U_1_vec + w_2 * U_2_vec;
@@ -457,7 +370,8 @@ arma::vec de_dnn_st_loop( const arma::mat& X, const arma::mat &Y, const arma::ma
 }
 
 // [[Rcpp::export]]
-arma::vec de_dnn_st( const arma::mat& eu_dist_mat, const arma::mat &X, const arma::mat &Y,
+arma::vec de_dnn_st( const arma::mat& eu_dist_mat,
+                     const arma::mat &Y,
                      const arma::mat & X_test,
                       const arma::vec& s_sizes, double c, int d, int n,
                       bool debug = false){
@@ -600,7 +514,7 @@ arma::vec tuning_st(const NumericVector& s_seq, const arma::mat &eu_dist_mat,
         if (verbose){
             Rcout << "tuning: estimating de_dnn" << std::endl;
         }
-        arma::vec de_dnn_estimates = de_dnn_st(eu_dist_mat, X, Y, X_test,
+        arma::vec de_dnn_estimates = de_dnn_st(eu_dist_mat, Y, X_test,
                                              s_val, c, d, n, debug);
 
         out.col(i) =  de_dnn_estimates;
@@ -620,22 +534,6 @@ arma::vec tuning_st(const NumericVector& s_seq, const arma::mat &eu_dist_mat,
 
 }
 
-// // [[Rcpp::export]]
-// void tuning_test(NumericVector s_seq,  arma::mat &X, NumericVector &Y,
-//                     arma::mat &X_test, double bc_p,
-//                     NumericVector W0_){
-//     int n_vals = s_seq.length();
-//     Rcout << n_vals << std::endl;
-//     for(int i = 0; i < n_vals; ++i) {
-//         Rcout << s_seq[i] << std::endl;
-//         Rcout << s_seq[i] + 1.0 << std::endl;
-//     }
-//
-// }
-
-// NumericVector tuning_es(const arma::mat &X, const arma::mat &Y,
-//                         const arma::mat &X_test, double c, int n_obs,
-//                         Nullable<NumericVector> W0_ = R_NilValue)
 
 
 // [[Rcpp::export]]
@@ -671,7 +569,7 @@ arma::vec tuning_es(const arma::mat &eu_dist_mat, const arma::mat &X, const arma
         //                                s_val, c, W0_);
         // // This gives me an estimate for each test observation and is a n x 1 matrix
         // arma::vec de_dnn_est_vec = as<arma::vec>(de_dnn_estimates["estimates"]);
-        arma::vec de_dnn_est_vec = de_dnn_st(eu_dist_mat, X, Y,X_test,
+        arma::vec de_dnn_est_vec = de_dnn_st(eu_dist_mat, Y,X_test,
                                           s_val, c, d, n, debug);
         arma::mat candidate_results = de_dnn_est_vec;
         candidate_results.reshape(n_obs, 1);
@@ -808,10 +706,10 @@ List est_reg_fn_rcpp(const arma::mat& X, const arma::mat& Y, const arma::mat& X_
         Rcout << "estimating effect..." << std::endl;
     }
 
-    arma::vec a_pred = de_dnn_st(eu_dist_mat, X, Y, X_test, s_sizes,
+    arma::vec a_pred = de_dnn_st(eu_dist_mat, Y, X_test, s_sizes,
                                  c, d, n, false);
 
-    arma::vec b_pred = de_dnn_st(eu_dist_mat, X, Y, X_test, s_sizes + 1,
+    arma::vec b_pred = de_dnn_st(eu_dist_mat, Y, X_test, s_sizes + 1,
                                  c, d, n, false);
 
     arma::vec deDNN_pred = (a_pred + b_pred) / 2;
