@@ -15,8 +15,9 @@ arma::uvec sample_replace_index(const int &size){
     arma::uvec out(size);
     int ii;
     for (ii = 0; ii < size; ii++) {
-        arma::vec rand_val = arma::randu<vec>(1);
-        out(ii) = size * as_scalar(rand_val);
+        // arma::vec rand_val = arma::randu<vec>(1);
+        // out(ii) = size * as_scalar(rand_val);
+        out(ii) = size * arma::randu<double>();
     }
     return out;
 }
@@ -126,7 +127,7 @@ arma::vec tdnn_st_boot(arma::mat X, arma::vec Y, arma::mat X_test,
 
         X_dis = X - all_rows;
 
-        EuDis = (pow(X_dis, 2)) * all_cols;
+        EuDis = (arma::pow(X_dis, 2)) * all_cols;
 
         arma::vec noise(n);
         double noise_val = arma::randn<double>();
@@ -233,7 +234,8 @@ struct BootstrapEstimate: public Worker {
             // Rcout << est << std::endl;
             // boot_stats.column(i) = est;
             // boot_stats.col(i) = est;
-            NumericVector est_rcpp = NumericVector(est.begin(),est.end());
+
+            // NumericVector est_rcpp = NumericVector(est.begin(),est.end());
             // boot_stats(_, i) = est_rcpp;
             // RMatrix<double>::Column column = boot_stats.column(i);
             // size_t n = column.length();
@@ -312,7 +314,7 @@ NumericMatrix bootstrap_cpp_mt(const arma::mat& X,
 
     parallelFor(0, B, bstrap_est);
     // Rcout<< boot_stats << std::endl;
-    return(wrap(boot_stats));
+    return(boot_stats);
 };
 
 
