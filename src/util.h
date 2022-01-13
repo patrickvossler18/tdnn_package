@@ -8,22 +8,26 @@
 
 #include <RcppArmadillo.h>
 #include <RcppParallel.h>
+#include <RcppEigen.h>
 #include <progress.hpp>
 #include <progress_bar.hpp>
 #include <math.h>
-#include "pdist.h"
-#include "convert_mat.h"
-#include "kd_tree.h"
+#include "nabo.h"
 
 // [[Rcpp::plugins(openmp)]]
 // [[Rcpp::depends(RcppProgress)]]
 // [[Rcpp::depends(RcppParallel)]]
 // [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::depends(RcppEigen)]]
+// [[Rcpp::plugins(cpp11)]]
+// [[Rcpp::depends(BH)]]
 
 using namespace Rcpp;
 using namespace RcppParallel;
 using namespace arma;
 using namespace std;
+using namespace Nabo;
+using namespace Eigen;
 
 
 

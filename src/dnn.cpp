@@ -1,5 +1,6 @@
 #include "util.h"
 #include "pdist.h"
+#include "kd_tree.h"
 
 
 arma::mat order_y_cols(const arma::mat& Y, const arma::mat& eu_dis, const arma::vec& noise){

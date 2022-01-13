@@ -12,6 +12,17 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// sample_replace_index
+arma::uvec sample_replace_index(const int& size);
+RcppExport SEXP _tdnn_sample_replace_index(SEXP sizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const int& >::type size(sizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(sample_replace_index(size));
+    return rcpp_result_gen;
+END_RCPP
+}
 // de_dnn_st_boot
 arma::vec de_dnn_st_boot(const arma::mat& X, const arma::mat& Y, const arma::mat& X_test, const arma::vec& s_sizes, const arma::vec& ord, double c, double n_prop);
 RcppExport SEXP _tdnn_de_dnn_st_boot(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_sizesSEXP, SEXP ordSEXP, SEXP cSEXP, SEXP n_propSEXP) {
@@ -26,6 +37,25 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type c(cSEXP);
     Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
     rcpp_result_gen = Rcpp::wrap(de_dnn_st_boot(X, Y, X_test, s_sizes, ord, c, n_prop));
+    return rcpp_result_gen;
+END_RCPP
+}
+// tdnn_st_boot
+arma::vec tdnn_st_boot(arma::mat X, arma::vec Y, arma::mat X_test, const arma::mat& weight_mat_s_1, const arma::mat& weight_mat_s_2, const arma::mat& weight_mat_s_1_plus_1, const arma::mat& weight_mat_s_2_plus_1, double c, double n_prop);
+RcppExport SEXP _tdnn_tdnn_st_boot(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP weight_mat_s_1SEXP, SEXP weight_mat_s_2SEXP, SEXP weight_mat_s_1_plus_1SEXP, SEXP weight_mat_s_2_plus_1SEXP, SEXP cSEXP, SEXP n_propSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type weight_mat_s_1(weight_mat_s_1SEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type weight_mat_s_2(weight_mat_s_2SEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type weight_mat_s_1_plus_1(weight_mat_s_1_plus_1SEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type weight_mat_s_2_plus_1(weight_mat_s_2_plus_1SEXP);
+    Rcpp::traits::input_parameter< double >::type c(cSEXP);
+    Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
+    rcpp_result_gen = Rcpp::wrap(tdnn_st_boot(X, Y, X_test, weight_mat_s_1, weight_mat_s_2, weight_mat_s_1_plus_1, weight_mat_s_2_plus_1, c, n_prop));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -481,7 +511,9 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_tdnn_sample_replace_index", (DL_FUNC) &_tdnn_sample_replace_index, 1},
     {"_tdnn_de_dnn_st_boot", (DL_FUNC) &_tdnn_de_dnn_st_boot, 7},
+    {"_tdnn_tdnn_st_boot", (DL_FUNC) &_tdnn_tdnn_st_boot, 9},
     {"_tdnn_bootstrap_cpp_mt", (DL_FUNC) &_tdnn_bootstrap_cpp_mt, 8},
     {"_tdnn_make_pdist_mat", (DL_FUNC) &_tdnn_make_pdist_mat, 3},
     {"_tdnn_make_ordered_Y_mat", (DL_FUNC) &_tdnn_make_ordered_Y_mat, 4},

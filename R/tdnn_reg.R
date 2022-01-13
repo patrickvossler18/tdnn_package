@@ -95,7 +95,7 @@ tdnn_reg <- function(X,
     variance <- NULL
     if (estimate_variance) {
         if(verbose){
-            message("starting estimating variance...")
+            message("starting variance estimation...")
         }
         if(use_boot){
             # prepare arguments to pass to boot function

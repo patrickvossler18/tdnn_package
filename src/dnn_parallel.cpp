@@ -1,4 +1,5 @@
 #include "util.h"
+#include "kd_tree.h"
 
 struct TdnnEstimate : public Worker {
 

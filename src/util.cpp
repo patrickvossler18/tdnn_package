@@ -72,6 +72,9 @@ Rcpp::NumericMatrix matrix_subset_idx_rcpp(
 }
 
 
+
+
+
 arma::uvec seq_int(long int a, long int b){
     long int d = std::abs(b-a)+1;
 

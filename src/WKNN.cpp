@@ -1,13 +1,6 @@
-#include <RcppArmadillo.h>
-#include <RcppEigen.h>
-#include "nabo.h"
 #include "WKNN.h"
-#include "util.h"
 
-// [[Rcpp::depends(RcppEigen)]]
-using namespace Rcpp;
-using namespace Nabo;
-using namespace Eigen;
+
 
 
 // Function to convert eigen data to arma

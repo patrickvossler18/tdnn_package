@@ -1,14 +1,8 @@
 #ifndef WKNND_H
 #define WKNND_H
 
-#include <Rcpp.h>
-#include <RcppEigen.h>
-#include "nabo.h"
+#include "util.h"
 
-// [[Rcpp::depends(RcppEigen)]]
-using namespace Rcpp;
-using namespace Nabo;
-using namespace Eigen;
 
 template<typename T>
 struct WKNN {
