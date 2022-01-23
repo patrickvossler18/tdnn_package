@@ -161,6 +161,7 @@ arma::vec tdnn( arma::mat X, arma::vec Y, arma::mat X_test,
     // Infer n and p from our data after we've filtered for relevant features
     int n = X.n_rows;
     int p = X.n_cols;
+    double C_s_2 = 2.0;
 
 
     // This just creates a sequence 1:n and then reverses it
@@ -171,10 +172,11 @@ arma::vec tdnn( arma::mat X, arma::vec Y, arma::mat X_test,
     arma::vec ord_arma = as<arma::vec>(ord);
 
     arma::vec s_1 = s_sizes;
-    arma::vec s_2 = round_modified(s_1 * pow(c, - double(d) / 2.0));
+    // arma::vec s_2 = round_modified(s_1 * pow(c, - double(d) / 2.0));
+    arma::vec s_2 = round_modified(C_s_2 * pow(n, double(d) / (double(d) + 8)));
 
     arma::vec s_1_1 = s_sizes_1;
-    arma::vec s_2_1 = round_modified(s_1_1 * pow(c, - double(d) / 2.0));
+    arma::vec s_2_1 = round_modified(C_s_2 * pow(n, double(d) / (double(d) + 8)));
     // Rcout << "s_1: " << s_1 << std::endl;
     // Rcout << "s_1_1: " << s_1_1 << std::endl;
     //
@@ -361,9 +363,12 @@ arma::vec de_dnn( arma::mat X, arma::vec Y, arma::mat X_test,
     // ord = n - ord;
     arma::vec ord_arma = as<arma::vec>(ord);
 
+    double C_s_2 = 2.0;
+
     arma::vec s_1 = s_sizes;
-    arma::vec s_2 = round_modified(s_1 * pow(c, - double(d) / 2.0));
-    arma::vec tmp = s_1 * pow(c, - double(d) / 2.0);
+    arma::vec s_2 = round_modified(C_s_2 * pow(n, double(d) / (double(d) + 8)));
+    // arma::vec s_1 = s_sizes;
+    // arma::vec s_2 = round_modified(s_1 * pow(c, - double(d) / 2.0));
     // Rcout << "tmp: " << tmp << std::endl;
     // Rcout << "s_2: " << s_2 << std::endl;
     // arma::mat weight_mat_s_1 = weight_mat_lfac(int(n), ord_arma, s_1);

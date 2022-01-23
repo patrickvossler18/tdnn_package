@@ -154,10 +154,11 @@ arma::mat de_dnn_st_tuning( const arma::mat &X, const arma::mat &Y, const arma::
 
     double w_1 = c/(c-1);
     double w_2 = -1/(c-1);
-
+    double C_s_2 = 2.0;
 
     arma::vec s_1 = s_sizes;
-    arma::vec s_2 = round_modified(s_1 * pow(c, - double(d) / 2.0));
+    arma::vec s_2 = round_modified(C_s_2 * pow(n, double(d) / (double(d) + 8)));
+    // arma::vec s_2 = round_modified(s_1 * pow(c, - double(d) / 2.0));
     // Rcout << "making weight mat s_1 ";
     arma::mat weight_mat_s_1 = weight_mat_lfac_s_2_filter(int(n), ord_arma, s_1, n_prop, false);
 
@@ -226,9 +227,12 @@ arma::vec de_dnn_st_mat_mult( const arma::mat &X, const arma::mat &Y, const arma
     double w_1 = c/(c-1);
     double w_2 = -1/(c-1);
 
+    double C_s_2 = 2.0;
 
     arma::vec s_1 = s_sizes;
-    arma::vec s_2 = round_modified(s_1 * pow(c, - double(d) / 2.0));
+    arma::vec s_2 = round_modified(C_s_2 * pow(n, double(d) / (double(d) + 8)));
+    // arma::vec s_1 = s_sizes;
+    // arma::vec s_2 = round_modified(s_1 * pow(c, - double(d) / 2.0));
     // Rcout << "making weight mat s_1 ";
     arma::mat weight_mat_s_1 = weight_mat_lfac_s_2_filter(int(n), ord_arma, s_1, n_prop, false);
 
@@ -294,9 +298,12 @@ arma::vec de_dnn_st_loop( const arma::mat& X, const arma::mat &Y, const arma::ma
     // ord = n - ord;
     arma::vec ord_arma = as<arma::vec>(ord);
 
+    double C_s_2 = 2.0;
 
     arma::vec s_1 = s_sizes;
-    arma::vec s_2 = round_modified(s_1 * pow(c, - double(d) / 2.0));
+    arma::vec s_2 = round_modified(C_s_2 * pow(n, double(d) / (double(d) + 8)));
+    // arma::vec s_1 = s_sizes;
+    // arma::vec s_2 = round_modified(s_1 * pow(c, - double(d) / 2.0));
     // Rcout << "making weight mat s_1 ";
     arma::mat weight_mat_s_1 = weight_mat_lfac_s_2_filter(int(n), ord_arma, s_1, n_prop, false);
 
@@ -396,9 +403,12 @@ arma::vec de_dnn_st( const arma::mat& eu_dist_mat,
     if(debug){
         Rcout << "de_dnn_st: making s_1 and s_2" << std::endl;
     }
+    double C_s_2 = 2.0;
 
     arma::vec s_1 = s_sizes;
-    arma::vec s_2 = round_modified(s_1 * pow(c, - double(d) / 2.0));
+    arma::vec s_2 = round_modified(C_s_2 * pow(n, double(d) / (double(d) + 8)));
+    // arma::vec s_1 = s_sizes;
+    // arma::vec s_2 = round_modified(s_1 * pow(c, - double(d) / 2.0));
     if(debug){
         Rcout << "de_dnn_st: making weight matrices" << std::endl;
     }
