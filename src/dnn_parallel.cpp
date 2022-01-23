@@ -147,6 +147,7 @@ arma::vec tdnn( arma::mat X, arma::vec Y, arma::mat X_test,
                   arma::vec s_sizes_1,
                   double c,
                   double n_prop,
+                  double C_s_2,
                   Nullable<NumericVector> W0_ = R_NilValue){
     int d = X.n_cols;
     // Handle case where W0 is not NULL:
@@ -161,7 +162,6 @@ arma::vec tdnn( arma::mat X, arma::vec Y, arma::mat X_test,
     // Infer n and p from our data after we've filtered for relevant features
     int n = X.n_rows;
     int p = X.n_cols;
-    double C_s_2 = 2.0;
 
 
     // This just creates a sequence 1:n and then reverses it
@@ -340,6 +340,7 @@ struct De_dnnEstimate : public Worker {
 arma::vec de_dnn( arma::mat X, arma::vec Y, arma::mat X_test,
              arma::vec s_sizes, double c,
              double n_prop,
+             double C_s_2,
              Nullable<NumericVector> W0_ = R_NilValue){
     int d = X.n_cols;
     // Handle case where W0 is not NULL:
@@ -362,8 +363,6 @@ arma::vec de_dnn( arma::mat X, arma::vec Y, arma::mat X_test,
     // don't need to reverse if we are using lfactorial
     // ord = n - ord;
     arma::vec ord_arma = as<arma::vec>(ord);
-
-    double C_s_2 = 2.0;
 
     arma::vec s_1 = s_sizes;
     arma::vec s_2(s_1.n_elem, fill::value(round_modified(C_s_2 * pow(n, double(d) / (double(d) + 8)))));
@@ -404,6 +403,7 @@ arma::vec de_dnn( arma::mat X, arma::vec Y, arma::mat X_test,
 NumericVector tuning(arma::mat X, arma::vec Y,
                             arma::mat X_test, double c,
                             double n_prop,
+                            double C_s_2,
                             Nullable<NumericVector> W0_ = R_NilValue){
 
     double n_obs = X_test.n_rows;
@@ -421,7 +421,7 @@ NumericVector tuning(arma::mat X, arma::vec Y,
 
         // For a given s, get the de_dnn estimates for each test observation
         // List de_dnn_estimates = de_dnn(X, Y, X_test, s_val, c, W0_);
-        arma::vec de_dnn_estimates = de_dnn(X, Y, X_test, s_val, c, n_prop, W0_);
+        arma::vec de_dnn_estimates = de_dnn(X, Y, X_test, s_val, c, n_prop,C_s_2, W0_);
 
         // This gives me an estimate for each test observation and is a n x 1 matrix
         // arma::vec de_dnn_est_vec = as<arma::vec>(de_dnn_estimates["estimates"]);
@@ -503,6 +503,7 @@ NumericVector tuning(arma::mat X, arma::vec Y,
 List tuning_est(arma::mat X, arma::vec Y,
                      arma::mat X_test, double c,
                      double n_prop,
+                     double C_s_2,
                      Nullable<NumericVector> W0_ = R_NilValue){
 
     double n_obs = X_test.n_rows;
@@ -520,7 +521,7 @@ List tuning_est(arma::mat X, arma::vec Y,
 
         // For a given s, get the de_dnn estimates for each test observation
         // List de_dnn_estimates = de_dnn(X, Y, X_test, s_val, c, W0_);
-        arma::vec de_dnn_estimates = de_dnn(X, Y, X_test, s_val, c, n_prop, W0_);
+        arma::vec de_dnn_estimates = de_dnn(X, Y, X_test, s_val, c, n_prop,C_s_2, W0_);
 
         // This gives me an estimate for each test observation and is a n x 1 matrix
         // arma::vec de_dnn_est_vec = as<arma::vec>(de_dnn_estimates["estimates"]);
@@ -603,7 +604,7 @@ List tuning_est(arma::mat X, arma::vec Y,
     // mat that corresponds to s = 4
     arma::vec tuned_estimates = select_mat_elements(tuning_mat, estimate_row_idx, estimate_col_idx);
     // now we need the s+1 estimates for each of these values
-    arma::vec tuned_1_estimates = de_dnn(X, Y, X_test, best_s + 1, c, n_prop, W0_);
+    arma::vec tuned_1_estimates = de_dnn(X, Y, X_test, best_s + 1, c, n_prop,C_s_2, W0_);
 
 
     arma::vec final_est = (tuned_estimates + tuned_1_estimates) / 2;
@@ -619,6 +620,7 @@ arma::mat bootstrap_reg_fn(const arma::mat& X, const arma::mat& Y,
                         arma::vec s_choice,
                         double c,
                         double n_prop,
+                        double C_s_2,
                         Nullable<NumericVector> W_0 = R_NilValue,
                         int B =1000,
                         bool verbose = false) {
@@ -649,7 +651,7 @@ arma::mat bootstrap_reg_fn(const arma::mat& X, const arma::mat& Y,
 
         arma::vec reg_est = tdnn(X_boot, Y_boot, X_test, s_choice,
                                  s_choice + 1,
-                                 c, n_prop, W0);
+                                 c, n_prop, C_s_2, W0);
 
         boot_stat.col(i) = reg_est;
     }
@@ -667,6 +669,7 @@ arma::mat bootstrap_cpp(const arma::mat& X, const arma::mat& Y,
                         arma::vec s_choice_1,
                         double c,
                         double n_prop,
+                        double C_s_2,
                         Nullable<NumericVector> W_0 = R_NilValue,
                         int B =1000,
                         bool verbose = false) {
@@ -728,11 +731,11 @@ arma::mat bootstrap_cpp(const arma::mat& X, const arma::mat& Y,
 
         arma::vec trt_est = tdnn(X_trt_boot, Y_trt_boot, X_test, s_choice_1,
                                  s_choice_1 + 1,
-                          c, n_prop, W0);
+                          c, n_prop, C_s_2, W0);
 
         arma::vec ctl_est = tdnn(X_ctl_boot, Y_ctl_boot, X_test, s_choice_0,
                                  s_choice_0 + 1,
-                                 c, n_prop, W0);
+                                 c, n_prop, C_s_2, W0);
         arma::vec diff = trt_est - ctl_est;
         // Rcout << "diff: " << diff << std::endl;
         boot_stat.col(i) = diff;
@@ -746,6 +749,7 @@ List est_reg_fn_mt_rcpp(const arma::mat& X, const arma::mat& Y,
                         const arma::mat& X_test,
                         double c,
                         double n_prop,
+                        double C_s_2,
                         bool verbose = false,
                         bool old = false,
                         Nullable<NumericVector> W0_ = R_NilValue){
@@ -759,7 +763,7 @@ List est_reg_fn_mt_rcpp(const arma::mat& X, const arma::mat& Y,
     if(verbose){
         Rcout << "starting tuning" << std::endl;
     }
-    NumericVector s_sizes = tuning(X, Y, X_test, c, n_prop, W0);
+    NumericVector s_sizes = tuning(X, Y, X_test, c, n_prop, C_s_2, W0);
     if(verbose){
         Rcout << "past tuning" << std::endl;
     }
@@ -768,12 +772,12 @@ List est_reg_fn_mt_rcpp(const arma::mat& X, const arma::mat& Y,
 
     if(old){
         arma::vec a_pred = de_dnn(X, Y, X_test, s_sizes,
-                                  c, n_prop, W0);
+                                  c, n_prop, C_s_2, W0);
         if(verbose){
             Rcout << "past first pred" << std::endl;
         }
         arma::vec b_pred = de_dnn(X, Y, X_test, s_sizes + 1,
-                                  c,n_prop, W0);
+                                  c,n_prop, C_s_2, W0);
         if(verbose){
             Rcout << "past second pred" << std::endl;
         }
@@ -781,7 +785,7 @@ List est_reg_fn_mt_rcpp(const arma::mat& X, const arma::mat& Y,
     } else {
         deDNN_pred = tdnn(X, Y, X_test, s_sizes,
                           s_sizes + 1,
-                          c, n_prop, W0);
+                          c, n_prop, C_s_2, W0);
     }
 
 

@@ -23,6 +23,7 @@ baseline_function <- function(x) {
   x[3]^2 + x[7]
 }
 c <- 0.8
+C_s_2 <- 2.0
 n0 <- 1000
 p0 <- d
 n <- n0
@@ -67,22 +68,6 @@ test_that("est_effect gives same estimate as est_effect_old", {
   expect_equal(cpp_version, r_version)
 })
 
-
-context("tuning functions should all give the same choice of s")
-test_that("early_stopping, single-threaded, and original implementation all give the same s value", {
-  normal <- as.numeric(tdnn:::tuning_st(seq(1, 50, 1), eu_dist_mat, Y, c = c, n = nrow(X),
-                             n_test_obs = nrow(Xtest), W0_ = W0,d = d))
-  early_stopping <- tdnn:::tuning(X, Y, Xtest, W0_ = W0, c = c)
-
-  t <- 50
-  tuning_mat <- matrix(0, t, 1)
-  Dataset <- data.frame(X, Y)
-  for (s in seq(1, t, 1)) {
-    tuning_mat[s] <- de.dnn(Dataset, X.test = Xtest, s.size = s + 1, W0 = W0, c = c)
-  }
-  base_r <- which(diff(abs(diff(tuning_mat) / tuning_mat[1:t - 1])) > -0.01)[1] + 3
-  expect_true(all.equal(normal, early_stopping, base_r))
-})
 
 
 

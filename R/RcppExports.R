@@ -5,12 +5,12 @@ tdnn_st_boot <- function(X, Y, X_test, weight_mat_s_1, weight_mat_s_2, weight_ma
     .Call(`_tdnn_tdnn_st_boot`, X, Y, X_test, weight_mat_s_1, weight_mat_s_2, weight_mat_s_1_plus_1, weight_mat_s_2_plus_1, c, n_prop)
 }
 
-bootstrap_cpp_mt <- function(X, Y, X_test, s_choice, c, n_prop, B, W0_ = NULL) {
-    .Call(`_tdnn_bootstrap_cpp_mt`, X, Y, X_test, s_choice, c, n_prop, B, W0_)
+bootstrap_cpp_mt <- function(X, Y, X_test, s_choice, c, n_prop, C_s_2, B, W0_ = NULL) {
+    .Call(`_tdnn_bootstrap_cpp_mt`, X, Y, X_test, s_choice, c, n_prop, C_s_2, B, W0_)
 }
 
-bootstrap_trt_effect_cpp_mt <- function(X, Y, W, X_test, s_choice_trt, s_choice_ctl, c, n_prop, B, W0_ = NULL) {
-    .Call(`_tdnn_bootstrap_trt_effect_cpp_mt`, X, Y, W, X_test, s_choice_trt, s_choice_ctl, c, n_prop, B, W0_)
+bootstrap_trt_effect_cpp_mt <- function(X, Y, W, X_test, s_choice_trt, s_choice_ctl, c, n_prop, C_s_2, B, W0_ = NULL) {
+    .Call(`_tdnn_bootstrap_trt_effect_cpp_mt`, X, Y, W, X_test, s_choice_trt, s_choice_ctl, c, n_prop, C_s_2, B, W0_)
 }
 
 make_pdist_mat <- function(X, X_test, W0_ = NULL) {
@@ -21,20 +21,20 @@ make_ordered_Y_mat <- function(X, Y, X_test, debug = FALSE) {
     .Call(`_tdnn_make_ordered_Y_mat`, X, Y, X_test, debug)
 }
 
-de_dnn_st_tuning <- function(X, Y, X_test, s_sizes, c, n_prop, W0_ = NULL) {
-    .Call(`_tdnn_de_dnn_st_tuning`, X, Y, X_test, s_sizes, c, n_prop, W0_)
+de_dnn_st_tuning <- function(X, Y, X_test, s_sizes, c, n_prop, C_s_2, W0_ = NULL) {
+    .Call(`_tdnn_de_dnn_st_tuning`, X, Y, X_test, s_sizes, c, n_prop, C_s_2, W0_)
 }
 
-de_dnn_st_mat_mult <- function(X, Y, X_test, s_sizes, c, n_prop, W0_ = NULL, debug = FALSE) {
-    .Call(`_tdnn_de_dnn_st_mat_mult`, X, Y, X_test, s_sizes, c, n_prop, W0_, debug)
+de_dnn_st_mat_mult <- function(X, Y, X_test, s_sizes, c, n_prop, C_s_2, W0_ = NULL, debug = FALSE) {
+    .Call(`_tdnn_de_dnn_st_mat_mult`, X, Y, X_test, s_sizes, c, n_prop, C_s_2, W0_, debug)
 }
 
-de_dnn_st_loop <- function(X, Y, X_test, s_sizes, c, n_prop, W0_ = NULL, debug = FALSE) {
-    .Call(`_tdnn_de_dnn_st_loop`, X, Y, X_test, s_sizes, c, n_prop, W0_, debug)
+de_dnn_st_loop <- function(X, Y, X_test, s_sizes, c, n_prop, C_s_2, W0_ = NULL, debug = FALSE) {
+    .Call(`_tdnn_de_dnn_st_loop`, X, Y, X_test, s_sizes, c, n_prop, C_s_2, W0_, debug)
 }
 
-de_dnn_st <- function(eu_dist_mat, Y, X_test, s_sizes, c, d, n, debug = FALSE) {
-    .Call(`_tdnn_de_dnn_st`, eu_dist_mat, Y, X_test, s_sizes, c, d, n, debug)
+de_dnn_st <- function(eu_dist_mat, Y, X_test, s_sizes, c, d, n, C_s_2, debug = FALSE) {
+    .Call(`_tdnn_de_dnn_st`, eu_dist_mat, Y, X_test, s_sizes, c, d, n, C_s_2, debug)
 }
 
 best_s <- function(estimate_matrix) {
@@ -53,48 +53,48 @@ est_reg_fn_rcpp <- function(X, Y, X_test, c, W0_ = NULL, tuning_method = "early 
     .Call(`_tdnn_est_reg_fn_rcpp`, X, Y, X_test, c, W0_, tuning_method, verbose)
 }
 
-tuning_st_loop <- function(s_seq, X, X_test, Y, c, n_prop, W0_ = NULL, debug = FALSE, verbose = FALSE) {
-    .Call(`_tdnn_tuning_st_loop`, s_seq, X, X_test, Y, c, n_prop, W0_, debug, verbose)
+tuning_st_loop <- function(s_seq, X, X_test, Y, c, n_prop, C_s_2, W0_ = NULL, debug = FALSE, verbose = FALSE) {
+    .Call(`_tdnn_tuning_st_loop`, s_seq, X, X_test, Y, c, n_prop, C_s_2, W0_, debug, verbose)
 }
 
-tuning_st_mat_mult <- function(s_seq, X, X_test, Y, c, n_prop, W0_ = NULL, debug = FALSE, verbose = FALSE) {
-    .Call(`_tdnn_tuning_st_mat_mult`, s_seq, X, X_test, Y, c, n_prop, W0_, debug, verbose)
+tuning_st_mat_mult <- function(s_seq, X, X_test, Y, c, n_prop, C_s_2, W0_ = NULL, debug = FALSE, verbose = FALSE) {
+    .Call(`_tdnn_tuning_st_mat_mult`, s_seq, X, X_test, Y, c, n_prop, C_s_2, W0_, debug, verbose)
 }
 
-tuning_es_loop <- function(X, Y, X_test, c, d, n_prop, W0_ = NULL, debug = FALSE, verbose = FALSE) {
-    .Call(`_tdnn_tuning_es_loop`, X, Y, X_test, c, d, n_prop, W0_, debug, verbose)
+tuning_es_loop <- function(X, Y, X_test, c, d, n_prop, C_s_2, W0_ = NULL, debug = FALSE, verbose = FALSE) {
+    .Call(`_tdnn_tuning_es_loop`, X, Y, X_test, c, d, n_prop, C_s_2, W0_, debug, verbose)
 }
 
-est_reg_fn_st_loop <- function(X, Y, X_test, c, n_prop, tuning_method = "early stopping", W0_ = NULL, verbose = FALSE) {
-    .Call(`_tdnn_est_reg_fn_st_loop`, X, Y, X_test, c, n_prop, tuning_method, W0_, verbose)
+est_reg_fn_st_loop <- function(X, Y, X_test, c, n_prop, C_s_2, tuning_method = "early stopping", W0_ = NULL, verbose = FALSE) {
+    .Call(`_tdnn_est_reg_fn_st_loop`, X, Y, X_test, c, n_prop, C_s_2, tuning_method, W0_, verbose)
 }
 
-tdnn <- function(X, Y, X_test, s_sizes, s_sizes_1, c, n_prop, W0_ = NULL) {
-    .Call(`_tdnn_tdnn`, X, Y, X_test, s_sizes, s_sizes_1, c, n_prop, W0_)
+tdnn <- function(X, Y, X_test, s_sizes, s_sizes_1, c, n_prop, C_s_2, W0_ = NULL) {
+    .Call(`_tdnn_tdnn`, X, Y, X_test, s_sizes, s_sizes_1, c, n_prop, C_s_2, W0_)
 }
 
-de_dnn <- function(X, Y, X_test, s_sizes, c, n_prop, W0_ = NULL) {
-    .Call(`_tdnn_de_dnn`, X, Y, X_test, s_sizes, c, n_prop, W0_)
+de_dnn <- function(X, Y, X_test, s_sizes, c, n_prop, C_s_2, W0_ = NULL) {
+    .Call(`_tdnn_de_dnn`, X, Y, X_test, s_sizes, c, n_prop, C_s_2, W0_)
 }
 
-tuning <- function(X, Y, X_test, c, n_prop, W0_ = NULL) {
-    .Call(`_tdnn_tuning`, X, Y, X_test, c, n_prop, W0_)
+tuning <- function(X, Y, X_test, c, n_prop, C_s_2, W0_ = NULL) {
+    .Call(`_tdnn_tuning`, X, Y, X_test, c, n_prop, C_s_2, W0_)
 }
 
-tuning_est <- function(X, Y, X_test, c, n_prop, W0_ = NULL) {
-    .Call(`_tdnn_tuning_est`, X, Y, X_test, c, n_prop, W0_)
+tuning_est <- function(X, Y, X_test, c, n_prop, C_s_2, W0_ = NULL) {
+    .Call(`_tdnn_tuning_est`, X, Y, X_test, c, n_prop, C_s_2, W0_)
 }
 
-bootstrap_reg_fn <- function(X, Y, X_test, s_choice, c, n_prop, W_0 = NULL, B = 1000L, verbose = FALSE) {
-    .Call(`_tdnn_bootstrap_reg_fn`, X, Y, X_test, s_choice, c, n_prop, W_0, B, verbose)
+bootstrap_reg_fn <- function(X, Y, X_test, s_choice, c, n_prop, C_s_2, W_0 = NULL, B = 1000L, verbose = FALSE) {
+    .Call(`_tdnn_bootstrap_reg_fn`, X, Y, X_test, s_choice, c, n_prop, C_s_2, W_0, B, verbose)
 }
 
-bootstrap_cpp <- function(X, Y, W, X_test, s_choice_0, s_choice_1, c, n_prop, W_0 = NULL, B = 1000L, verbose = FALSE) {
-    .Call(`_tdnn_bootstrap_cpp`, X, Y, W, X_test, s_choice_0, s_choice_1, c, n_prop, W_0, B, verbose)
+bootstrap_cpp <- function(X, Y, W, X_test, s_choice_0, s_choice_1, c, n_prop, C_s_2, W_0 = NULL, B = 1000L, verbose = FALSE) {
+    .Call(`_tdnn_bootstrap_cpp`, X, Y, W, X_test, s_choice_0, s_choice_1, c, n_prop, C_s_2, W_0, B, verbose)
 }
 
-est_reg_fn_mt_rcpp <- function(X, Y, X_test, c, n_prop, verbose = FALSE, old = FALSE, W0_ = NULL) {
-    .Call(`_tdnn_est_reg_fn_mt_rcpp`, X, Y, X_test, c, n_prop, verbose, old, W0_)
+est_reg_fn_mt_rcpp <- function(X, Y, X_test, c, n_prop, C_s_2, verbose = FALSE, old = FALSE, W0_ = NULL) {
+    .Call(`_tdnn_est_reg_fn_mt_rcpp`, X, Y, X_test, c, n_prop, C_s_2, verbose, old, W0_)
 }
 
 get_1nn_reg <- function(X, X_test, Y, k) {

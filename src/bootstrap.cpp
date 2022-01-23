@@ -156,6 +156,7 @@ NumericMatrix bootstrap_cpp_mt(const arma::mat& X,
                           const arma::vec& s_choice,
                           const double c,
                           const double n_prop,
+                          const double C_s_2,
                           const int B,
                           Nullable<NumericVector> W0_ = R_NilValue){
 
@@ -180,7 +181,6 @@ NumericMatrix bootstrap_cpp_mt(const arma::mat& X,
     // Infer n and p from our data after we've filtered for relevant features
     int n = X_subset.n_rows;
     int p = X_subset.n_cols;
-    double C_s_2 = 2.0;
 
     arma::vec ord = arma::linspace(1,n, n);
     arma::vec s_1 = s_choice;
@@ -316,9 +316,8 @@ struct TrtEffectBootstrapEstimate: public Worker {
 
 
 std::tuple<arma::mat, arma::mat,arma::mat, arma::mat> make_weight_matrix(
-        int n, int d, double n_prop, double c, arma::vec s_choice ){
+        int n, int d, double n_prop, double C_s_2, arma::vec s_choice ){
     arma::vec ord = arma::linspace(1,n, n);
-    double C_s_2 = 2.0;
 
     arma::vec s_1 = s_choice;
     arma::vec s_2(s_1.n_elem, fill::value(round_modified(C_s_2 * pow(n, double(d) / (double(d) + 8)))));
@@ -348,6 +347,7 @@ NumericMatrix bootstrap_trt_effect_cpp_mt(const arma::mat& X,
                                           const arma::vec& s_choice_ctl,
                                           const double c,
                                           const double n_prop,
+                                          const double C_s_2,
                                           const int B,
                                           Nullable<NumericVector> W0_ = R_NilValue){
 
@@ -397,11 +397,11 @@ NumericMatrix bootstrap_trt_effect_cpp_mt(const arma::mat& X,
 
     std::tie(weight_mat_s_1_trt,weight_mat_s_2_trt, weight_mat_s_1_plus_1_trt,
              weight_mat_s_2_plus_1_trt) = make_weight_matrix(X_trt.n_rows, int(d),
-             n_prop, c, s_choice_trt);
+             n_prop, C_s_2, s_choice_trt);
 
     std::tie(weight_mat_s_1_ctl,weight_mat_s_2_ctl, weight_mat_s_1_plus_1_ctl,
              weight_mat_s_2_plus_1_ctl) = make_weight_matrix(X_ctl.n_rows, int(d),
-             n_prop, c, s_choice_ctl);
+             n_prop, C_s_2, s_choice_ctl);
 
     // initialize results matrix
     // arma::mat boot_stats(X_test_subset.n_rows, B);

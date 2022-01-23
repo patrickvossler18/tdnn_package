@@ -126,7 +126,7 @@ arma::mat make_ordered_Y_mat( const arma::mat &X, const arma::mat &Y,
 
 // [[Rcpp::export]]
 arma::mat de_dnn_st_tuning( const arma::mat &X, const arma::mat &Y, const arma::mat &X_test,
-                              const arma::vec& s_sizes, double c, double n_prop,
+                              const arma::vec& s_sizes, double c, double n_prop, double C_s_2,
                               Nullable<NumericVector> W0_ = R_NilValue){
     // Handle case where W0 is not NULL:
     int d = X.n_cols;
@@ -154,7 +154,6 @@ arma::mat de_dnn_st_tuning( const arma::mat &X, const arma::mat &Y, const arma::
 
     double w_1 = c/(c-1);
     double w_2 = -1/(c-1);
-    double C_s_2 = 2.0;
 
     arma::vec s_1 = s_sizes;
     arma::vec s_2(s_1.n_elem, fill::value(round_modified(C_s_2 * pow(n, double(d) / (double(d) + 8)))));
@@ -196,7 +195,7 @@ arma::mat de_dnn_st_tuning( const arma::mat &X, const arma::mat &Y, const arma::
 
 // [[Rcpp::export]]
 arma::vec de_dnn_st_mat_mult( const arma::mat &X, const arma::mat &Y, const arma::mat &X_test,
-                          const arma::vec& s_sizes, double c, double n_prop,
+                          const arma::vec& s_sizes, double c, double n_prop, double C_s_2,
                           Nullable<NumericVector> W0_ = R_NilValue, bool debug = false){
 
     // Handle case where W0 is not NULL:
@@ -227,7 +226,6 @@ arma::vec de_dnn_st_mat_mult( const arma::mat &X, const arma::mat &Y, const arma
     double w_1 = c/(c-1);
     double w_2 = -1/(c-1);
 
-    double C_s_2 = 2.0;
 
     arma::vec s_1 = s_sizes;
     arma::vec s_2(s_1.n_elem, fill::value(round_modified(C_s_2 * pow(n, double(d) / (double(d) + 8)))));
@@ -270,7 +268,7 @@ arma::vec de_dnn_st_mat_mult( const arma::mat &X, const arma::mat &Y, const arma
 
 // [[Rcpp::export]]
 arma::vec de_dnn_st_loop( const arma::mat& X, const arma::mat &Y, const arma::mat &X_test,
-                     const arma::vec& s_sizes, double c, double n_prop,
+                     const arma::vec& s_sizes, double c, double n_prop, double C_s_2,
                      Nullable<NumericVector> W0_ = R_NilValue, bool debug = false){
 
     // Handle case where W0 is not NULL:
@@ -298,7 +296,6 @@ arma::vec de_dnn_st_loop( const arma::mat& X, const arma::mat &Y, const arma::ma
     // ord = n - ord;
     arma::vec ord_arma = as<arma::vec>(ord);
 
-    double C_s_2 = 2.0;
 
     arma::vec s_1 = s_sizes;
     arma::vec s_2(s_1.n_elem, fill::value(round_modified(C_s_2 * pow(n, double(d) / (double(d) + 8)))));
@@ -381,7 +378,7 @@ arma::vec de_dnn_st_loop( const arma::mat& X, const arma::mat &Y, const arma::ma
 arma::vec de_dnn_st( const arma::mat& eu_dist_mat,
                      const arma::mat &Y,
                      const arma::mat & X_test,
-                      const arma::vec& s_sizes, double c, int d, int n,
+                      const arma::vec& s_sizes, double c, int d, int n, double C_s_2,
                       bool debug = false){
 
 
@@ -403,7 +400,6 @@ arma::vec de_dnn_st( const arma::mat& eu_dist_mat,
     if(debug){
         Rcout << "de_dnn_st: making s_1 and s_2" << std::endl;
     }
-    double C_s_2 = 2.0;
 
     arma::vec s_1 = s_sizes;
     arma::vec s_2(s_1.n_elem, fill::value(round_modified(C_s_2 * pow(n, double(d) / (double(d) + 8)))));
@@ -735,6 +731,7 @@ arma::vec tuning_st_loop(const NumericVector& s_seq, const arma::mat& X,
                          const arma::mat& X_test,
                          const arma::mat &Y, double c,
                          double n_prop,
+                         double C_s_2,
                          Nullable<NumericVector> W0_ = R_NilValue,
                          bool debug = false,
                          bool verbose = false){
@@ -766,7 +763,7 @@ arma::vec tuning_st_loop(const NumericVector& s_seq, const arma::mat& X,
             Rcout << "tuning: estimating de_dnn" << std::endl;
         }
         arma::vec de_dnn_estimates = de_dnn_st_loop(X, Y, X_test,
-                                                    s_val, c, n_prop, W0, debug);
+                                                    s_val, c, n_prop,C_s_2, W0, debug);
 
         out.col(i) =  de_dnn_estimates;
         // Rcout << "issue not with out matrix"<< "\n";
@@ -788,6 +785,7 @@ arma::vec tuning_st_mat_mult(const NumericVector& s_seq, const arma::mat& X,
                          const arma::mat& X_test,
                          const arma::mat &Y, double c,
                          double n_prop,
+                         double C_s_2,
                          Nullable<NumericVector> W0_ = R_NilValue,
                          bool debug = false,
                          bool verbose = false){
@@ -805,7 +803,7 @@ arma::vec tuning_st_mat_mult(const NumericVector& s_seq, const arma::mat& X,
     // int n_obs = X_test.n_rows;
     // arma::mat out(n_obs, n_vals, fill::zeros);
 
-    arma::mat out = de_dnn_st_tuning(X,Y,X_test, s_seq + 1, c, n_prop,W0);
+    arma::mat out = de_dnn_st_tuning(X,Y,X_test, s_seq + 1, c, n_prop, C_s_2, W0);
 
     NumericVector s_choice = best_s(out);
 
@@ -819,7 +817,7 @@ arma::vec tuning_st_mat_mult(const NumericVector& s_seq, const arma::mat& X,
 // [[Rcpp::export]]
 arma::vec tuning_es_loop(const arma::mat &X, const arma::mat &Y,
                     const arma::mat & X_test,
-                    double c, int d, double n_prop,
+                    double c, int d, double n_prop, double C_s_2,
                     Nullable<NumericVector> W0_ = R_NilValue, bool debug = false, bool verbose = false){
 
     NumericVector W0;
@@ -860,7 +858,7 @@ arma::vec tuning_es_loop(const arma::mat &X, const arma::mat &Y,
         // arma::vec de_dnn_est_vec = as<arma::vec>(de_dnn_estimates["estimates"]);
 
         arma::vec de_dnn_est_vec = de_dnn_st_loop( X, Y,X_test,
-                                             s_val, c, n_prop, W0, debug);
+                                             s_val, c, n_prop, C_s_2, W0, debug);
         arma::mat candidate_results = de_dnn_est_vec;
         candidate_results.reshape(n_obs, 1);
         if (verbose){
@@ -954,6 +952,7 @@ arma::vec est_reg_fn_st_loop(const arma::mat& X,
                         const arma::mat& X_test,
                      double c,
                      double n_prop,
+                     double C_s_2,
                      String tuning_method = "early stopping",
                      Nullable<NumericVector> W0_ = R_NilValue,
                      bool verbose = false){
@@ -970,14 +969,14 @@ arma::vec est_reg_fn_st_loop(const arma::mat& X,
     arma::vec s_sizes;
     if(tuning_method == "early stopping"){
         s_sizes = tuning_es_loop(X, Y, X_test,
-                            c, d, n_prop, W0, false, verbose);
+                            c, d, n_prop, C_s_2, W0, false, verbose);
     } else if(tuning_method == "sequence"){
         NumericVector s_seq = seq_cpp(1.0,50.0);
         if(verbose){
             Rcout << "s_seq..." << s_seq << std::endl;
         }
         s_sizes = tuning_st_loop(s_seq, X,X_test, Y,
-                                           c, n_prop, W0,false, verbose);
+                                           c, n_prop, C_s_2, W0,false, verbose);
     }
 
 
@@ -986,9 +985,9 @@ arma::vec est_reg_fn_st_loop(const arma::mat& X,
         Rcout << "estimating effect..." << std::endl;
     }
 
-    arma::vec a_pred = de_dnn_st_loop(X, Y, X_test, s_sizes, c, n_prop, W0);
+    arma::vec a_pred = de_dnn_st_loop(X, Y, X_test, s_sizes, c, n_prop, C_s_2, W0);
 
-    arma::vec b_pred = de_dnn_st_loop(X, Y, X_test, s_sizes + 1, c, n_prop, W0);
+    arma::vec b_pred = de_dnn_st_loop(X, Y, X_test, s_sizes + 1, c, n_prop, C_s_2, W0);
 
     arma::vec deDNN_pred = (a_pred + b_pred) / 2;
 

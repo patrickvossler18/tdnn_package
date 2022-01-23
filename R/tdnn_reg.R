@@ -5,8 +5,9 @@
 #' @param X_test matrix of test observations
 #' @param W_0 Optional integer vector with 1 corresponding to columns that should be used to estimate the treatment effect. Default value is NULL
 #' @param c Parameter that controls the size of the ratio of \eqn{s_1} and \eqn{s_2} through the equation
-#' \eqn{s_2 = s_1 \cdot c^{d/2}}. Default value is 0.80
+#' \eqn{s_2 = s_1 \cdot c^{d/2}}. Default value is 0.80. Also determines the weights of the s_1 and s_2 estimates
 #' @param n_prop How large of a value relative to the sample size before we just use 1-NN to give us an estimate.
+#' @param C_s_2 Constant term for s_2 = C_s_2 * n^(d/(d+8)) where d is ambient dimension and n is sample size. Default is 2
 #' @param tuning_method Choose the method used to choose the subsample size \eqn{s} ("early stopping", "sequence").
 #'  The default is the "early stopping" method which stops as soon as a sign change in the difference of the estimates is detected,
 #'   while the "sequence" method calculates an estimate for each of the different s values
@@ -17,17 +18,18 @@
 #' @importFrom strex match_arg
 #' @export
 tdnn_reg <- function(X,
-                       Y,
-                       X_test,
-                       W_0 = NULL,
-                       c = 0.80,
-                       n_prop = 0.5,
-                       tuning_method = "early stopping",
-                       estimate_variance=F,
-                       use_boot=F,
-                       bootstrap_iter = 1000,
-                       verbose=F,
-                       n_threads=4,
+                     Y,
+                     X_test,
+                     W_0 = NULL,
+                     c = 0.80,
+                     n_prop = 0.5,
+                     C_s_2 = 2.0,
+                     tuning_method = "early stopping",
+                     estimate_variance = F,
+                     use_boot = F,
+                     bootstrap_iter = 1000,
+                     verbose = F,
+                     n_threads = 4,
                        ...) {
     # Data checks before we doing anything else
     # Check X is a dataframe or matrix. If df, make it a matrix
@@ -89,6 +91,7 @@ tdnn_reg <- function(X,
         c = c,
         verbose = verbose,
         n_prop = n_prop,
+        C_s_2 = C_s_2,
         W0_ = W_0
     )
     boot_vals <- NULL
@@ -112,6 +115,7 @@ tdnn_reg <- function(X,
                 W_0 = W_0,
                 c = c,
                 n_prop = n_prop,
+                C_s_2 = C_s_2,
                 d = d,
                 R = R,
                 ...
@@ -128,6 +132,7 @@ tdnn_reg <- function(X,
                                                       s_choice= deDNN$s,
                                                       c=c,
                                                       n_prop=n_prop,
+                                                      C_s_2 = C_s_2,
                                                       B=B,
                                                       W0_ = W_0)
             # boot_estimates <- tdnn:::bootstrap_reg_fn(X,Y,X_test,
