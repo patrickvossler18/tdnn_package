@@ -93,8 +93,8 @@ arma::mat matrix_subset_idx(const arma::mat& x,
 arma::mat matrix_row_subset_idx(const arma::mat& x,
                             const arma::uvec& y) {
 
-    // y must be an integer between 0 and columns - 1
-    // Allows for repeated draws from same columns.
+    // y must be an integer between 0 and rows - 1
+    // Allows for repeated draws from same rows.
     return x.rows( y );
 }
 
@@ -228,3 +228,13 @@ arma::vec colSums_arma(const arma::mat& x) {
     return ans;
 }
 
+arma::uvec sample_replace_index(const int &size){
+    arma::uvec out(size);
+    int ii;
+    for (ii = 0; ii < size; ii++) {
+        // arma::vec rand_val = arma::randu<vec>(1);
+        // out(ii) = size * as_scalar(rand_val);
+        out(ii) = size * arma::randu<double>();
+    }
+    return out;
+}

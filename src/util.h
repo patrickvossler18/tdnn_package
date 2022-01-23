@@ -12,6 +12,7 @@
 #include <progress.hpp>
 #include <progress_bar.hpp>
 #include <math.h>
+#include <tuple>
 #include "nabo.h"
 
 // [[Rcpp::plugins(openmp)]]
@@ -58,5 +59,7 @@ arma::vec colSums_arma(const arma::mat& x);
 arma::vec select_mat_elements(const arma::mat& x,const arma::uvec& row_idx, const arma::uvec& col_idx);
 
 arma::uvec r_like_order(const arma::vec& x, const arma::vec& y);
+
+arma::uvec sample_replace_index(const int &size);
 
 #endif
