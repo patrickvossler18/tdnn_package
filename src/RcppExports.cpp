@@ -480,13 +480,24 @@ BEGIN_RCPP
 END_RCPP
 }
 // round_modified
-arma::vec round_modified(const arma::vec& x);
+double round_modified(const double& x);
 RcppExport SEXP _tdnn_round_modified(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const double& >::type x(xSEXP);
     rcpp_result_gen = Rcpp::wrap(round_modified(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// round_modified_vec
+arma::vec round_modified_vec(const arma::vec& x);
+RcppExport SEXP _tdnn_round_modified_vec(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(round_modified_vec(x));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -531,6 +542,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_tdnn_fastPdist", (DL_FUNC) &_tdnn_fastPdist, 2},
     {"_tdnn_weight_mat_lfac_s_2_filter", (DL_FUNC) &_tdnn_weight_mat_lfac_s_2_filter, 5},
     {"_tdnn_round_modified", (DL_FUNC) &_tdnn_round_modified, 1},
+    {"_tdnn_round_modified_vec", (DL_FUNC) &_tdnn_round_modified_vec, 1},
     {"_tdnn_arma_round", (DL_FUNC) &_tdnn_arma_round, 1},
     {NULL, NULL, 0}
 };

@@ -192,7 +192,15 @@ arma::mat weight_mat_lfac(int n, const arma::vec& ord, const arma::vec& s_vec){
 }
 
 // [[Rcpp::export]]
-arma::vec round_modified(const arma::vec& x){
+double round_modified(const double& x){
+    NumericVector x_rcpp = as<NumericVector>(wrap(x));
+
+    x_rcpp = Rcpp::round(x_rcpp, 0);
+    return as<double>(x_rcpp);
+}
+
+// [[Rcpp::export]]
+arma::vec round_modified_vec(const arma::vec& x){
     NumericVector x_rcpp = as<NumericVector>(wrap(x));
     x_rcpp = Rcpp::round(x_rcpp, 0);
     return as<arma::vec>(wrap(x_rcpp));

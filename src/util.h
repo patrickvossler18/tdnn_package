@@ -49,7 +49,8 @@ arma::mat weight_mat_lfac(int n, const arma::vec& ord, const arma::vec& s_vec);
 
 arma::mat weight_mat_lfac_s_2_filter(int n, const arma::vec& ord, const arma::vec& s_vec, double n_prop, bool is_s_2);
 
-arma::vec round_modified(const arma::vec& x);
+double round_modified(const double& x);
+arma::vec round_modified_vec(const arma::vec& x);
 arma::vec arma_round(const arma::vec& x);
 
 arma::vec rowMeans_arma(const arma::mat& x);

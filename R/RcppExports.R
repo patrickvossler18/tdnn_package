@@ -113,6 +113,10 @@ round_modified <- function(x) {
     .Call(`_tdnn_round_modified`, x)
 }
 
+round_modified_vec <- function(x) {
+    .Call(`_tdnn_round_modified_vec`, x)
+}
+
 arma_round <- function(x) {
     .Call(`_tdnn_arma_round`, x)
 }

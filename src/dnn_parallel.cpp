@@ -173,10 +173,10 @@ arma::vec tdnn( arma::mat X, arma::vec Y, arma::mat X_test,
 
     arma::vec s_1 = s_sizes;
     // arma::vec s_2 = round_modified(s_1 * pow(c, - double(d) / 2.0));
-    arma::vec s_2 = round_modified(C_s_2 * pow(n, double(d) / (double(d) + 8)));
+    arma::vec s_2(s_1.n_elem, fill::value(round_modified(C_s_2 * pow(n, double(d) / (double(d) + 8)))));
 
     arma::vec s_1_1 = s_sizes_1;
-    arma::vec s_2_1 = round_modified(C_s_2 * pow(n, double(d) / (double(d) + 8)));
+    arma::vec s_2_1(s_1.n_elem, fill::value(round_modified(C_s_2 * pow(n, double(d) / (double(d) + 8)))));
     // Rcout << "s_1: " << s_1 << std::endl;
     // Rcout << "s_1_1: " << s_1_1 << std::endl;
     //
@@ -366,7 +366,7 @@ arma::vec de_dnn( arma::mat X, arma::vec Y, arma::mat X_test,
     double C_s_2 = 2.0;
 
     arma::vec s_1 = s_sizes;
-    arma::vec s_2 = round_modified(C_s_2 * pow(n, double(d) / (double(d) + 8)));
+    arma::vec s_2(s_1.n_elem, fill::value(round_modified(C_s_2 * pow(n, double(d) / (double(d) + 8)))));
     // arma::vec s_1 = s_sizes;
     // arma::vec s_2 = round_modified(s_1 * pow(c, - double(d) / 2.0));
     // Rcout << "tmp: " << tmp << std::endl;
