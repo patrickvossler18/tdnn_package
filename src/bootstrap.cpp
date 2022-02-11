@@ -182,16 +182,17 @@ NumericMatrix bootstrap_cpp_mt(const arma::mat& X,
     int n = X_subset.n_rows;
     int p = X_subset.n_cols;
     int log_n = log(n);
+    int s_2_val = round_modified(exp( C_s_2 * log_n * (double(d)/(double(d) + 8))));
 
     arma::vec ord = arma::linspace(1,n, n);
     arma::vec s_1 = s_choice;
     // arma::vec s_2 = round_modified(s_1 * pow(c, - double(d) / 2.0));
     // arma::vec s_2(s_1.n_elem, fill::value(round_modified(C_s_2 * pow(n, double(d) / (double(d) + 8)))));
-    arma::vec s_2(s_1.n_elem, fill::value(round_modified(C_s_2 * log_n * (double(d)/(double(d) + 8)))));
+    arma::vec s_2(s_1.n_elem, fill::value(s_2_val));
 
     arma::vec s_1_1 = s_1 + 1;
     // arma::vec s_2_1(s_1.n_elem, fill::value(round_modified(C_s_2 * pow(n, double(d) / (double(d) + 8)))));
-    arma::vec s_2_1(s_1.n_elem, fill::value(round_modified(C_s_2 * log_n * (double(d)/(double(d) + 8)))));
+    arma::vec s_2_1(s_1.n_elem, fill::value(s_2_val));
 
     // Generate these matrices once since they won't change and just pass them to the workers
     arma::mat weight_mat_s_1 = weight_mat_lfac_s_2_filter(n, ord, s_1, n_prop, false);

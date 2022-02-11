@@ -163,6 +163,7 @@ arma::vec tdnn( arma::mat X, arma::vec Y, arma::mat X_test,
     int n = X.n_rows;
     int p = X.n_cols;
     int log_n = log(n);
+    int s_2_val = round_modified(exp( C_s_2 * log_n * (double(d)/(double(d) + 8))));
 
 
     // This just creates a sequence 1:n and then reverses it
@@ -175,10 +176,10 @@ arma::vec tdnn( arma::mat X, arma::vec Y, arma::mat X_test,
     arma::vec s_1 = s_sizes;
     // arma::vec s_2 = round_modified(s_1 * pow(c, - double(d) / 2.0));
     // arma::vec s_2(s_1.n_elem, fill::value(round_modified(C_s_2 * pow(n, double(d) / (double(d) + 8)))));
-    arma::vec s_2(s_1.n_elem, fill::value(round_modified(C_s_2 * log_n * (double(d)/(double(d) + 8)))));
+    arma::vec s_2(s_1.n_elem, fill::value(s_2_val));
 
     arma::vec s_1_1 = s_sizes_1;
-    arma::vec s_2_1(s_1.n_elem, fill::value(round_modified(C_s_2 * log_n * (double(d)/(double(d) + 8)))));
+    arma::vec s_2_1(s_1.n_elem, fill::value(s_2_val));
     // Rcout << "s_1: " << s_1 << std::endl;
     // Rcout << "s_1_1: " << s_1_1 << std::endl;
     //
