@@ -46,7 +46,7 @@ tune_c_s2 <- function(X_train,
             C_s_2 = M,
             estimate_variance = FALSE,
             n_threads = n_threads,
-            verbose = verbose
+            verbose = FALSE
         )
         results_df <- make_results_df(Y_val,
                         as.numeric(tdnn_pred_rand_x$deDNN_pred))
@@ -114,7 +114,10 @@ tdnn_reg_cv <- function(X,
         message("tuning parameters...")
     }
     tuned_params <- bind_rows(lapply(1:B, function(i) {
-        print(glue::glue("i: {i}/{B}"))
+        if(verbose){
+            print(glue::glue("i: {i}/{B}"))
+        }
+
         train_idx <- loo_samples[[i]]$train_idx
 
         X_train <- X[train_idx, ]
@@ -224,7 +227,6 @@ tdnn_reg_split <- function(X,
         make_summary = TRUE
     )
     if (verbose) {
-        print(tuned_params)
         message(
             glue::glue(
                 "Estimating using c = {glue::glue_collapse(tuned_params$c)}, M={glue::glue_collapse(tuned_params$M)}..."
