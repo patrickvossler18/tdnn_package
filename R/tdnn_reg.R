@@ -161,3 +161,5 @@ tdnn_reg <- function(X,
     results[["boot_vals"]] <- boot_vals
     return(results)
 }
+
+
