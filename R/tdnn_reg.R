@@ -29,7 +29,7 @@ tdnn_reg <- function(X,
                      use_boot = F,
                      bootstrap_iter = 1000,
                      verbose = F,
-                     n_threads = 4,
+                     n_threads = NULL,
                        ...) {
     # Data checks before we doing anything else
     # Check X is a dataframe or matrix. If df, make it a matrix
@@ -80,8 +80,10 @@ tdnn_reg <- function(X,
 
     # Do argument matching for tuning method
     matched_tuning_method <- strex::match_arg(tuning_method, c("early stopping", "sequence"))
+    if(!is.null(n_threads)){
+        RcppParallel::setThreadOptions(numThreads = n_threads)
+    }
 
-    RcppParallel::setThreadOptions(numThreads = n_threads)
 
     # After doing data checks, pass off to CPP code.
     deDNN <- est_reg_fn_mt_rcpp(

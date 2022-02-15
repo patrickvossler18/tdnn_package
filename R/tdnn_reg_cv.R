@@ -75,7 +75,6 @@ loo_sample <- function(num_rows, B = 200) {
         held_out_idx <- sample(idx, 1)
         list(train_idx = idx[-held_out_idx], held_out_idx = held_out_idx)
     })
-
 }
 
 tdnn_reg_cv <- function(X,
@@ -90,7 +89,7 @@ tdnn_reg_cv <- function(X,
                         s_1_tuning_method = "early stopping",
                         estimate_variance = F,
                         bootstrap_iter = 1000,
-                        n_threads = 4,
+                        n_threads = NULL,
                         verbose = F) {
     n <- nrow(X)
     # handle case where M_seq or c_seq are NULL
@@ -127,6 +126,7 @@ tdnn_reg_cv <- function(X,
         Y_val <- as.matrix(Y[-train_idx, ])
 
         # returns dataframe with MSE for each parameter combo for this split
+        tictoc::tic("tuning params on loo sample")
         tuned_params <- tune_c_s2(
             X_train,
             Y_train,
@@ -139,6 +139,8 @@ tdnn_reg_cv <- function(X,
             verbose = F,
             make_summary = F
         )
+        tictoc::toc()
+
         return(tuned_params)
     }))
     tuned_params <- tuned_params %>%
@@ -183,7 +185,7 @@ tdnn_reg_split <- function(X,
                            s_1_tuning_method = "early stopping",
                            estimate_variance = F,
                            bootstrap_iter = 1000,
-                           n_threads = 4,
+                           n_threads = NULL,
                            verbose = F) {
     # handle case where M_seq or c_seq are NULL
     if (is.null(M_seq)) {
