@@ -74,24 +74,6 @@ struct TdnnEstimate : public Worker {
 
             arma::uvec index = r_like_order(vec_eu_dis, noise);
 
-            // std::vector<double> eu_dis = conv_to<std::vector<double>>::from(vec_eu_dis);
-            // std::vector<double> noise_vec = conv_to<std::vector<double>>::from(noise);
-            //
-            // vector<int> index(int(n), 0);
-            // for (int i = 0 ; i != index.size() ; i++) {
-            //     index[i] = i;
-            // }
-            // sort(index.begin(), index.end(),
-            //      [&](const int& a, const int& b) {
-            //          if (eu_dis[a] != eu_dis[b]){
-            //              return eu_dis[a] < eu_dis[b];
-            //          }
-            //          return noise_vec[a] < noise_vec[b];
-            //      }
-            // );
-            // arma::vec ordered_Y;
-            // arma::mat ordered_Y_vec = conv_to<arma::mat>::from(Y).rows(conv_to<arma::uvec>::from(index));
-
             arma::vec ordered_Y;
             arma::mat ordered_Y_vec = conv_to<arma::mat>::from(Y).rows(index);
             // // Rcout << ordered_Y_vec[order_vec];

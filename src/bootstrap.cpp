@@ -374,7 +374,6 @@ NumericMatrix bootstrap_trt_effect_cpp_mt(const arma::mat& X,
     }
 
 
-
     // Infer n and p from our data after we've filtered for relevant features
     int n = X_subset.n_rows;
     // int p = X_subset.n_cols;
