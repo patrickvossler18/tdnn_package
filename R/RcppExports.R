@@ -69,7 +69,7 @@ est_reg_fn_st_loop <- function(X, Y, X_test, c, n_prop, C_s_2, tuning_method = "
     .Call(`_tdnn_est_reg_fn_st_loop`, X, Y, X_test, c, n_prop, C_s_2, tuning_method, W0_, verbose)
 }
 
-tdnn <- function(X, Y, X_test, s_sizes, s_sizes_1, c, n_prop, C_s_2, W0_ = NULL) {
+tdnn <- function(X, Y, X_test, s_sizes, s_sizes_1, c, n_prop, C_s_2, W0_) {
     .Call(`_tdnn_tdnn`, X, Y, X_test, s_sizes, s_sizes_1, c, n_prop, C_s_2, W0_)
 }
 
@@ -77,7 +77,7 @@ de_dnn <- function(X, Y, X_test, s_sizes, c, n_prop, C_s_2, W0_ = NULL) {
     .Call(`_tdnn_de_dnn`, X, Y, X_test, s_sizes, c, n_prop, C_s_2, W0_)
 }
 
-tuning <- function(X, Y, X_test, c, n_prop, C_s_2, W0_ = NULL) {
+tuning <- function(X, Y, X_test, c, n_prop, C_s_2, W0_) {
     .Call(`_tdnn_tuning`, X, Y, X_test, c, n_prop, C_s_2, W0_)
 }
 
@@ -103,6 +103,14 @@ get_1nn_reg <- function(X, X_test, Y, k) {
 
 fastPdist <- function(Ar, Br) {
     .Call(`_tdnn_fastPdist`, Ar, Br)
+}
+
+make_param_estimate <- function(X_train, Y_train, X_val, ordered_Y, ord_arma, n, p, log_n, c, C_s_2, n_prop, W0) {
+    .Call(`_tdnn_make_param_estimate`, X_train, Y_train, X_val, ordered_Y, ord_arma, n, p, log_n, c, C_s_2, n_prop, W0)
+}
+
+tune_params <- function(X, Y, X_test, param_mat, B, n_prop, verbose, W0_) {
+    .Call(`_tdnn_tune_params`, X, Y, X_test, param_mat, B, n_prop, verbose, W0_)
 }
 
 weight_mat_lfac_s_2_filter <- function(n, ord, s_vec, n_prop, is_s_2) {

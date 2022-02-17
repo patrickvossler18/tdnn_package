@@ -1,5 +1,4 @@
-#include "util.h"
-#include "kd_tree.h"
+#include "dnn_parallel.h"
 
 struct TdnnEstimate : public Worker {
 
@@ -130,7 +129,7 @@ arma::vec tdnn( arma::mat X, arma::vec Y, arma::mat X_test,
                   double c,
                   double n_prop,
                   double C_s_2,
-                  Nullable<NumericVector> W0_ = R_NilValue){
+                  Nullable<NumericVector> W0_){
     int d = X.n_cols;
     // Handle case where W0 is not NULL:
     if (W0_.isNotNull()){
@@ -391,7 +390,7 @@ NumericVector tuning(arma::mat X, arma::vec Y,
                             arma::mat X_test, double c,
                             double n_prop,
                             double C_s_2,
-                            Nullable<NumericVector> W0_ = R_NilValue){
+                            Nullable<NumericVector> W0_){
 
     double n_obs = X_test.n_rows;
     bool search_for_s = true;
@@ -751,6 +750,7 @@ List est_reg_fn_mt_rcpp(const arma::mat& X, const arma::mat& Y,
         Rcout << "starting tuning" << std::endl;
     }
     NumericVector s_sizes = tuning(X, Y, X_test, c, n_prop, C_s_2, W0);
+
     if(verbose){
         Rcout << "past tuning" << std::endl;
     }
