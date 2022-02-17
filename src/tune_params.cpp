@@ -114,22 +114,15 @@ arma::vec make_param_estimate(const arma::mat& X_train,
 
 
 // [[Rcpp::export]]
-List tune_params(const arma::mat& X,
+arma::vec tune_params(const arma::mat& X,
                   const arma::mat& Y,
                   const arma::mat& X_test,
                   const arma::mat& param_mat,
                   int B,
                   double n_prop,
-                  bool verbose,
-                  Nullable<NumericVector> W0_
+                  NumericVector W0,
+                  bool verbose
 ) {
-    // This function is called after we've done data checks in R
-    NumericVector W0;
-    if (W0_.isNotNull()){
-        W0 = W0_;
-    } else{
-        W0 = rep(1,X.n_cols);
-    }
     int n_params = param_mat.n_rows;
     // Store the results where each column is one Monte Carlo replication and each row is a parameter combination
     // Doing it this way since Armadillo is column major format
@@ -183,6 +176,8 @@ List tune_params(const arma::mat& X,
         mse_results(i) = mse;
     }
     int min_mse_idx = mse_results.index_min();
-    return(List::create(Named("c") = as_scalar(param_mat(min_mse_idx,0)),
-                        Named("M") = as_scalar(param_mat(min_mse_idx,1))));
+    // return(List::create(Named("c") = as_scalar(param_mat(min_mse_idx,0)),
+    //                     Named("M") = as_scalar(param_mat(min_mse_idx,1))));
+    arma::vec results_vec = {as_scalar(param_mat(min_mse_idx,0)),as_scalar(param_mat(min_mse_idx,1)) };
+    return(results_vec);
 }

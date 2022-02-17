@@ -1,7 +1,6 @@
-#include "util.h"
-#include "kd_tree.h"
+#include "bootstrap.h"
 
-// [[Rcpp::export]]
+
 arma::vec tdnn_st_boot(arma::mat X, arma::vec Y, arma::mat X_test,
                            const arma::mat& weight_mat_s_1,
                            const arma::mat& weight_mat_s_2,
@@ -158,7 +157,7 @@ NumericMatrix bootstrap_cpp_mt(const arma::mat& X,
                           const double n_prop,
                           const double C_s_2,
                           const int B,
-                          Nullable<NumericVector> W0_ = R_NilValue){
+                          Nullable<NumericVector> W0_){
 
 
     // Filter by W0

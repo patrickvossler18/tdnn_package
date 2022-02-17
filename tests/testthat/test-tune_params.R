@@ -20,7 +20,13 @@ dgp_function = function(x) {
     (x[1] - 1) ^ 2 + (x[2] + 1) ^ 3 - 3 * x[3]
 }
 
-
+loo_sample <- function(num_rows, B = 200) {
+    a <- map(seq(B), function(x) {
+        idx <- seq(num_rows)
+        held_out_idx <- sample(idx, 1)
+        list(train_idx = idx[-held_out_idx], held_out_idx = held_out_idx)
+    })
+}
 
 # Generate data
 X = matrix(runif(n * p, grid_start_end[1], grid_start_end[2]), n, p)
@@ -30,7 +36,7 @@ Y = apply(X, MARGIN = 1, dgp_function) + epsi
 W_0 = rep(1, p)
 
 # get a single LOO sample
-train_idx <- tdnn:::loo_sample(n, B)[[1]]$train_idx
+train_idx <- loo_sample(n, 1)$train_idx
 X_train <- X[train_idx,]
 X_val <- matrix(X[-train_idx,], 1, ncol(X))
 Y_train <- as.matrix(Y[train_idx,])

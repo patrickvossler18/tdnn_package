@@ -5,6 +5,7 @@
 #include "util.h"
 #include "dnn_parallel.h"
 #include "tune_params.h"
+#include "bootstrap.h"
 
 List tdnn_reg_cv_cpp(
         const arma::mat& X,
