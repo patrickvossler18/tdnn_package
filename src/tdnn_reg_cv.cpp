@@ -47,8 +47,10 @@ List tdnn_reg_cv_cpp(
     if(estimate_variance){
         NumericMatrix bstrap_estimates = bootstrap_cpp_mt(X, Y, X_test, s_sizes,
                                                           c, n_prop, M, bootstrap_iter, W0);
+        // need to apply variance over columns
+        arma::vec variance = rowVar_arma(as<arma::mat>(bstrap_estimates));
         return(List::create( Named("estimates") = deDNN_pred,
-                             Named("variance") = bstrap_estimates,
+                             Named("variance") = variance,
                              Named("s") = s_sizes,
                              Named("c") = c,
                              Named("M") = M));

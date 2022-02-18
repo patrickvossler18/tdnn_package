@@ -236,6 +236,29 @@ arma::vec colSums_arma(const arma::mat& x) {
     return ans;
 }
 
+arma::vec rowVar_arma(const arma::mat& x) {
+    int nr = x.n_rows;
+    arma::vec ans(nr);
+    for (int j = 0; j < nr; j++) {
+        arma::rowvec row_tmp = x.row(j);
+        double var = arma::var(row_tmp);
+        ans(j) = var;
+    }
+    return ans;
+}
+
+
+arma::vec colVar_arma(const arma::mat& x) {
+    int nc = x.n_cols;
+    arma::vec ans(nc);
+    for (int j = 0; j < nc; j++) {
+        arma::vec col_tmp = x.col(j);
+        double sum = arma::var(col_tmp);
+        ans(j) = sum;
+    }
+    return ans;
+}
+
 arma::uvec sample_replace_index(const int &size){
     arma::uvec out(size);
     int ii;

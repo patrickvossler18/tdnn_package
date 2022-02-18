@@ -57,6 +57,10 @@ arma::vec rowMeans_arma(const arma::mat& x);
 
 arma::vec colSums_arma(const arma::mat& x);
 
+arma::vec colVar_arma(const arma::mat& x);
+
+arma::vec rowVar_arma(const arma::mat& x);
+
 arma::vec select_mat_elements(const arma::mat& x,const arma::uvec& row_idx, const arma::uvec& col_idx);
 
 arma::uvec r_like_order(const arma::vec& x, const arma::vec& y);
