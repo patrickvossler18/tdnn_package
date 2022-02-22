@@ -151,7 +151,7 @@ tune_c_s2 <- function(X_train,
             c = c_val,
             verbose = FALSE,
             n_prop = 0.5,
-            C_s_2 = M,
+            M = M,
             W0_ = W_0
         )
         list(truth = as.numeric(Y_val), predictions = as.numeric(tdnn_pred_rand_x$estimates), c=c_val, M=M)
