@@ -10,13 +10,9 @@ fixed_test_vector <- rep(0.5, d)
 fixed_test_vector[impt_idx] <- c(0.2, 0.4, 0.6)
 
 dgp_function <- function(x, idx) {
-  # This function will take a row of the matrix as input and return the
-  # transformed value. To use this on a matrix, we can use the apply function
-  # with margin=1
   prod(sapply(idx, function(i) {
     (1 + 1 / (1 + exp(-20 * (x[i] - 1 / 3))))
   }))
-  # (1 + 1 / (1 + exp(-20 * (x[1] - 1/3)))) * (1 + 1 / (1 + exp(-20 * (x[2] - 1/3))))
 }
 
 baseline_function <- function(x) {
