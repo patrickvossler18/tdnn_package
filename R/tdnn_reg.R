@@ -1,36 +1,29 @@
-#' Estimate a regression function using the two-scale DNN estimator
+#' Get tdnn estimate
 #'
-#' @param X matrix of covariates
-#' @param Y matrix of responses
-#' @param X_test matrix of test observations
-#' @param W_0 Optional integer vector with 1 corresponding to columns that should be used to estimate the treatment effect. Default value is NULL
-#' @param c Parameter that controls the size of the ratio of \eqn{s_1} and \eqn{s_2} through the equation
-#' \eqn{s_2 = s_1 \cdot c^{d/2}}. Default value is 0.80. Also determines the weights of the s_1 and s_2 estimates
-#' @param n_prop How large of a value relative to the sample size before we just use 1-NN to give us an estimate.
-#' @param C_s_2 Constant term for s_2 = C_s_2 * n^(d/(d+8)) where d is ambient dimension and n is sample size. Default is 2
-#' @param tuning_method Choose the method used to choose the subsample size \eqn{s} ("early stopping", "sequence").
-#'  The default is the "early stopping" method which stops as soon as a sign change in the difference of the estimates is detected,
-#'   while the "sequence" method calculates an estimate for each of the different s values
-#'    (a sequence from 1 to 50) and then finds the s which causes a change in the sign of the derivative.
-#' @param estimate_variance Bootstrap variance estimates using the \code{boot} library
+#' @param X Matrix of covariates
+#' @param Y Matrix of responses
+#' @param X_test Matrix of test observations for which we want to get estimates
+#' @param W_0 Optional integer vector with 1 corresponding to columns that should be used for estimation. Default value is NULL
+#' @param c Value of c.
+#' @param M Value of M.
+#' @param n_prop If \eqn{s_{2} > n\dot \text{n_prop}}, default to using 1-NN estimate.
+#' @param n_threads Number of threads to use when calculating bootstrap variance. Default is to use all available threads.
 #' @param verbose Print which step the method is currently calculating in the console.
 #' @importFrom glue glue
-#' @importFrom strex match_arg
+#' @import dplyr
 #' @export
+
 tdnn_reg <- function(X,
                      Y,
                      X_test,
                      W_0 = NULL,
-                     c = 0.80,
+                     M = NULL,
+                     c = NULL,
                      n_prop = 0.5,
-                     C_s_2 = 2.0,
-                     tuning_method = "early stopping",
                      estimate_variance = F,
-                     use_boot = F,
                      bootstrap_iter = 1000,
-                     verbose = F,
                      n_threads = NULL,
-                       ...) {
+                     verbose = F) {
     # Data checks before we doing anything else
     # Check X is a dataframe or matrix. If df, make it a matrix
     if (is.data.frame(X)) {
@@ -78,90 +71,24 @@ tdnn_reg <- function(X,
         if (is.logical(W_0)) W_0 <- as.numeric(W_0)
     }
 
-    # Do argument matching for tuning method
-    matched_tuning_method <- strex::match_arg(tuning_method, c("early stopping", "sequence"))
     if(!is.null(n_threads)){
         RcppParallel::setThreadOptions(numThreads = n_threads)
     }
 
+    n <- nrow(X)
+    tuned_tdnn_results <-
+        tdnn:::tdnn_reg_cpp(X, Y, X_test, c, M, n_prop,
+                            bootstrap_iter,
+                            estimate_variance, verbose, W_0)
 
-    # After doing data checks, pass off to CPP code.
-    deDNN <- est_reg_fn_mt_rcpp(
-        X,
-        Y,
-        X_test,
-        c = c,
-        verbose = verbose,
-        n_prop = n_prop,
-        C_s_2 = C_s_2,
-        W0_ = W_0
-    )
-    boot_vals <- NULL
-    variance <- NULL
-    if (estimate_variance) {
-        if(verbose){
-            message("starting variance estimation...")
-        }
-        if(use_boot){
-            # prepare arguments to pass to boot function
-            # bootstrap_iter -> R
-            R <- bootstrap_iter
-
-            boot_data <- data.frame(X, Y)
-            d <- dim(X)[2]
-            boot_estimates <- boot::boot(
-                data = boot_data,
-                statistic = boot_function_est_reg_fn,
-                X_test = X_test,
-                s_choice = deDNN$s,
-                W_0 = W_0,
-                c = c,
-                n_prop = n_prop,
-                C_s_2 = C_s_2,
-                d = d,
-                R = R,
-                ...
-            )
-
-            variance <- apply(boot_estimates$t,2, var)
-        } else {
-            B <- bootstrap_iter
-            if (verbose){
-                message(paste0("B is ", B))
-            }
-
-            boot_estimates <- tdnn:::bootstrap_cpp_mt(X,Y,X_test,
-                                                      s_choice= deDNN$s,
-                                                      c=c,
-                                                      n_prop=n_prop,
-                                                      C_s_2 = C_s_2,
-                                                      B=B,
-                                                      W0_ = W_0)
-            # boot_estimates <- tdnn:::bootstrap_reg_fn(X,Y,X_test,
-            #                                           s_choice = deDNN$s,
-            #                                           W_0=W_0,
-            #                                           c=c,
-            #                                           B=B,
-            #                                           n_prop=n_prop,
-            #                                           verbose=verbose)
-            boot_vals <- boot_estimates
-            variance <- apply(boot_estimates,1, var)
-        }
-
-
-        if(verbose){
-            message("finished estimating variance")
-        }
-
-
-    }
-
-    results <- structure(list(), class = "tdnn_regression_est")
-    results[["deDNN_pred"]] <- deDNN$estimates
-    results[["s_choice"]] <- deDNN$s
-    results[["variance"]] <- variance
-    results[["boot_vals"]] <- boot_vals
-    return(results)
+    return(tuned_tdnn_results)
 }
 
+make_results_df <- function(truth, predictions, variance = NULL) {
+    if (!is.null(variance)) {
+        return(data.frame(truth = truth, predictions = predictions, variance = variance))
+    } else{
+        return(data.frame(truth = truth, predictions = predictions))
+    }
+}
 
