@@ -64,12 +64,12 @@ arma::vec make_param_estimate(const arma::mat &X_train,
                               NumericVector W0)
 {
 
-    int s_2_val = std::max(int(round_modified(exp(M * log_n * (double(p) / (double(p) + 8))))), 1);
-    int s_1_val = std::max(int(round_modified(s_2_val * pow(c, double(p) / 2))), 1);
+    int s_2_val = std::ceil(int(round_modified(exp(M * log_n * (double(p) / (double(p) + 8))))));
+    int s_1_val = std::ceil(int(round_modified(s_2_val * pow(c, double(p) / 2))));
 
     // need to choose s_1 through tuning
-    arma::vec s_1(n, fill::value(s_1_val));
-    arma::vec s_1_1(n, fill::value(s_1_val + 1));
+    arma::vec s_1(X_val.n_rows, fill::value(s_1_val));
+    arma::vec s_1_1(s_1.n_elem, fill::value(s_1_val + 1));
 
     arma::vec s_2(s_1.n_elem, fill::value(s_2_val));
     arma::vec s_2_1(s_1.n_elem, fill::value(s_2_val + 1));

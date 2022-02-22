@@ -1,13 +1,13 @@
-#include "tdnn_reg_cv.h"
+#include "tdnn_reg.h"
 
 // [[Rcpp::export]]
-List tdnn_reg_cv_cpp(
+List tdnn_reg_cpp(
     const arma::mat &X,
     const arma::mat &Y,
     const arma::mat &X_test,
-    const arma::mat &param_mat,
+    double c,
+    double M,
     double n_prop,
-    int B,
     int bootstrap_iter,
     bool estimate_variance,
     bool verbose,
@@ -22,29 +22,10 @@ List tdnn_reg_cv_cpp(
     {
         W0 = rep(1, X.n_cols);
     }
-    if (verbose)
-    {
-        Rcout << "starting tuning" << std::endl;
-    }
-
-    // first do LOO CV to get tuned c and M
-    arma::vec tuned_params = tune_params(X, Y, X_test, param_mat, B, n_prop, W0, verbose);
-
-    if (verbose)
-    {
-        Rcout << "Finished tuning c and M" << std::endl;
-    }
-    double c = tuned_params[0];
-    double M = tuned_params[1];
 
     int d = sum(W0);
     int s_2_val = std::ceil(int(round_modified(exp(M * log(X.n_rows) * (double(d) / (double(d) + 8))))));
     int s_1_val = std::ceil(int(round_modified(s_2_val * pow(c, double(d) / 2))));
-
-    if (verbose)
-    {
-        Rcout << "past tuning" << std::endl;
-    }
 
     arma::vec deDNN_pred;
 

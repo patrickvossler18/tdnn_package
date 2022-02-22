@@ -183,11 +183,11 @@ NumericMatrix bootstrap_cpp_mt(const arma::mat &X,
     int n = X_subset.n_rows;
     int p = X_subset.n_cols;
     int log_n = log(n);
-    int s_2_val = std::max(int(round_modified(exp(M * log_n * (double(d) / (double(d) + 8))))), 1);
-    int s_1_val = std::max(int(round_modified(s_2_val * pow(c, double(d) / 2))), 1);
+    int s_2_val = std::ceil(int(round_modified(exp(M * log_n * (double(d) / (double(d) + 8))))));
+    int s_1_val = std::ceil(int(round_modified(s_2_val * pow(c, double(d) / 2))));
 
     arma::vec ord = arma::linspace(1, n, n);
-    arma::vec s_1(n, arma::fill::value(s_1_val));
+    arma::vec s_1(X_test.n_rows, arma::fill::value(s_1_val));
     // arma::vec s_2 = round_modified(s_1 * pow(c, - double(d) / 2.0));
     // arma::vec s_2(s_1.n_elem, fill::value(round_modified(M * pow(n, double(d) / (double(d) + 8)))));
     arma::vec s_2(s_1.n_elem, fill::value(s_2_val));
