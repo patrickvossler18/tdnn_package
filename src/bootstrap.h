@@ -9,7 +9,8 @@ NumericMatrix bootstrap_cpp_mt(const arma::mat &X,
                                const arma::mat &X_test,
                                const double c,
                                const double n_prop,
-                               const double C_s_2,
+                               const int s_1_val,
+                               const int s_2_val,
                                const int B,
                                Nullable<NumericVector> W0_ = R_NilValue);
 

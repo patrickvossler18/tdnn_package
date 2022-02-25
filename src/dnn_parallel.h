@@ -13,7 +13,8 @@ NumericVector tuning(arma::mat X, arma::vec Y,
 arma::vec tdnn(arma::mat X, arma::vec Y, arma::mat X_test,
                double c,
                double n_prop,
-               double C_s_2,
+               int s_1_val,
+               int s_2_val,
                Nullable<NumericVector> W0_ = R_NilValue);
 
 #endif

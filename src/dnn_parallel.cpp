@@ -126,7 +126,8 @@ struct TdnnEstimate : public Worker
 arma::vec tdnn(arma::mat X, arma::vec Y, arma::mat X_test,
                double c,
                double n_prop,
-               double M,
+               int s_1_val,
+               int s_2_val,
                Nullable<NumericVector> W0_)
 {
     int d = X.n_cols;
@@ -142,9 +143,9 @@ arma::vec tdnn(arma::mat X, arma::vec Y, arma::mat X_test,
 
     // Infer n and p from our data after we've filtered for relevant features
     int n = X.n_rows;
-    int log_n = log(n);
-    int s_2_val = std::ceil(int(round_modified(exp(M * log_n * (double(d) / (double(d) + 8))))));
-    int s_1_val = std::ceil(int(round_modified(s_2_val * pow(c, double(d) / 2))));
+    // int log_n = log(n);
+    // int s_2_val = std::ceil(int(round_modified(exp(M * log_n * (double(d) / (double(d) + 8))))));
+    // int s_1_val = std::ceil(int(round_modified(s_2_val * pow(c, double(d) / 2))));
 
     // This just creates a sequence 1:n and then reverses it
     NumericVector ord = seq_cpp(1, n);

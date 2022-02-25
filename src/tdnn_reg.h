@@ -11,9 +11,10 @@ List tdnn_reg_cpp(
     const arma::mat &Y,
     const arma::mat &X_test,
     double c,
-    double M,
-    int B,
     double n_prop,
+    int s_1_val,
+    int s_2_val,
+    int B,
     bool verbose = false,
     Nullable<NumericVector> W0_ = R_NilValue);
 

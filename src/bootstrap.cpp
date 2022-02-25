@@ -87,7 +87,6 @@ struct BootstrapEstimate : public Worker
     const arma::mat X;
     const arma::mat Y;
     const arma::mat X_test;
-    const arma::vec s_choice;
     const arma::mat &weight_mat_s_1;
     const arma::mat &weight_mat_s_2;
     const arma::mat &weight_mat_s_1_plus_1;
@@ -156,7 +155,8 @@ NumericMatrix bootstrap_cpp_mt(const arma::mat &X,
                                const arma::mat &X_test,
                                const double c,
                                const double n_prop,
-                               const double M,
+                               const int s_1_val,
+                               const int s_2_val,
                                const int B,
                                Nullable<NumericVector> W0_)
 {
@@ -182,9 +182,9 @@ NumericMatrix bootstrap_cpp_mt(const arma::mat &X,
     // Infer n and p from our data after we've filtered for relevant features
     int n = X_subset.n_rows;
     int p = X_subset.n_cols;
-    int log_n = log(n);
-    int s_2_val = std::ceil(int(round_modified(exp(M * log_n * (double(d) / (double(d) + 8))))));
-    int s_1_val = std::ceil(int(round_modified(s_2_val * pow(c, double(d) / 2))));
+    // int log_n = log(n);
+    // int s_2_val = std::ceil(int(round_modified(exp(M * log_n * (double(d) / (double(d) + 8))))));
+    // int s_1_val = std::ceil(int(round_modified(s_2_val * pow(c, double(d) / 2))));
 
     arma::vec ord = arma::linspace(1, n, n);
     arma::vec s_1(X_test.n_rows, arma::fill::value(s_1_val));

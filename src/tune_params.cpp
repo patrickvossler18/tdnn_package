@@ -59,20 +59,21 @@ arma::vec make_param_estimate(const arma::mat &X_train,
                               int p,
                               int log_n,
                               double c,
-                              double M,
+                              int s_1_val,
+                              int s_2_val,
                               double n_prop,
                               NumericVector W0)
 {
 
-    int s_2_val = std::ceil(int(round_modified(exp(M * log_n * (double(p) / (double(p) + 8))))));
-    int s_1_val = std::ceil(int(round_modified(s_2_val * pow(c, double(p) / 2))));
+    // int s_2_val = std::ceil(int(round_modified(exp(M * log_n * (double(p) / (double(p) + 8))))));
+    // int s_1_val = std::ceil(int(round_modified(s_2_val * pow(c, double(p) / 2))));
 
     // need to choose s_1 through tuning
     arma::vec s_1(X_val.n_rows, fill::value(s_1_val));
     arma::vec s_1_1(s_1.n_elem, fill::value(s_1_val + 1));
 
     arma::vec s_2(s_1.n_elem, fill::value(s_2_val));
-    arma::vec s_2_1(s_1.n_elem, fill::value(s_2_val + 1));
+    arma::vec s_2_1(s_1.n_elem, fill::value(s_2_val));
 
     // generate the weight matrices (technically vector because only one test observation)
     arma::mat weight_mat_s_1 = weight_mat_lfac_s_2_filter(n, ord_arma, s_1, n_prop, false);
@@ -162,11 +163,14 @@ arma::vec tune_params(const arma::mat &X,
         {
             // loop through the parameter combinations
             double c = param_mat(i, 0);
-            double M = param_mat(i, 1);
+            // double M = param_mat(i, 1);
+            int s_1_val = int(param_mat(i,1));
+            int s_2_val = std::ceil(s_1_val * c);
 
             arma::vec avg_est = make_param_estimate(X_train, Y_train, X_val,
                                                     ordered_Y, ord_arma,
-                                                    n, p, log_n, c, M,
+                                                    n, p, log_n, c,
+                                                    s_1_val, s_2_val,
                                                     n_prop, W0);
             param_estimates(i) = arma::as_scalar(avg_est);
         }
