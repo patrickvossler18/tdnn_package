@@ -18,8 +18,9 @@ de.dnn <-
     w_2 <- -1 / (c - 1)
     C_s_2 <- 2.0
     s_1 <- s.size
-    s_2 <- round(C_s_2 * n^(d/(d+8)))
+    # s_2 <- round(C_s_2 * n^(d/(d+8)))
     # s_2 <- round(s_1 * (c^(-d / 2)))
+    s_2 <- ceiling(s_1 * c)
 
 
     # Distance

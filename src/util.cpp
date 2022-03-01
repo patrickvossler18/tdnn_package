@@ -217,7 +217,18 @@ arma::vec rowMeans_arma(const arma::mat& x) {
     // NumericVector ans(nc);
     arma::vec ans(nr);
     for (int j = 0; j < nr; j++) {
-        arma::vec col_tmp = x.row(j);
+        arma::rowvec col_tmp = x.row(j);
+        double mean = arma::mean(col_tmp);
+        ans(j) = mean;
+    }
+    return ans;
+}
+
+arma::vec colMeans_arma(const arma::mat& x) {
+    int nc = x.n_cols;
+    arma::vec ans(nc);
+    for (int j = 0; j < nc; j++) {
+        arma::vec col_tmp = x.col(j);
         double mean = arma::mean(col_tmp);
         ans(j) = mean;
     }

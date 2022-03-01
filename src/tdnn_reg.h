@@ -13,7 +13,6 @@ List tdnn_reg_cpp(
     double c,
     double n_prop,
     int s_1_val,
-    int s_2_val,
     int B,
     bool verbose = false,
     Nullable<NumericVector> W0_ = R_NilValue);

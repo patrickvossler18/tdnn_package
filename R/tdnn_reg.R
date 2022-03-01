@@ -5,7 +5,7 @@
 #' @param X_test Matrix of test observations for which we want to get estimates
 #' @param W_0 Optional integer vector with 1 corresponding to columns that should be used for estimation. Default value is NULL
 #' @param c Value of c.
-#' @param M Value of M.
+#' @param s_1 Value of s_1.
 #' @param n_prop If \eqn{s_{2} > n\dot \text{n_prop}}, default to using 1-NN estimate.
 #' @param n_threads Number of threads to use when calculating bootstrap variance. Default is to use all available threads.
 #' @param verbose Print which step the method is currently calculating in the console.
@@ -16,9 +16,9 @@
 tdnn_reg <- function(X,
                      Y,
                      X_test,
+                     s_1,
+                     c,
                      W_0 = NULL,
-                     M = NULL,
-                     c = NULL,
                      n_prop = 0.5,
                      estimate_variance = F,
                      bootstrap_iter = 1000,
@@ -75,9 +75,11 @@ tdnn_reg <- function(X,
         RcppParallel::setThreadOptions(numThreads = n_threads)
     }
 
+
     n <- nrow(X)
     tuned_tdnn_results <-
-        tdnn:::tdnn_reg_cpp(X, Y, X_test, c, M, n_prop,
+        tdnn:::tdnn_reg_cpp(X, Y, X_test, c, n_prop,
+                            s_1,
                             bootstrap_iter,
                             estimate_variance, verbose, W_0)
 

@@ -164,8 +164,8 @@ arma::vec tune_params(const arma::mat &X,
             // loop through the parameter combinations
             double c = param_mat(i, 0);
             // double M = param_mat(i, 1);
-            int s_1_val = int(param_mat(i,1));
-            int s_2_val = std::ceil(s_1_val * c);
+            int s_1_val = int(param_mat(i, 1));
+            int s_2_val = int(std::ceil(s_1_val * c));
 
             arma::vec avg_est = make_param_estimate(X_train, Y_train, X_val,
                                                     ordered_Y, ord_arma,
@@ -174,18 +174,20 @@ arma::vec tune_params(const arma::mat &X,
                                                     n_prop, W0);
             param_estimates(i) = arma::as_scalar(avg_est);
         }
-        results_mat.col(b) = param_estimates;
-        truth_vec(b) = arma::as_scalar(Y_val);
+
+        results_mat.col(b) = pow(param_estimates - arma::as_scalar(Y_val),2);
+        // truth_vec(b) = arma::as_scalar(Y_val);
         // calculate loss function here
     }
     // now to find the best parameter combination, we will loop over the rows
-    arma::vec mse_results(n_params);
-    for (int i = 0; i < n_params; i++)
-    {
-        arma::rowvec param_mc_est = results_mat.row(i);
-        double mse = mean(pow((truth_vec - param_mc_est), 2));
-        mse_results(i) = mse;
-    }
+    arma::vec mse_results = rowMeans_arma(results_mat);
+    // arma::vec mse_results(n_params);
+    // for (int i = 0; i < n_params; i++)
+    // {
+    //     arma::rowvec param_mc_est = results_mat.row(i);
+    //     double mse = mean(pow((truth_vec - param_mc_est), 2));
+    //     mse_results(i) = mse;
+    // }
     int min_mse_idx = mse_results.index_min();
     // return(List::create(Named("c") = as_scalar(param_mat(min_mse_idx,0)),
     //                     Named("M") = as_scalar(param_mat(min_mse_idx,1))));

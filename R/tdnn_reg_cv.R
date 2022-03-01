@@ -5,8 +5,8 @@
 #' @param X_test Matrix of test observations for which we want to get estimates
 #' @param tuning_iter Number of iterations for MC resampling when tuning parameters. Default is 200
 #' @param W_0 Optional integer vector with 1 corresponding to columns that should be used for estimation. Default value is NULL
-#' @param c_seq Sequence of potential values for \eqn{c}. If a sequence is not provided, the default is \code{seq(0.1, 0.9, 0.1)}
-#' @param M_seq Sequence of potential values for \eqn{M}. If a sequence is not provided, the default is \code{seq(0.5, 2, 0.25)}
+#' @param c_seq Sequence of potential values for \eqn{c}. If a sequence is not provided, the default is \code{seq(1.25, 3, 0.25)}
+#' @param s_seq Sequence of potential values for \eqn{s_1}. If a sequence is not provided, the default is \code{seq(1,50,1)}
 #' @param n_prop If \eqn{s_{2} > n\dot \text{n_prop}}, default to using 1-NN estimate.
 #' @param n_threads Number of threads to use when calculating bootstrap variance. Default is to use all available threads.
 #' @param verbose Print which step the method is currently calculating in the console.
@@ -19,7 +19,7 @@ tdnn_reg_cv <- function(X,
                         X_test,
                         tuning_iter= 200,
                         W_0 = NULL,
-                        M_seq = NULL,
+                        s_seq = NULL,
                         c_seq = NULL,
                         n_prop = 0.5,
                         estimate_variance = F,
@@ -78,22 +78,22 @@ tdnn_reg_cv <- function(X,
     }
 
     n <- nrow(X)
-    # handle case where M_seq or c_seq are NULL
-    if (is.null(M_seq)) {
-        M_seq <- seq(0.5, 2, 0.25)
-        M_seq_text <- deparse(quote(seq(0.5, 2, 0.25)))
-        message(glue::glue("Using default M sequence: {M_seq_text}"))
+    # handle case where s_seq or c_seq are NULL
+    if (is.null(s_seq)) {
+        s_seq <- seq(1, 50, 1)
+        s_seq_text <- deparse(quote(seq(1,50,1)))
+        message(glue::glue("Using default S sequence: {s_seq_text}"))
 
     }
 
     if (is.null(c_seq)) {
-        c_seq <- seq(0.1, 0.9, 0.1)
-        c_seq_text <- deparse(quote(seq(0.1, 0.9, 0.1)))
+        c_seq <- seq(1.25, 3, 0.25)
+        c_seq_text <- deparse(quote(seq(1.25, 3, 0.25)))
         message(glue::glue("Using default c sequence: {c_seq_text}"))
 
     }
     # generate the matrix of tuning parameters
-    param_mat <- as.matrix(tidyr::expand_grid(c_val = c_seq, M =  M_seq))
+    param_mat <- as.matrix(tidyr::expand_grid(c_val = c_seq, M =  s_seq))
     if (verbose) {
         message("tuning parameters...")
     }

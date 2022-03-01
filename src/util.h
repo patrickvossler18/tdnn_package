@@ -55,6 +55,8 @@ arma::vec arma_round(const arma::vec& x);
 
 arma::vec rowMeans_arma(const arma::mat& x);
 
+arma::vec colMeans_arma(const arma::mat& x);
+
 arma::vec colSums_arma(const arma::mat& x);
 
 arma::vec colVar_arma(const arma::mat& x);
