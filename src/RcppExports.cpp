@@ -440,9 +440,46 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// pt_mat_dist
+arma::vec pt_mat_dist(arma::mat X, arma::vec y);
+RcppExport SEXP _tdnn_pt_mat_dist(SEXP XSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(pt_mat_dist(X, y));
+    return rcpp_result_gen;
+END_RCPP
+}
+// make_ord_vec
+arma::vec make_ord_vec(int n);
+RcppExport SEXP _tdnn_make_ord_vec(SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(make_ord_vec(n));
+    return rcpp_result_gen;
+END_RCPP
+}
+// make_ordered_Y_vec
+arma::rowvec make_ordered_Y_vec(const arma::mat& X_train, const arma::vec& X_val_vec, const arma::mat& Y_train, int n);
+RcppExport SEXP _tdnn_make_ordered_Y_vec(SEXP X_trainSEXP, SEXP X_val_vecSEXP, SEXP Y_trainSEXP, SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_train(X_trainSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type X_val_vec(X_val_vecSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y_train(Y_trainSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(make_ordered_Y_vec(X_train, X_val_vec, Y_train, n));
+    return rcpp_result_gen;
+END_RCPP
+}
 // make_param_estimate
-arma::vec make_param_estimate(const arma::mat& X_train, const arma::mat& Y_train, const arma::mat& X_val, const arma::rowvec& ordered_Y, const arma::vec& ord_arma, int n, int p, int log_n, double c, int s_1_val, int s_2_val, double n_prop, NumericVector W0);
-RcppExport SEXP _tdnn_make_param_estimate(SEXP X_trainSEXP, SEXP Y_trainSEXP, SEXP X_valSEXP, SEXP ordered_YSEXP, SEXP ord_armaSEXP, SEXP nSEXP, SEXP pSEXP, SEXP log_nSEXP, SEXP cSEXP, SEXP s_1_valSEXP, SEXP s_2_valSEXP, SEXP n_propSEXP, SEXP W0SEXP) {
+arma::vec make_param_estimate(const arma::mat& X_train, const arma::mat& Y_train, const arma::mat& X_val, const arma::rowvec& ordered_Y, const arma::vec& ord_arma, int n, int p, int log_n, double c, int s_1_val, int s_2_val, double n_prop);
+RcppExport SEXP _tdnn_make_param_estimate(SEXP X_trainSEXP, SEXP Y_trainSEXP, SEXP X_valSEXP, SEXP ordered_YSEXP, SEXP ord_armaSEXP, SEXP nSEXP, SEXP pSEXP, SEXP log_nSEXP, SEXP cSEXP, SEXP s_1_valSEXP, SEXP s_2_valSEXP, SEXP n_propSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -458,8 +495,25 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type s_1_val(s_1_valSEXP);
     Rcpp::traits::input_parameter< int >::type s_2_val(s_2_valSEXP);
     Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
+    rcpp_result_gen = Rcpp::wrap(make_param_estimate(X_train, Y_train, X_val, ordered_Y, ord_arma, n, p, log_n, c, s_1_val, s_2_val, n_prop));
+    return rcpp_result_gen;
+END_RCPP
+}
+// loo_test
+Rcpp::List loo_test(const arma::mat& X, const arma::mat& Y, const arma::mat& X_test, const arma::mat& param_mat, int B, double n_prop, NumericVector W0, bool verbose);
+RcppExport SEXP _tdnn_loo_test(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP param_matSEXP, SEXP BSEXP, SEXP n_propSEXP, SEXP W0SEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type param_mat(param_matSEXP);
+    Rcpp::traits::input_parameter< int >::type B(BSEXP);
+    Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type W0(W0SEXP);
-    rcpp_result_gen = Rcpp::wrap(make_param_estimate(X_train, Y_train, X_val, ordered_Y, ord_arma, n, p, log_n, c, s_1_val, s_2_val, n_prop, W0));
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(loo_test(X, Y, X_test, param_mat, B, n_prop, W0, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -478,6 +532,36 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type W0(W0SEXP);
     Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
     rcpp_result_gen = Rcpp::wrap(tune_params(X, Y, X_test, param_mat, B, n_prop, W0, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
+// tune_params_debug
+Rcpp::List tune_params_debug(const arma::mat& X, const arma::mat& Y, const arma::mat& X_test, const arma::mat& param_mat, int B, double n_prop, NumericVector W0, bool verbose);
+RcppExport SEXP _tdnn_tune_params_debug(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP param_matSEXP, SEXP BSEXP, SEXP n_propSEXP, SEXP W0SEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type param_mat(param_matSEXP);
+    Rcpp::traits::input_parameter< int >::type B(BSEXP);
+    Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type W0(W0SEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(tune_params_debug(X, Y, X_test, param_mat, B, n_prop, W0, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
+// r_like_order
+arma::uvec r_like_order(const arma::vec& x, const arma::vec& y);
+RcppExport SEXP _tdnn_r_like_order(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(r_like_order(x, y));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -555,8 +639,14 @@ static const R_CallMethodDef CallEntries[] = {
     {"_tdnn_fastPdist", (DL_FUNC) &_tdnn_fastPdist, 2},
     {"_tdnn_tdnn_reg_cpp", (DL_FUNC) &_tdnn_tdnn_reg_cpp, 10},
     {"_tdnn_tdnn_reg_cv_cpp", (DL_FUNC) &_tdnn_tdnn_reg_cv_cpp, 10},
-    {"_tdnn_make_param_estimate", (DL_FUNC) &_tdnn_make_param_estimate, 13},
+    {"_tdnn_pt_mat_dist", (DL_FUNC) &_tdnn_pt_mat_dist, 2},
+    {"_tdnn_make_ord_vec", (DL_FUNC) &_tdnn_make_ord_vec, 1},
+    {"_tdnn_make_ordered_Y_vec", (DL_FUNC) &_tdnn_make_ordered_Y_vec, 4},
+    {"_tdnn_make_param_estimate", (DL_FUNC) &_tdnn_make_param_estimate, 12},
+    {"_tdnn_loo_test", (DL_FUNC) &_tdnn_loo_test, 8},
     {"_tdnn_tune_params", (DL_FUNC) &_tdnn_tune_params, 8},
+    {"_tdnn_tune_params_debug", (DL_FUNC) &_tdnn_tune_params_debug, 8},
+    {"_tdnn_r_like_order", (DL_FUNC) &_tdnn_r_like_order, 2},
     {"_tdnn_weight_mat_lfac_s_2_filter", (DL_FUNC) &_tdnn_weight_mat_lfac_s_2_filter, 5},
     {"_tdnn_round_modified", (DL_FUNC) &_tdnn_round_modified, 1},
     {"_tdnn_round_modified_vec", (DL_FUNC) &_tdnn_round_modified_vec, 1},

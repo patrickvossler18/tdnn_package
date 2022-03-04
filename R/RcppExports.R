@@ -97,12 +97,36 @@ tdnn_reg_cv_cpp <- function(X, Y, X_test, param_mat, n_prop, B, bootstrap_iter, 
     .Call(`_tdnn_tdnn_reg_cv_cpp`, X, Y, X_test, param_mat, n_prop, B, bootstrap_iter, estimate_variance, verbose, W0_)
 }
 
-make_param_estimate <- function(X_train, Y_train, X_val, ordered_Y, ord_arma, n, p, log_n, c, s_1_val, s_2_val, n_prop, W0) {
-    .Call(`_tdnn_make_param_estimate`, X_train, Y_train, X_val, ordered_Y, ord_arma, n, p, log_n, c, s_1_val, s_2_val, n_prop, W0)
+pt_mat_dist <- function(X, y) {
+    .Call(`_tdnn_pt_mat_dist`, X, y)
+}
+
+make_ord_vec <- function(n) {
+    .Call(`_tdnn_make_ord_vec`, n)
+}
+
+make_ordered_Y_vec <- function(X_train, X_val_vec, Y_train, n) {
+    .Call(`_tdnn_make_ordered_Y_vec`, X_train, X_val_vec, Y_train, n)
+}
+
+make_param_estimate <- function(X_train, Y_train, X_val, ordered_Y, ord_arma, n, p, log_n, c, s_1_val, s_2_val, n_prop) {
+    .Call(`_tdnn_make_param_estimate`, X_train, Y_train, X_val, ordered_Y, ord_arma, n, p, log_n, c, s_1_val, s_2_val, n_prop)
+}
+
+loo_test <- function(X, Y, X_test, param_mat, B, n_prop, W0, verbose) {
+    .Call(`_tdnn_loo_test`, X, Y, X_test, param_mat, B, n_prop, W0, verbose)
 }
 
 tune_params <- function(X, Y, X_test, param_mat, B, n_prop, W0, verbose) {
     .Call(`_tdnn_tune_params`, X, Y, X_test, param_mat, B, n_prop, W0, verbose)
+}
+
+tune_params_debug <- function(X, Y, X_test, param_mat, B, n_prop, W0, verbose) {
+    .Call(`_tdnn_tune_params_debug`, X, Y, X_test, param_mat, B, n_prop, W0, verbose)
+}
+
+r_like_order <- function(x, y) {
+    .Call(`_tdnn_r_like_order`, x, y)
 }
 
 weight_mat_lfac_s_2_filter <- function(n, ord, s_vec, n_prop, is_s_2) {

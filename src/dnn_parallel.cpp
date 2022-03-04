@@ -86,8 +86,11 @@ struct TdnnEstimate : public Worker
             arma::vec U_1_1_vec(ordered_Y.n_rows);
             arma::vec U_2_1_vec;
 
-            double w_1 = c / (c - 1);
-            double w_2 = -1 / (c - 1);
+            // double w_1 = c / (c - 1);
+            // double w_2 = -1 / (c - 1);
+            double w_2 = pow(c, 2/ double(d)) / (pow(c, 2/ double(d)) - 1);
+            double w_1 = -1 / (pow(c, 2 / double(d)) - 1);
+
 
             // the weight matrix is # train obs x # test obs so we want to use the ith column of the weight mat for the ith test observation
             U_1_vec = reshape(ordered_Y, 1, n) * weight_mat_s_1.col(i);
@@ -113,8 +116,11 @@ struct TdnnEstimate : public Worker
 
             arma::vec U_vec = w_1 * U_1_vec + w_2 * U_2_vec;
             arma::vec U_vec_1 = w_1 * U_1_1_vec + w_2 * U_2_1_vec;
+            // Rcout << "U_vec: " << U_vec << std::endl;
+            // Rcout << "U_vec_1: " << U_vec_1 << std::endl;
             // now take the average of the two estimates and use that as our final estimate
-            arma::vec avg_est = (U_vec + U_vec_1) / 2.0;
+            // arma::vec avg_est = (U_vec + U_vec_1) / 2.0;
+            arma::vec avg_est = U_vec;
             estimates[i] = arma::as_scalar(avg_est);
         }
     }
@@ -160,7 +166,8 @@ arma::vec tdnn(arma::mat X, arma::vec Y, arma::mat X_test,
     arma::vec s_2(s_1.n_elem, arma::fill::value(s_2_val));
 
     arma::vec s_1_1(s_1.n_elem, arma::fill::value(s_1_val + 1));
-    arma::vec s_2_1(s_1.n_elem, arma::fill::value(s_2_val));
+    arma::vec s_2_1(s_1.n_elem, arma::fill::value(ceil((s_1_val+ 1)*2)));
+
     // Rcout << "s_1: " << s_1 << std::endl;
     // Rcout << "s_1_1: " << s_1_1 << std::endl;
     //
@@ -292,8 +299,11 @@ struct De_dnnEstimate : public Worker
             // arma::vec U_2_vec(ordered_Y.n_rows);
             arma::vec U_2_vec;
 
-            double w_1 = c / (c - 1);
-            double w_2 = -1 / (c - 1);
+            double w_2 = pow(c, 2 / double(d)) / (pow(c, 2 / double(d)) - 1);
+            double w_1 = -1 / (pow(c, 2 / double(d)) - 1);
+
+            // w_2 = c^(2/d)/ (c^(2/d) -1)
+            // w_1 = -1/ (c^(2/d) - 1)
 
             // the weight matrix is # train obs x # test obs so we want to use the ith column of the weight mat for the ith test observation
             U_1_vec = reshape(ordered_Y, 1, n) * weight_mat_s_1.col(i);

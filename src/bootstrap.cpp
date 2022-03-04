@@ -51,8 +51,10 @@ arma::vec tdnn_st_boot(arma::mat X, arma::vec Y, arma::mat X_test,
         arma::vec U_1_1_vec(ordered_Y.n_rows);
         arma::vec U_2_1_vec;
 
-        double w_1 = c / (c - 1);
-        double w_2 = -1 / (c - 1);
+        // double w_1 = c / (c - 1);
+        // double w_2 = -1 / (c - 1);
+        double w_2 = pow(c, 2/ double(p)) / (pow(c, 2/ double(p)) - 1);
+        double w_1 = -1 / (pow(c, 2/ double(p)) - 1);
 
         // the weight matrix is # train obs x # test obs so we want to use the
         // ith column of the weight mat for the ith test observation
@@ -194,7 +196,7 @@ NumericMatrix bootstrap_cpp_mt(const arma::mat &X,
 
     arma::vec s_1_1(s_1.n_elem, arma::fill::value(s_1_val + 1));
     // arma::vec s_2_1(s_1.n_elem, fill::value(round_modified(M * pow(n, double(d) / (double(d) + 8)))));
-    arma::vec s_2_1(s_1.n_elem, fill::value(s_2_val));
+    arma::vec s_2_1(s_1.n_elem, arma::fill::value(ceil((s_1_val+ 1)*2)));
 
     // Generate these matrices once since they won't change and just pass them to the workers
     arma::mat weight_mat_s_1 = weight_mat_lfac_s_2_filter(n, ord, s_1, n_prop, false);
@@ -334,6 +336,7 @@ std::tuple<arma::mat, arma::mat, arma::mat, arma::mat> make_weight_matrix(
 
     arma::vec s_1_1 = s_1 + 1;
     arma::vec s_2_1(s_1.n_elem, fill::value(s_2_val));
+
     arma::mat weight_mat_s_1 = weight_mat_lfac_s_2_filter(n, ord, s_1, n_prop, false);
     arma::mat weight_mat_s_2 = weight_mat_lfac_s_2_filter(n, ord, s_2, n_prop, true);
 

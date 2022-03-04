@@ -117,7 +117,7 @@ arma::vec vector_subset_idx(const arma::vec& x,
     return x.elem( y );
 }
 
-
+// [[Rcpp::export]]
 arma::uvec r_like_order(const arma::vec& x, const arma::vec& y){
     std::vector<double> eu_dis = conv_to<std::vector<double>>::from(x);
     std::vector<double> noise_vec = conv_to<std::vector<double>>::from(y);
@@ -157,6 +157,11 @@ arma::mat weight_mat_lfac_s_2_filter(int n, const arma::vec& ord, const arma::ve
             out.col(i) = weight_vec;
 
         } else{
+
+// weight1 = s.size*exp(lfactorial(n-ord) + lfactorial(n-s.size) - lfactorial(n) - lfactorial(n-ord-s.size+1))
+// weight2 = 2*s.size*exp(lfactorial(n-ord) + lfactorial(n-2*s.size) - lfactorial(n) - lfactorial(n-ord-2*s.size+1))
+
+
             // use fact that lfactorial(x) = lgamma(x+1)
             arma::vec n_ord = arma::lgamma( ((double(n)- ord) + 1.0) ); // first term
             arma::vec n_ord_s = arma::lgamma( ((double(n) - ord - s_val + 1.0) + 1.0) ); // last term
