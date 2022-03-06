@@ -323,8 +323,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // de_dnn
-arma::vec de_dnn(arma::mat X, arma::vec Y, arma::mat X_test, arma::vec s_sizes, double c, double n_prop, double M, Nullable<NumericVector> W0_);
-RcppExport SEXP _tdnn_de_dnn(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_sizesSEXP, SEXP cSEXP, SEXP n_propSEXP, SEXP MSEXP, SEXP W0_SEXP) {
+arma::vec de_dnn(arma::mat X, arma::vec Y, arma::mat X_test, arma::vec s_sizes, double c, double n_prop, Nullable<NumericVector> W0_);
+RcppExport SEXP _tdnn_de_dnn(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_sizesSEXP, SEXP cSEXP, SEXP n_propSEXP, SEXP W0_SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -334,15 +334,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type s_sizes(s_sizesSEXP);
     Rcpp::traits::input_parameter< double >::type c(cSEXP);
     Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
-    Rcpp::traits::input_parameter< double >::type M(MSEXP);
     Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
-    rcpp_result_gen = Rcpp::wrap(de_dnn(X, Y, X_test, s_sizes, c, n_prop, M, W0_));
+    rcpp_result_gen = Rcpp::wrap(de_dnn(X, Y, X_test, s_sizes, c, n_prop, W0_));
     return rcpp_result_gen;
 END_RCPP
 }
 // tuning
-NumericVector tuning(arma::mat X, arma::vec Y, arma::mat X_test, double c, double n_prop, double M, Nullable<NumericVector> W0_);
-RcppExport SEXP _tdnn_tuning(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP cSEXP, SEXP n_propSEXP, SEXP MSEXP, SEXP W0_SEXP) {
+NumericVector tuning(arma::mat X, arma::vec Y, arma::mat X_test, double c, double n_prop, Nullable<NumericVector> W0_);
+RcppExport SEXP _tdnn_tuning(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP cSEXP, SEXP n_propSEXP, SEXP W0_SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -351,15 +350,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type X_test(X_testSEXP);
     Rcpp::traits::input_parameter< double >::type c(cSEXP);
     Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
-    Rcpp::traits::input_parameter< double >::type M(MSEXP);
     Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
-    rcpp_result_gen = Rcpp::wrap(tuning(X, Y, X_test, c, n_prop, M, W0_));
+    rcpp_result_gen = Rcpp::wrap(tuning(X, Y, X_test, c, n_prop, W0_));
     return rcpp_result_gen;
 END_RCPP
 }
 // tuning_est
-List tuning_est(arma::mat X, arma::vec Y, arma::mat X_test, double c, double n_prop, double M, Nullable<NumericVector> W0_);
-RcppExport SEXP _tdnn_tuning_est(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP cSEXP, SEXP n_propSEXP, SEXP MSEXP, SEXP W0_SEXP) {
+List tuning_est(arma::mat X, arma::vec Y, arma::mat X_test, double c, double n_prop, Nullable<NumericVector> W0_);
+RcppExport SEXP _tdnn_tuning_est(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP cSEXP, SEXP n_propSEXP, SEXP W0_SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -368,9 +366,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type X_test(X_testSEXP);
     Rcpp::traits::input_parameter< double >::type c(cSEXP);
     Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
-    Rcpp::traits::input_parameter< double >::type M(MSEXP);
     Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
-    rcpp_result_gen = Rcpp::wrap(tuning_est(X, Y, X_test, c, n_prop, M, W0_));
+    rcpp_result_gen = Rcpp::wrap(tuning_est(X, Y, X_test, c, n_prop, W0_));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -632,9 +629,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_tdnn_tuning_es_loop", (DL_FUNC) &_tdnn_tuning_es_loop, 10},
     {"_tdnn_est_reg_fn_st_loop", (DL_FUNC) &_tdnn_est_reg_fn_st_loop, 9},
     {"_tdnn_tdnn", (DL_FUNC) &_tdnn_tdnn, 8},
-    {"_tdnn_de_dnn", (DL_FUNC) &_tdnn_de_dnn, 8},
-    {"_tdnn_tuning", (DL_FUNC) &_tdnn_tuning, 7},
-    {"_tdnn_tuning_est", (DL_FUNC) &_tdnn_tuning_est, 7},
+    {"_tdnn_de_dnn", (DL_FUNC) &_tdnn_de_dnn, 7},
+    {"_tdnn_tuning", (DL_FUNC) &_tdnn_tuning, 6},
+    {"_tdnn_tuning_est", (DL_FUNC) &_tdnn_tuning_est, 6},
     {"_tdnn_get_1nn_reg", (DL_FUNC) &_tdnn_get_1nn_reg, 4},
     {"_tdnn_fastPdist", (DL_FUNC) &_tdnn_fastPdist, 2},
     {"_tdnn_tdnn_reg_cpp", (DL_FUNC) &_tdnn_tdnn_reg_cpp, 10},

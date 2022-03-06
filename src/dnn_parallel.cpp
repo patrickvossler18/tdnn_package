@@ -272,23 +272,6 @@ struct De_dnnEstimate : public Worker
 
             arma::vec vec_eu_dis = conv_to<arma::vec>::from(EuDis);
             arma::uvec index = r_like_order(vec_eu_dis, noise);
-            // std::vector<double> eu_dis = conv_to<std::vector<double>>::from(vec_eu_dis);
-            // std::vector<double> noise_vec = conv_to<std::vector<double>>::from(noise);
-            //
-            // vector<int> index(int(n), 0);
-            // for (int i = 0 ; i != index.size() ; i++) {
-            //     index[i] = i;
-            // }
-            // sort(index.begin(), index.end(),
-            //      [&](const int& a, const int& b) {
-            //          if (eu_dis[a] != eu_dis[b]){
-            //              return eu_dis[a] < eu_dis[b];
-            //          }
-            //          return noise_vec[a] < noise_vec[b];
-            //      }
-            // );
-            // arma::vec ordered_Y;
-            // arma::mat ordered_Y_vec = conv_to<arma::mat>::from(Y).rows(conv_to<arma::uvec>::from(index));
 
             arma::vec ordered_Y;
             arma::mat ordered_Y_vec = conv_to<arma::mat>::from(Y).rows(index);
@@ -334,7 +317,6 @@ struct De_dnnEstimate : public Worker
 arma::vec de_dnn(arma::mat X, arma::vec Y, arma::mat X_test,
                  arma::vec s_sizes, double c,
                  double n_prop,
-                 double M,
                  Nullable<NumericVector> W0_ = R_NilValue)
 {
     int d = X.n_cols;
@@ -351,8 +333,9 @@ arma::vec de_dnn(arma::mat X, arma::vec Y, arma::mat X_test,
     // Infer n and p from our data after we've filtered for relevant features
     int n = X.n_rows;
     int p = X.n_cols;
-    int log_n = log(n);
-    int s_2_val = round_modified(exp(M * log_n * (double(d) / (double(d) + 8))));
+
+    // int log_n = log(n);
+    // int s_2_val = round_modified(exp(M * log_n * (double(d) / (double(d) + 8))));
 
     // This just creates a sequence 1:n and then reverses it
     NumericVector ord = seq_cpp(1, n);
@@ -362,13 +345,7 @@ arma::vec de_dnn(arma::mat X, arma::vec Y, arma::mat X_test,
     arma::vec ord_arma = as<arma::vec>(ord);
 
     arma::vec s_1 = s_sizes;
-    arma::vec s_2(s_1.n_elem, fill::value(s_2_val));
-    // arma::vec s_1 = s_sizes;
-    // arma::vec s_2 = round_modified(s_1 * pow(c, - double(d) / 2.0));
-    // Rcout << "tmp: " << tmp << std::endl;
-    // Rcout << "s_2: " << s_2 << std::endl;
-    // arma::mat weight_mat_s_1 = weight_mat_lfac(int(n), ord_arma, s_1);
-    // arma::mat weight_mat_s_2 = weight_mat_lfac(int(n), ord_arma, s_2);
+    arma::vec s_2 = arma::ceil(s_1 * c);
 
     arma::mat weight_mat_s_1 = weight_mat_lfac_s_2_filter(n, ord_arma, s_1, n_prop, false);
     arma::mat weight_mat_s_2 = weight_mat_lfac_s_2_filter(n, ord_arma, s_2, n_prop, true);
@@ -398,7 +375,6 @@ arma::vec de_dnn(arma::mat X, arma::vec Y, arma::mat X_test,
 NumericVector tuning(arma::mat X, arma::vec Y,
                      arma::mat X_test, double c,
                      double n_prop,
-                     double M,
                      Nullable<NumericVector> W0_)
 {
 
@@ -418,7 +394,7 @@ NumericVector tuning(arma::mat X, arma::vec Y,
 
         // For a given s, get the de_dnn estimates for each test observation
         // List de_dnn_estimates = de_dnn(X, Y, X_test, s_val, c, W0_);
-        arma::vec de_dnn_estimates = de_dnn(X, Y, X_test, s_val, c, n_prop, M, W0_);
+        arma::vec de_dnn_estimates = de_dnn(X, Y, X_test, s_val, c, n_prop, W0_);
 
         // This gives me an estimate for each test observation and is a n x 1 matrix
         // arma::vec de_dnn_est_vec = as<arma::vec>(de_dnn_estimates["estimates"]);
@@ -512,7 +488,6 @@ NumericVector tuning(arma::mat X, arma::vec Y,
 List tuning_est(arma::mat X, arma::vec Y,
                 arma::mat X_test, double c,
                 double n_prop,
-                double M,
                 Nullable<NumericVector> W0_ = R_NilValue)
 {
 
@@ -532,7 +507,7 @@ List tuning_est(arma::mat X, arma::vec Y,
 
         // For a given s, get the de_dnn estimates for each test observation
         // List de_dnn_estimates = de_dnn(X, Y, X_test, s_val, c, W0_);
-        arma::vec de_dnn_estimates = de_dnn(X, Y, X_test, s_val, c, n_prop, M, W0_);
+        arma::vec de_dnn_estimates = de_dnn(X, Y, X_test, s_val, c, n_prop, W0_);
 
         // This gives me an estimate for each test observation and is a n x 1 matrix
         // arma::vec de_dnn_est_vec = as<arma::vec>(de_dnn_estimates["estimates"]);
@@ -627,11 +602,7 @@ List tuning_est(arma::mat X, arma::vec Y,
     // so if the first row had s=4 then we need the first element of the column of tuning
     // mat that corresponds to s = 4
     arma::vec tuned_estimates = select_mat_elements(tuning_mat, estimate_row_idx, estimate_col_idx);
-    // now we need the s+1 estimates for each of these values
-    arma::vec tuned_1_estimates = de_dnn(X, Y, X_test, best_s + 1, c, n_prop, M, W0_);
-
-    arma::vec final_est = (tuned_estimates + tuned_1_estimates) / 2;
-    return (List::create(Named("estimates") = final_est, Named("s") = NumericVector(best_s.begin(), best_s.end())));
+    return (List::create(Named("estimates") = tuned_estimates, Named("s") = NumericVector(best_s.begin(), best_s.end())));
 
     // return NumericVector(best_s.begin(), best_s.end());
     // return best_s;

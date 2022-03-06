@@ -69,16 +69,16 @@ tdnn <- function(X, Y, X_test, c, n_prop, s_1_val, s_2_val, W0_) {
     .Call(`_tdnn_tdnn`, X, Y, X_test, c, n_prop, s_1_val, s_2_val, W0_)
 }
 
-de_dnn <- function(X, Y, X_test, s_sizes, c, n_prop, M, W0_ = NULL) {
-    .Call(`_tdnn_de_dnn`, X, Y, X_test, s_sizes, c, n_prop, M, W0_)
+de_dnn <- function(X, Y, X_test, s_sizes, c, n_prop, W0_ = NULL) {
+    .Call(`_tdnn_de_dnn`, X, Y, X_test, s_sizes, c, n_prop, W0_)
 }
 
-tuning <- function(X, Y, X_test, c, n_prop, M, W0_) {
-    .Call(`_tdnn_tuning`, X, Y, X_test, c, n_prop, M, W0_)
+tuning <- function(X, Y, X_test, c, n_prop, W0_) {
+    .Call(`_tdnn_tuning`, X, Y, X_test, c, n_prop, W0_)
 }
 
-tuning_est <- function(X, Y, X_test, c, n_prop, M, W0_ = NULL) {
-    .Call(`_tdnn_tuning_est`, X, Y, X_test, c, n_prop, M, W0_)
+tuning_est <- function(X, Y, X_test, c, n_prop, W0_ = NULL) {
+    .Call(`_tdnn_tuning_est`, X, Y, X_test, c, n_prop, W0_)
 }
 
 get_1nn_reg <- function(X, X_test, Y, k) {
