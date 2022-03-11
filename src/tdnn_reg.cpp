@@ -32,24 +32,29 @@ List tdnn_reg_cpp(
 
     deDNN_pred = tdnn(X, Y, X_test, c, n_prop, s_1_val, s_2_val, W0);
 
-    if (estimate_variance)
-    {
-        NumericMatrix bstrap_estimates = bootstrap_cpp_mt(X, Y, X_test,
-                                                          c, n_prop, s_1_val,
-                                                          s_2_val, bootstrap_iter, W0);
-        // need to apply variance over columns
-        arma::vec variance = rowVar_arma(as<arma::mat>(bstrap_estimates));
-        return (List::create(Named("estimates") = deDNN_pred,
-                             Named("variance") = variance,
-                             Named("s_1") = s_1_val,
-                             Named("s_2") = s_2_val,
-                             Named("c") = c));
-    }
-    else
-    {
-        return (List::create(Named("estimates") = deDNN_pred,
-                             Named("s_1") = s_1_val,
-                             Named("s_2") = s_2_val,
-                             Named("c") = c));
-    }
+    // if (estimate_variance)
+    // {
+    //     NumericMatrix bstrap_estimates = bootstrap_cpp_mt(X, Y, X_test,
+    //                                                       c, n_prop, s_1_val,
+    //                                                       s_2_val, bootstrap_iter, W0);
+    //     // need to apply variance over columns
+    //     arma::vec variance = rowVar_arma(as<arma::mat>(bstrap_estimates));
+    //     return (List::create(Named("estimates") = deDNN_pred,
+    //                          Named("variance") = variance,
+    //                          Named("s_1") = s_1_val,
+    //                          Named("s_2") = s_2_val,
+    //                          Named("c") = c));
+    // }
+    // else
+    // {
+    //     return (List::create(Named("estimates") = deDNN_pred,
+    //                          Named("s_1") = s_1_val,
+    //                          Named("s_2") = s_2_val,
+    //                          Named("c") = c));
+    // }
+
+    return (List::create(Named("estimates") = deDNN_pred,
+                         Named("s_1") = s_1_val,
+                         Named("s_2") = s_2_val,
+                         Named("c") = c));
 }

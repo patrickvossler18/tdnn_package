@@ -9,8 +9,6 @@ struct TdnnEstimate : public Worker
     const arma::vec Y;
     const arma::mat weight_mat_s_1;
     const arma::mat weight_mat_s_2;
-    const arma::mat weight_mat_s_1_plus_1;
-    const arma::mat weight_mat_s_2_plus_1;
 
     // input constants
     const int n;
@@ -27,15 +25,11 @@ struct TdnnEstimate : public Worker
                  NumericVector estimates,
                  const arma::mat &weight_mat_s_1,
                  const arma::mat &weight_mat_s_2,
-                 const arma::mat &weight_mat_s_1_plus_1,
-                 const arma::mat &weight_mat_s_2_plus_1,
                  double c, int n, int d)
         : X(X), X_test(X_test),
           Y(Y),
           weight_mat_s_1(weight_mat_s_1),
           weight_mat_s_2(weight_mat_s_2),
-          weight_mat_s_1_plus_1(weight_mat_s_1_plus_1),
-          weight_mat_s_2_plus_1(weight_mat_s_2_plus_1),
           n(n), c(c), d(d),
           estimates(estimates) {}
 
@@ -88,13 +82,12 @@ struct TdnnEstimate : public Worker
 
             // double w_1 = c / (c - 1);
             // double w_2 = -1 / (c - 1);
-            double w_2 = pow(c, 2/ double(d)) / (pow(c, 2/ double(d)) - 1);
+            double w_2 = pow(c, 2 / double(d)) / (pow(c, 2 / double(d)) - 1);
             double w_1 = -1 / (pow(c, 2 / double(d)) - 1);
 
-
-            // the weight matrix is # train obs x # test obs so we want to use the ith column of the weight mat for the ith test observation
+            // the weight matrix is # train obs x # test obs so we want to use
+            // the ith column of the weight mat for the ith test observation
             U_1_vec = reshape(ordered_Y, 1, n) * weight_mat_s_1.col(i);
-            U_1_1_vec = reshape(ordered_Y, 1, n) * weight_mat_s_1_plus_1.col(i);
             if (arma::accu(weight_mat_s_2.col(i)) == 0)
             {
                 // in this case s_2 is too large so we will get the 1-NN to use as the estimate
@@ -104,24 +97,17 @@ struct TdnnEstimate : public Worker
                 // std::cout << "Y:" << Y << std::endl;
                 arma::vec nn_1_result = get_1nn_reg(X, X_test_row, Y, 1);
                 U_2_vec = arma::as_scalar(nn_1_result);
-                U_2_1_vec = arma::as_scalar(nn_1_result);
                 // std::cout << "U_2_vec: " <<  U_2_vec << std::endl;
                 // std::cout << "weight_mat_s_2.n_rows: " <<  weight_mat_s_2.n_rows << std::endl;
             }
             else
             {
                 U_2_vec = reshape(ordered_Y, 1, n) * weight_mat_s_2.col(i);
-                U_2_1_vec = reshape(ordered_Y, 1, n) * weight_mat_s_2_plus_1.col(i);
             }
 
             arma::vec U_vec = w_1 * U_1_vec + w_2 * U_2_vec;
-            arma::vec U_vec_1 = w_1 * U_1_1_vec + w_2 * U_2_1_vec;
             // Rcout << "U_vec: " << U_vec << std::endl;
-            // Rcout << "U_vec_1: " << U_vec_1 << std::endl;
-            // now take the average of the two estimates and use that as our final estimate
-            // arma::vec avg_est = (U_vec + U_vec_1) / 2.0;
-            arma::vec avg_est = U_vec;
-            estimates[i] = arma::as_scalar(avg_est);
+            estimates[i] = arma::as_scalar(U_vec);
         }
     }
 };
@@ -149,9 +135,6 @@ arma::vec tdnn(arma::mat X, arma::vec Y, arma::mat X_test,
 
     // Infer n and p from our data after we've filtered for relevant features
     int n = X.n_rows;
-    // int log_n = log(n);
-    // int s_2_val = std::ceil(int(round_modified(exp(M * log_n * (double(d) / (double(d) + 8))))));
-    // int s_1_val = std::ceil(int(round_modified(s_2_val * pow(c, double(d) / 2))));
 
     // This just creates a sequence 1:n and then reverses it
     NumericVector ord = seq_cpp(1, n);
@@ -161,26 +144,10 @@ arma::vec tdnn(arma::mat X, arma::vec Y, arma::mat X_test,
     arma::vec ord_arma = as<arma::vec>(ord);
 
     arma::vec s_1(X_test.n_rows, arma::fill::value(s_1_val));
-    // arma::vec s_2 = round_modified(s_1 * pow(c, - double(d) / 2.0));
-    // arma::vec s_2(s_1.n_elem, fill::value(round_modified(M * pow(n, double(d) / (double(d) + 8)))));
     arma::vec s_2(s_1.n_elem, arma::fill::value(s_2_val));
-
-    arma::vec s_1_1(s_1.n_elem, arma::fill::value(s_1_val + 1));
-    arma::vec s_2_1(s_1.n_elem, arma::fill::value(ceil((s_1_val+ 1)*2)));
-
-    // Rcout << "s_1: " << s_1 << std::endl;
-    // Rcout << "s_1_1: " << s_1_1 << std::endl;
-    //
-    // Rcout << "s_2: " << s_2 << std::endl;
-    // Rcout << "s_2_1: " << s_2_1 << std::endl;
-    // arma::mat weight_mat_s_1 = weight_mat_lfac(int(n), ord_arma, s_1);
-    // arma::mat weight_mat_s_2 = weight_mat_lfac(int(n), ord_arma, s_2);
 
     arma::mat weight_mat_s_1 = weight_mat_lfac_s_2_filter(n, ord_arma, s_1, n_prop, false);
     arma::mat weight_mat_s_2 = weight_mat_lfac_s_2_filter(n, ord_arma, s_2, n_prop, true);
-
-    arma::mat weight_mat_s_1_plus_1 = weight_mat_lfac_s_2_filter(n, ord_arma, s_1_1, n_prop, false);
-    arma::mat weight_mat_s_2_plus_1 = weight_mat_lfac_s_2_filter(n, ord_arma, s_2_1, n_prop, true);
 
     // double choose(n, s_size);
     //  estimates vector
@@ -190,8 +157,6 @@ arma::vec tdnn(arma::mat X, arma::vec Y, arma::mat X_test,
                               estimates,
                               weight_mat_s_1,
                               weight_mat_s_2,
-                              weight_mat_s_1_plus_1,
-                              weight_mat_s_2_plus_1,
                               c, n, d);
 
     parallelFor(0, X_test.n_rows, tdnnEstimate);
@@ -380,7 +345,7 @@ NumericVector tuning(arma::mat X, arma::vec Y,
 
     double n_obs = X_test.n_rows;
     bool search_for_s = true;
-    arma::mat tuning_mat(n_obs, 100, fill::zeros);
+    arma::mat tuning_mat(n_obs, int(sqrt(n_obs)), fill::zeros);
     arma::vec best_s(n_obs, fill::zeros);
     double s = 0;
     // using zero indexing here to match with C++, note s + 1 -> s+2 in de_dnn call
@@ -493,7 +458,8 @@ List tuning_est(arma::mat X, arma::vec Y,
 
     double n_obs = X_test.n_rows;
     bool search_for_s = true;
-    arma::mat tuning_mat(n_obs, 100, fill::zeros);
+    int n_tuning = int(ceil(sqrt(X.n_rows)));
+    arma::mat tuning_mat(n_obs, n_tuning, fill::zeros);
     arma::vec best_s(n_obs, fill::zeros);
     double s = 0;
     // using zero indexing here to match with C++, note s + 1 -> s+2 in de_dnn call
