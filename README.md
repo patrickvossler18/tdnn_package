@@ -3,9 +3,9 @@
 
 <!-- badges: start -->
 <!-- badges: end -->
-*This package is still in beta and not yet intended for regular use*
+### This package is still in beta and not yet intended for regular use 
 
-The `tdnn` R package provides an implementation of the two-scale distributional nearest neighbors algorithm proposed in (Demirkaya et al., 2022)[https://arxiv.org/abs/1808.08469].
+The `tdnn` R package provides an implementation of the two-scale distributional nearest neighbors algorithm proposed in [Demirkaya et al., 2022](https://arxiv.org/abs/1808.08469).
 
 ## Installation
 
@@ -48,4 +48,4 @@ tdnn_est <-tdnn_reg_tune(X, Y, X_test)
 
 ## Acknowledgements
 
-The `tdnn` package makes use of the (libnabo)[https://github.com/ethz-asl/libnabo] C++ library for its 1-NN calculations and we thank the authors for such a performant implementation. `tdnn` would not exist if not for the (Rcpp)[https://cran.r-project.org/package=Rcpp], (RcppArmadillo)[https://cran.r-project.org/package=RcppArmadillo], and (RcppParallel)[https://cran.r-project.org/package=RcppParallel] packages - many thanks to their authors! 
+The `tdnn` package makes use of the [libnabo](https://github.com/ethz-asl/libnabo) C++ library for its 1-NN calculations and we thank the authors for such a performant implementation. `tdnn` would not exist if not for the [Rcpp](https://cran.r-project.org/package=Rcpp), [RcppArmadillo](https://cran.r-project.org/package=RcppArmadillo), and [RcppParallel](https://cran.r-project.org/package=RcppParallel) packages - many thanks to their authors! 
