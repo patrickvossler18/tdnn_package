@@ -5,6 +5,7 @@
 src/*.o
 src/*.so
 src/*.dll
+src/kd_tree/*.o
 .DS_Store
 autom4te.cache
 config.*

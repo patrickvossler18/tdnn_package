@@ -11,7 +11,7 @@ Encoding: UTF-8
 LazyData: true
 Suggests: testthat
 Imports: glue, boot, strex, energy, RcppParallel, RcppArmadillo, Rcpp,
-        parallel
+        parallel, dplyr, tidyr
 RoxygenNote: 7.1.2
 LinkingTo: Rcpp, RcppArmadillo, RcppParallel, RcppProgress, RcppEigen,
         BH
