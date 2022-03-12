@@ -2,6 +2,7 @@
 # tdnn: Two-scale Distributional Nearest Neighbors
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/patrickvossler18/tdnn_package/workflows/R-CMD-check/badge.svg)](https://github.com/patrickvossler18/tdnn_package/actions)
 <!-- badges: end -->
 ### This package is still in beta and not yet intended for regular use 
 
