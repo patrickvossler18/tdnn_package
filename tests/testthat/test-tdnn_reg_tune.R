@@ -236,3 +236,11 @@ test_that("Bootstrap estimate matches tuned C++ estimate when using the same s v
 })
 
 
+test_that("tdnn tune reg R function gives same estimate as using the C++ function directly", {
+    X_test_rand <- matrix(rnorm(100*p),100,p)
+    expect_equal(
+        tdnn::tdnn_reg_tune(X,Y,X_test_rand,W_0 = rep(1,p),c_val = fixed_c,B_NN = 20,n_prop = 0.5,estimate_variance = F, bootstrap_iter = 100),
+        tdnn:::tune_de_dnn_no_dist_cpp(X,Y,X_test_rand,W0_ = rep(1,p),c = fixed_c,
+                                       B_NN = 20,scale_p = 1,n_prop=0.5, debug = F)
+    )
+})
