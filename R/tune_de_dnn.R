@@ -21,9 +21,7 @@ de.dnn <- function(X,
     # Estimator
     U1 = sum(TempD$Y * weight1)
     U2 = sum(TempD$Y * weight2)
-    Magic = solve(matrix(c(1, 1, 1, (1 / bc.p) ^ (2 / min(
-        p, 3
-    ))), 2, 2)) %*% matrix(c(1, 0), 2, 1)
+    Magic = solve(matrix(c(1, 1, 1, (1 / bc.p) ^ (2 / p)), 2, 2)) %*% matrix(c(1, 0), 2, 1)
     U = Magic[1, 1] * U1 + Magic[2, 1] * U2
     return(U)
 }
@@ -48,9 +46,7 @@ de.dnn_no_dist <- function(
     # Estimator
     U1 = sum(ordered_Y * weight1)
     U2 = sum(ordered_Y * weight2)
-    Magic = solve(matrix(c(1, 1, 1, (1 / bc.p) ^ (2 / min(
-        p, 3
-    ))), 2, 2)) %*% matrix(c(1, 0), 2, 1)
+    Magic = solve(matrix(c(1, 1, 1, (1 / bc.p) ^ (2 / p)), 2, 2)) %*% matrix(c(1, 0), 2, 1)
     U = Magic[1, 1] * U1 + Magic[2, 1] * U2
     return(U)
 }
@@ -98,7 +94,7 @@ tune_de_dnn <- function(X,Y,X_test, c = 2, B_NN=20, scale_p=1, debug=F){
     estimate_curve = de.dnn(X, Y, X_test, s.size = s_curve, bc.p = 2)
 
     s_1_seq <- seq(s_curve,s_curve*2,1)
-    param_df <- tidyr::expand_grid(c = fixed_c, s_1 =  s_1_seq)
+    param_df <- tidyr::expand_grid(c = c, s_1 =  s_1_seq)
 
     B_NN_estimates <- purrr::map_df(1:B_NN, function(b){
         X_train <- X[-B.index[b],]
@@ -171,7 +167,7 @@ tune_de_dnn_no_dist <- function(X,Y,X_test, c = 2, B_NN=20, scale_p=1, debug=F){
     estimate_curve = de.dnn_no_dist(ordered_Y,n,p,s_curve,bc.p=2)
 
     s_1_seq <- seq(s_curve,s_curve*2,1)
-    param_df <- tidyr::expand_grid(c = fixed_c, s_1 =  s_1_seq)
+    param_df <- tidyr::expand_grid(c = c, s_1 =  s_1_seq)
 
 
     B_NN_estimates <- purrr::map_df(1:B_NN, function(b){
@@ -265,7 +261,7 @@ tune_de_dnn_no_dist_test_mat <- function(X,Y,X_test, c = 2, B_NN=20, scale_p=1, 
         estimate_curve = de.dnn_no_dist(ordered_Y,n,p,s_curve,bc.p=2)
 
         s_1_seq <- seq(s_curve,s_curve*2,1)
-        param_df <- tidyr::expand_grid(c = fixed_c, s_1 =  s_1_seq)
+        param_df <- tidyr::expand_grid(c = c, s_1 =  s_1_seq)
 
 
         B_NN_estimates <- purrr::map_df(1:B_NN, function(b){
