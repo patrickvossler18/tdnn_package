@@ -54,6 +54,7 @@ echo "
   Configuration for ${PACKAGE_NAME} ${PACKAGE_VERSION}
 
     cppflags: ${CXXFLAGS}
+    openmp_cflags: ${OPENMP_CFLAGS}
     libs:     ${LIBS}
 
   --------------------------------------------------

@@ -4792,8 +4792,8 @@ printf "%s\n" "$ac_cv_prog_cxx_openmp" >&6; }
 # we also check that the actual package will work
 ac_pkg_openmp=no
 if test -n "${OPENMP_CFLAGS}"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether OpenMP will work in a package" >&5
-printf %s "checking whether OpenMP will work in a package... " >&6; }
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking OpenMP detected, checking if viable for package use" >&5
+printf %s "checking OpenMP detected, checking if viable for package use... " >&6; }
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <omp.h>
@@ -4805,7 +4805,7 @@ main (void)
   return 0;
 }
 _ACEOF
-  PKG_CFLAGS="${OPENMP_CFLAGS}" PKG_LIBS="${OPENMP_CFLAGS}" "$RBIN" CMD SHLIB conftest.c 1>&5 2>&5 && "$RBIN" --vanilla -q -e "dyn.load(paste('conftest',.Platform\$dynlib.ext,sep=''))" 1>&5 2>&5 && ac_pkg_openmp=yes
+  "$RBIN" CMD SHLIB conftest.c 1>&5 2>&5 && "$RBIN" --vanilla -q -e "dyn.load(paste('conftest',.Platform\$dynlib.ext,sep=''))" 1>&5 2>&5 && ac_pkg_openmp=yes
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: ${ac_pkg_openmp}" >&5
 printf "%s\n" "${ac_pkg_openmp}" >&6; }
 fi
@@ -5977,6 +5977,7 @@ echo "
   Configuration for ${PACKAGE_NAME} ${PACKAGE_VERSION}
 
     cppflags: ${CXXFLAGS}
+    openmp_cflags: ${OPENMP_CFLAGS}
     libs:     ${LIBS}
 
   --------------------------------------------------
