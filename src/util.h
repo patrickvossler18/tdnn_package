@@ -6,18 +6,15 @@
 #endif
 
 #include <RcppArmadillo.h>
-#include <RcppEigen.h>
 #include <RcppParallel.h>
 
 #include <math.h>
 #include <tuple>
-#include "nabo.h"
 
 // [[Rcpp::plugins(openmp)]]
 // [[Rcpp::depends(RcppProgress)]]
 // [[Rcpp::depends(RcppParallel)]]
 // [[Rcpp::depends(RcppArmadillo)]]
-// [[Rcpp::depends(RcppEigen)]]
 // [[Rcpp::plugins(cpp11)]]
 // [[Rcpp::depends(BH)]]
 
@@ -25,8 +22,6 @@ using namespace Rcpp;
 using namespace RcppParallel;
 using namespace arma;
 using namespace std;
-using namespace Nabo;
-using namespace Eigen;
 
 double nChoosek(double n, double k);
 NumericVector seq_cpp(double lo, double hi);
