@@ -78,7 +78,7 @@ tdnn_reg <- function(X,
 
     n <- nrow(X)
     tuned_tdnn_results <-
-        tdnn:::tdnn_reg_cpp(X, Y, X_test, c, n_prop,
+        tdnn_reg_cpp(X, Y, X_test, c, n_prop,
                             s_1,
                             bootstrap_iter,
                             estimate_variance, verbose, W_0)

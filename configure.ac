@@ -1,6 +1,6 @@
 AC_PREREQ(2.61)
 
-AC_INIT(tdnn, m4_esyscmd_s([awk -e '/^Version:/ {print $2}' DESCRIPTION]))
+AC_INIT(tdnn, m4_esyscmd_s([awk '/^Version:/ {print $2}' DESCRIPTION]))
 AC_COPYRIGHT(Copyright (C) 2022 Patrick Vossler)
 
 
@@ -15,6 +15,12 @@ CC=`"${RBIN}" CMD config CC`;
 CFLAGS=`"${RBIN}" CMD config CFLAGS`
 LIBS="${PKG_LIBS}"
 
+CXX=`"${R_HOME}/bin/R" CMD config CXX`
+CXXFLAGS=`"${R_HOME}/bin/R" CMD config CXXFLAGS`
+CPPFLAGS=`"${R_HOME}/bin/R" CMD config CPPFLAGS`
+
+AC_LANG(C++)
+AC_PROG_CPP
 # Checks for programs.
 AC_PROG_CC
 # Check for OpenMP
@@ -42,3 +48,13 @@ AC_SUBST(LIBS)
 
 AC_CONFIG_FILES([src/Makevars])
 AC_OUTPUT
+
+echo "
+  --------------------------------------------------
+  Configuration for ${PACKAGE_NAME} ${PACKAGE_VERSION}
+
+    cppflags: ${CPPFLAGS}
+    libs:     ${PKG_LIBS}
+
+  --------------------------------------------------
+"

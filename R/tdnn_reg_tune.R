@@ -77,9 +77,9 @@ tdnn_reg_tune <- function(X,
 
     n <- nrow(X)
     tuned_tdnn_results <-
-        tdnn:::tune_de_dnn_no_dist_cpp(
+        tune_de_dnn_no_dist_cpp(
             X, Y, X_test,
-            W_0, c=cc, B_NN=B_NN, n_prop=n_prop,
+            W_0, c=c, B_NN=B_NN, n_prop=n_prop,
             estimate_variance= estimate_variance,
             bootstrap_iter=bootstrap_iter,
             debug=verbose)

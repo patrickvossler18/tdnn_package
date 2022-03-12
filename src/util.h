@@ -6,8 +6,10 @@
 #endif
 
 #include <RcppArmadillo.h>
-#include <RcppParallel.h>
+#define NDEBUG
 #include <RcppEigen.h>
+#include <RcppParallel.h>
+
 #include <progress.hpp>
 #include <progress_bar.hpp>
 #include <math.h>

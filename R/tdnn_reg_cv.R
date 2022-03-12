@@ -98,7 +98,7 @@ tdnn_reg_cv <- function(X,
         message("tuning parameters...")
     }
     tuned_tdnn_results <-
-        tdnn:::tdnn_reg_cv_cpp(X, Y, X_test, param_mat, n_prop,
+        tdnn_reg_cv_cpp(X, Y, X_test, param_mat, n_prop,
                                tuning_iter,
                                bootstrap_iter,
                                estimate_variance, verbose, W_0)

@@ -1,5 +1,3 @@
-library(tidyverse)
-library(tdnn)
 
 dgp_function = function(x){
     # This function will take a row of the matrix as input and return the
@@ -110,7 +108,7 @@ s_1 = 2
 B_NN = 1
 s_1_tuning_seq = seq(2,4,1)
 param_df <- tidyr::expand_grid(c = fixed_c, s_1 =  s_1_tuning_seq)
-B_NN_estimates_R <- purrr::map_df(1:B_NN, function(b){
+B_NN_estimates_R <- map_df(1:B_NN, function(b){
     X_train <- X[-B.index[b],]
     Y_train <- as.matrix(Y[-B.index[b],])
 
@@ -129,7 +127,7 @@ B_NN_estimates_R <- purrr::map_df(1:B_NN, function(b){
     weighted_y_val = Y_val*sqrt(neighbor_weights)
 
     # this loops through the parameter combinations and returns a data frame with the results
-    purrr::pmap_df(param_df, function(c, s_1) {
+    pmap_df(param_df, function(c, s_1) {
         param_estimate = tdnn:::de.dnn_no_dist(ordered_Y_train,n_train, p_train, s_1, c)
         weighted_estimate = param_estimate*sqrt(neighbor_weights)
         if(debug){

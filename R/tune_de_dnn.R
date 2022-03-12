@@ -1,4 +1,5 @@
 #' @export
+#' @importFrom purrr pmap_df
 de.dnn <- function(X,
                    Y,
                    X.test,

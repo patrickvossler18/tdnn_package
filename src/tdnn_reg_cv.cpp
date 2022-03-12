@@ -24,7 +24,7 @@ List tdnn_reg_cv_cpp(
     }
     if (verbose)
     {
-        Rcout << "starting tuning" << std::endl;
+        Rcout << "starting tuning";
     }
 
     // first do LOO CV to get tuned c and M
@@ -32,7 +32,7 @@ List tdnn_reg_cv_cpp(
 
     if (verbose)
     {
-        Rcout << "Finished tuning c and M" << std::endl;
+        Rcout << "Finished tuning c and M";
     }
     double c = tuned_params[0];
     int s_1_val = int(tuned_params[1]);
@@ -45,7 +45,7 @@ List tdnn_reg_cv_cpp(
 
     if (verbose)
     {
-        Rcout << "past tuning" << std::endl;
+        Rcout << "past tuning";
     }
 
     arma::vec deDNN_pred;
