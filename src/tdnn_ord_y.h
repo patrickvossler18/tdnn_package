@@ -2,7 +2,6 @@
 #define TDNN_ORD_Y_H
 
 #include "util.h"
-#include "kd_tree.h"
 #include "bootstrap.h"
 
 #endif

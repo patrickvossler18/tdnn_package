@@ -75,7 +75,7 @@ arma::vec make_param_estimate(const arma::mat &X_train,
     arma::vec s_1_1(s_1.n_elem, fill::value(s_1_val + 1));
 
     arma::vec s_2(s_1.n_elem, fill::value(s_2_val));
-    arma::vec s_2_1(s_1.n_elem, arma::fill::value(ceil((s_1_val+ 1)*2)));
+    arma::vec s_2_1(s_1.n_elem, arma::fill::value(ceil((s_1_val + 1) * 2)));
 
     // generate the weight matrices (technically vector because only one test observation)
     arma::mat weight_mat_s_1 = weight_mat_lfac_s_2_filter(n, ord_arma, s_1, n_prop, false);
@@ -93,26 +93,15 @@ arma::vec make_param_estimate(const arma::mat &X_train,
 
     // double w_1 = c / (c - 1);
     // double w_2 = -1 / (c - 1);
-    double w_2 = pow(c, 2/double(p)) / (pow(c, 2/double(p)) - 1);
-    double w_1 = -1 / (pow(c, 2/double(p)) - 1);
+    double w_2 = pow(c, 2 / double(p)) / (pow(c, 2 / double(p)) - 1);
+    double w_1 = -1 / (pow(c, 2 / double(p)) - 1);
 
     // the weight matrix is # train obs x # test obs so we want to use the ith column of the weight mat for the ith test observation
     // NOTE: hard-coding the column to be the first column since we are doing LOO sampling
     U_1_vec = ordered_Y * weight_mat_s_1.col(0);
     U_1_1_vec = ordered_Y * weight_mat_s_1_plus_1.col(0);
-    if (arma::accu(weight_mat_s_2.col(0)) == 0)
-    {
-        // in this case s_2 is too large so we will get the 1-NN to use as the estimate
-        // std::cout << "using 1-NN" << std::endl;
-        arma::vec nn_1_result = get_1nn_reg(X_train, X_val, Y_train, 1);
-        U_2_vec = arma::as_scalar(nn_1_result);
-        U_2_1_vec = arma::as_scalar(nn_1_result);
-    }
-    else
-    {
-        U_2_vec = ordered_Y * weight_mat_s_2.col(0);
-        U_2_1_vec = ordered_Y * weight_mat_s_2_plus_1.col(0);
-    }
+    U_2_vec = ordered_Y * weight_mat_s_2.col(0);
+    U_2_1_vec = ordered_Y * weight_mat_s_2_plus_1.col(0);
 
     arma::vec U_vec = w_1 * U_1_vec + w_2 * U_2_vec;
     arma::vec U_vec_1 = w_1 * U_1_1_vec + w_2 * U_2_1_vec;
@@ -189,13 +178,13 @@ struct ParamEstimates : public Worker
 
 // [[Rcpp::export]]
 Rcpp::List loo_test(const arma::mat &X,
-                      const arma::mat &Y,
-                      const arma::mat &X_test,
-                      const arma::mat &param_mat,
-                      int B,
-                      double n_prop,
-                      NumericVector W0,
-                      bool verbose)
+                    const arma::mat &Y,
+                    const arma::mat &X_test,
+                    const arma::mat &param_mat,
+                    int B,
+                    double n_prop,
+                    NumericVector W0,
+                    bool verbose)
 {
     int n_params = param_mat.n_rows;
     // Store the results where each column is one Monte Carlo replication and each row is a parameter combination
@@ -240,7 +229,7 @@ Rcpp::List loo_test(const arma::mat &X,
                                                 n_prop);
         param_estimates(i) = arma::as_scalar(avg_est);
     }
-    return(
+    return (
         Rcpp::List::create(
             Named("param_estimates") = param_estimates,
             Named("ord_arma") = ord_arma,
@@ -250,11 +239,8 @@ Rcpp::List loo_test(const arma::mat &X,
             Named("X_train") = X_train,
             Named("Y_train") = Y_train,
             Named("X_val") = X_val,
-            Named("Y_val") = Y_val
-        )
-    );
+            Named("Y_val") = Y_val));
 }
-
 
 // [[Rcpp::export]]
 arma::vec tune_params(const arma::mat &X,
@@ -342,16 +328,15 @@ arma::vec tune_params(const arma::mat &X,
     return (results_vec);
 }
 
-
 // [[Rcpp::export]]
 Rcpp::List tune_params_debug(const arma::mat &X,
-                      const arma::mat &Y,
-                      const arma::mat &X_test,
-                      const arma::mat &param_mat,
-                      int B,
-                      double n_prop,
-                      NumericVector W0,
-                      bool verbose)
+                             const arma::mat &Y,
+                             const arma::mat &X_test,
+                             const arma::mat &param_mat,
+                             int B,
+                             double n_prop,
+                             NumericVector W0,
+                             bool verbose)
 {
     // arma::mat X_subset = matrix_subset_logical(X, as<arma::vec>(W0));
     // arma::mat X_test_subset = matrix_subset_logical(X_test, as<arma::vec>(W0));
@@ -364,7 +349,7 @@ Rcpp::List tune_params_debug(const arma::mat &X,
 
     // last element will be the validation index
     arma::mat loo_idx_mat(X.n_rows, B);
-    arma::mat x_val_mat(3,B);
+    arma::mat x_val_mat(3, B);
     arma::mat param_est_mat(n_params, B);
     // arma::mat x_train_mat(X.n_rows-1,B);
     for (int b = 0; b < B; b++)
@@ -442,6 +427,5 @@ Rcpp::List tune_params_debug(const arma::mat &X,
         Named("param_est_mat") = param_est_mat,
         Named("truth_vec") = truth_vec,
         Named("idx_mat") = loo_idx_mat,
-        Named("x_val_mat") = x_val_mat
-    ));
+        Named("x_val_mat") = x_val_mat));
 }

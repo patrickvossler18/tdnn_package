@@ -54,15 +54,7 @@ arma::vec tdnn_st_boot(arma::mat X, arma::vec Y, arma::mat X_test,
         // ith column of the weight mat for the ith test observation
         // U_1_vec = reshape(ordered_Y, 1, n) * weight_mat_s_1.col(i);
         U_1_vec = ordered_Y.as_row() * weight_mat_s_1.col(i);
-        if (arma::accu(weight_mat_s_2.col(i)) == 0)
-        {
-            arma::vec nn_1_result = get_1nn_reg(X, X_test_row, Y, 1);
-            U_2_vec = arma::as_scalar(nn_1_result);
-        }
-        else
-        {
-            U_2_vec = ordered_Y.as_row() * weight_mat_s_2.col(i);
-        }
+        U_2_vec = ordered_Y.as_row() * weight_mat_s_2.col(i);
 
         arma::vec U_vec = w_1 * U_1_vec + w_2 * U_2_vec;
         estimates(i) = arma::as_scalar(U_vec);
