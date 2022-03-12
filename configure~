@@ -4563,6 +4563,7 @@ echo "
     cppflags: ${CXXFLAGS}
     ARMA_LAPACK: ${ARMA_LAPACK}
     ARMA_HAVE_OPENMP: ${ARMA_HAVE_OPENMP}
+    OPENMP_FLAG: ${OPENMP_FLAG}
   --------------------------------------------------
 "
 
