@@ -2,7 +2,6 @@
 #define DNN_PARALLEL_H
 
 #include "util.h"
-#include "kd_tree.h"
 
 NumericVector tuning(arma::mat X, arma::vec Y,
                      arma::mat X_test, double c,

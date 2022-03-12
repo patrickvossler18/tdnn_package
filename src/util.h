@@ -12,11 +12,9 @@
 #include <tuple>
 
 // [[Rcpp::plugins(openmp)]]
-// [[Rcpp::depends(RcppProgress)]]
 // [[Rcpp::depends(RcppParallel)]]
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::plugins(cpp11)]]
-// [[Rcpp::depends(BH)]]
 
 using namespace Rcpp;
 using namespace RcppParallel;

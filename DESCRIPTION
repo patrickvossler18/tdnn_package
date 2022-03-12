@@ -13,8 +13,7 @@ Suggests: testthat
 Imports: glue, boot, strex, energy, RcppParallel, RcppArmadillo, Rcpp,
         parallel, dplyr, tidyr, purrr
 RoxygenNote: 7.1.2
-LinkingTo: Rcpp, RcppArmadillo, RcppParallel, RcppProgress, RcppEigen,
-        BH
+LinkingTo: Rcpp, RcppArmadillo, RcppParallel
 SystemRequirements: GNU make
 NeedsCompilation: yes
 Packaged: 2021-08-30 22:44:22 UTC; patrick
