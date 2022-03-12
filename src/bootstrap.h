@@ -2,7 +2,6 @@
 #define BOOTSTRAP_H
 
 #include "util.h"
-#include "kd_tree.h"
 
 NumericMatrix bootstrap_cpp_mt(const arma::mat &X,
                                const arma::mat &Y,
