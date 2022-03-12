@@ -88,22 +88,7 @@ struct TdnnEstimate : public Worker
             // the weight matrix is # train obs x # test obs so we want to use
             // the ith column of the weight mat for the ith test observation
             U_1_vec = reshape(ordered_Y, 1, n) * weight_mat_s_1.col(i);
-            if (arma::accu(weight_mat_s_2.col(i)) == 0)
-            {
-                // in this case s_2 is too large so we will get the 1-NN to use as the estimate
-                // std::cout << "using 1-NN" << std::endl;
-                // std::cout << "X_test_row:" << X_test_row << std::endl;
-                // std::cout << "X:" << X << std::endl;
-                // std::cout << "Y:" << Y << std::endl;
-                arma::vec nn_1_result = get_1nn_reg(X, X_test_row, Y, 1);
-                U_2_vec = arma::as_scalar(nn_1_result);
-                // std::cout << "U_2_vec: " <<  U_2_vec << std::endl;
-                // std::cout << "weight_mat_s_2.n_rows: " <<  weight_mat_s_2.n_rows << std::endl;
-            }
-            else
-            {
-                U_2_vec = reshape(ordered_Y, 1, n) * weight_mat_s_2.col(i);
-            }
+            U_2_vec = reshape(ordered_Y, 1, n) * weight_mat_s_2.col(i);
 
             arma::vec U_vec = w_1 * U_1_vec + w_2 * U_2_vec;
             // Rcout << "U_vec: " << U_vec << std::endl;
@@ -255,19 +240,7 @@ struct De_dnnEstimate : public Worker
 
             // the weight matrix is # train obs x # test obs so we want to use the ith column of the weight mat for the ith test observation
             U_1_vec = reshape(ordered_Y, 1, n) * weight_mat_s_1.col(i);
-            if (arma::accu(weight_mat_s_2.col(i)) == 0)
-            {
-                // in this case s_2 is too large so we will get the 1-NN to use as the estimate
-                // std::cout << "using 1-NN" << std::endl;
-                arma::vec nn_1_result = get_1nn_reg(X, X_test_row, Y, 1);
-                U_2_vec = arma::as_scalar(nn_1_result);
-                // std::cout << "U_2_vec: " <<  U_2_vec << std::endl;
-                // std::cout << "weight_mat_s_2.n_rows: " <<  weight_mat_s_2.n_rows << std::endl;
-            }
-            else
-            {
-                U_2_vec = reshape(ordered_Y, 1, n) * weight_mat_s_2.col(i); // might need to convert this to mat?
-            }
+            U_2_vec = reshape(ordered_Y, 1, n) * weight_mat_s_2.col(i); // might need to convert this to mat?
 
             arma::vec U_vec = w_1 * U_1_vec + w_2 * U_2_vec;
             // estimates.insert(i, sum(U_vec));
