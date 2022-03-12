@@ -274,6 +274,7 @@ arma::vec colSums_arma(const arma::mat &x)
     return ans;
 }
 
+
 arma::vec rowVar_arma(const arma::mat &x)
 {
     int nr = x.n_rows;

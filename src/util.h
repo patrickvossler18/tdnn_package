@@ -6,12 +6,9 @@
 #endif
 
 #include <RcppArmadillo.h>
-#define NDEBUG
 #include <RcppEigen.h>
 #include <RcppParallel.h>
 
-#include <progress.hpp>
-#include <progress_bar.hpp>
 #include <math.h>
 #include <tuple>
 #include "nabo.h"

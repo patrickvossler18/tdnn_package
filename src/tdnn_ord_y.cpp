@@ -444,7 +444,7 @@ Rcpp::List tune_de_dnn_no_dist_cpp(
 
     if (estimate_variance)
     {
-        NumericMatrix bstrap_estimates = bootstrap_cpp_mt(X, Y, X_test, s_1_B_NN, c, n_prop, bootstrap_iter);
+        NumericMatrix bstrap_estimates = bootstrap_cpp_mt(X, Y, X_test, s_1_B_NN, c, n_prop, bootstrap_iter, R_NilValue);
         // need to apply variance over columns
         arma::vec variance = rowVar_arma(as<arma::mat>(bstrap_estimates));
         return Rcpp::List::create(

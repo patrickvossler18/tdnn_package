@@ -9,7 +9,7 @@ tdnn_reg_tune(
   Y,
   X_test,
   W_0 = NULL,
-  c_seq = 2,
+  c_val = 2,
   B_NN = 20,
   n_prop = 0.5,
   estimate_variance = F,
@@ -27,6 +27,8 @@ tdnn_reg_tune(
 
 \item{W_0}{Optional integer vector with 1 corresponding to columns that should be used for estimation. Default value is NULL}
 
+\item{c_val}{Sequence of potential values for \eqn{c}. If a sequence is not provided, the default is 2.}
+
 \item{B_NN}{Number of nearest neighbors to use during tuning. Default is 20.}
 
 \item{n_prop}{If \eqn{s_{2} > n\dot \text{n_prop}}, default to using 1-NN estimate.}
@@ -34,8 +36,6 @@ tdnn_reg_tune(
 \item{n_threads}{Number of threads to use when calculating bootstrap variance. Default is to use all available threads.}
 
 \item{verbose}{Print which step the method is currently calculating in the console as well as debug information.}
-
-\item{c}{Sequence of potential values for \eqn{c}. If a sequence is not provided, the default is 2.}
 }
 \description{
 Get a tuned tdnn estimate

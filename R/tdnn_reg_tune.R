@@ -4,7 +4,7 @@
 #' @param Y Matrix of responses
 #' @param X_test Matrix of test observations for which we want to get estimates
 #' @param W_0 Optional integer vector with 1 corresponding to columns that should be used for estimation. Default value is NULL
-#' @param c Sequence of potential values for \eqn{c}. If a sequence is not provided, the default is 2.
+#' @param c_val Sequence of potential values for \eqn{c}. If a sequence is not provided, the default is 2.
 #' @param B_NN Number of nearest neighbors to use during tuning. Default is 20.
 #' @param n_prop If \eqn{s_{2} > n\dot \text{n_prop}}, default to using 1-NN estimate.
 #' @param n_threads Number of threads to use when calculating bootstrap variance. Default is to use all available threads.
@@ -17,7 +17,7 @@ tdnn_reg_tune <- function(X,
                         Y,
                         X_test,
                         W_0 = NULL,
-                        c_seq = 2,
+                        c_val = 2,
                         B_NN = 20,
                         n_prop = 0.5,
                         estimate_variance = F,
@@ -77,9 +77,9 @@ tdnn_reg_tune <- function(X,
 
     n <- nrow(X)
     tuned_tdnn_results <-
-        tune_de_dnn_no_dist_cpp(
-            X, Y, X_test,
-            W_0, c=c, B_NN=B_NN, n_prop=n_prop,
+        tune_de_dnn_no_dist_cpp(   
+            X, Y, X_test,   
+            W_0, c=c_val, B_NN=B_NN, n_prop=n_prop,
             estimate_variance= estimate_variance,
             bootstrap_iter=bootstrap_iter,
             debug=verbose)
