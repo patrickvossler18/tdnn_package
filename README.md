@@ -18,7 +18,7 @@ Once you have installed the appropriate toolchain, you can install the developme
 
 ``` r
 if (!require("devtools")) install.packages("devtools")
-devtools::install_github("patrickvossler18/tdnn")
+devtools::install_github("patrickvossler18/tdnn_package")
 ```
 
 ## Tests
