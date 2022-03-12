@@ -53,8 +53,8 @@ echo "
   --------------------------------------------------
   Configuration for ${PACKAGE_NAME} ${PACKAGE_VERSION}
 
-    cppflags: ${CPPFLAGS}
-    libs:     ${PKG_LIBS}
+    cppflags: ${CXXFLAGS}
+    libs:     ${LIBS}
 
   --------------------------------------------------
 "

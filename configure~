@@ -5976,7 +5976,7 @@ echo "
   --------------------------------------------------
   Configuration for ${PACKAGE_NAME} ${PACKAGE_VERSION}
 
-    cppflags: ${CPPFLAGS} ${PKG_CPPFLAGS}
+    cppflags: ${CPPFLAGS}
     libs:     ${PKG_LIBS}
 
   --------------------------------------------------
