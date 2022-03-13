@@ -387,8 +387,7 @@ Rcpp::List tune_de_dnn_no_dist_cpp(
 
     // loop through test observations and get ordered Y and B_NN for each
     // test observation
-    // arma::mat ordered_Y_mat(n, n_test);
-    // arma::umat B_index(B_NN, n_test);
+
     arma::vec tuned_estimate(n_test);
     arma::vec s_1_B_NN(n_test);
     for (int i = 0; i < n_test; i++)
