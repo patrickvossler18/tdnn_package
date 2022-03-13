@@ -8,6 +8,8 @@
 #' @param c_seq Sequence of potential values for \eqn{c}. If a sequence is not provided, the default is \code{seq(1.25, 3, 0.25)}
 #' @param s_seq Sequence of potential values for \eqn{s_1}. If a sequence is not provided, the default is \code{seq(1,50,1)}
 #' @param n_prop If \eqn{s_{2} > n\dot \text{n_prop}}, default to using 1-NN estimate.
+#' @param estimate_variance Boolean flag for estimating variance. Default is FALSE.
+#' @param bootstrap_iter Number of bootstrap iterations to use when estimating variance. Default is 1000.
 #' @param n_threads Number of threads to use when calculating bootstrap variance. Default is to use all available threads.
 #' @param verbose Print which step the method is currently calculating in the console.
 #' @importFrom glue glue

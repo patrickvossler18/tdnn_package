@@ -1,5 +1,12 @@
+#' Get a de-DNN estimate using R implementation
+#'
+#' @param X Matrix of covariates
+#' @param Y Matrix of responses
+#' @param X.test Matrix of a single test observation for which we want to get an estimate
+#' @param s.size Size of subsample used in estimation
+#' @param bc.p Ratio between the subsampling scales: bc.p = s_2/s_1
+#' @importFrom stats rnorm
 #' @export
-#' @importFrom purrr pmap_df
 de.dnn <- function(X,
                    Y,
                    X.test,
@@ -26,6 +33,15 @@ de.dnn <- function(X,
     return(U)
 }
 
+#' Get a de-DNN estimate using R implementation
+#' This version of the algorithm assumes that the Euclidean distance between
+#' the train and test observations has already been calculated and used to order the responses
+#' @param ordered_Y Matrix of Y values ordered by euclidean distance
+#' @param n Number of rows in the training data
+#' @param p Number of columns in the training data
+#' @param s.size Size of subsample used in estimation
+#' @param bc.p Ratio between the subsampling scales: bc.p = s_2/s_1
+#' @export
 de.dnn_no_dist <- function(
                    ordered_Y,
                    n,
@@ -37,12 +53,6 @@ de.dnn_no_dist <- function(
     # (n-k s-1) over (n s)
     weight1 = choose(n - ord, s.size - 1) / choose(n, s.size)
     weight2 = choose(n - ord, bc.p * s.size - 1) / choose(n, bc.p * s.size)
-    # Distance
-    # X.dis = X - kronecker(matrix(1, n, 1), X.test)
-    # EuDis = (X.dis ^ 2) %*% matrix(1, p, 1)
-    # Ascending small->large
-    # noise = matrix(rnorm(1), n, 1)
-    # TempD = data.frame(EuDis, Y, noise)[order(EuDis, noise),]
     # Estimator
     U1 = sum(ordered_Y * weight1)
     U2 = sum(ordered_Y * weight2)
@@ -52,7 +62,13 @@ de.dnn_no_dist <- function(
 }
 
 
-#' @export
+#' Tune the subsampling scale s using the R implementation
+#' @param X Matrix of covariates
+#' @param Y Matrix of responses
+#' @param X_test Matrix of a single test observation for which we want to get an estimate
+#' @param s_seq Vector of s values to use for tuning
+#' @param c Ratio between the subsampling scales: c = s_2/s_1
+#' #' @export
 tune_s <- function(X,Y,X_test, s_seq, c){
     t <- length(s_seq)
     tuning = matrix(0, length(s_seq), 1)
@@ -64,6 +80,16 @@ tune_s <- function(X,Y,X_test, s_seq, c){
     return(s.choice)
 }
 
+
+#' Tune the subsampling scale s using the R implementation
+#' This version of the algorithm assumes that the Euclidean distance between the
+#' train and test observations has already been calculated and used to order the responses
+#' @param ordered_Y Matrix of Y values ordered by euclidean distance
+#' @param n Number of rows in the training data
+#' @param p Number of columns in the training data
+#' @param s_seq Vector of s values to use for tuning
+#' @param c Ratio between the subsampling scales: c = s_2/s_1
+#' #' @export
 tune_s_no_dist <- function(ordered_Y,n,p, s_seq, c){
     t <- length(s_seq)
     tuning = matrix(0, length(s_seq), 1)
@@ -75,6 +101,15 @@ tune_s_no_dist <- function(ordered_Y,n,p, s_seq, c){
     return(s.choice)
 }
 
+#' Calculate a tuned de-DNN estimate using the R implementation
+#' @param X Matrix of covariates
+#' @param Y Matrix of responses
+#' @param X_test Matrix of a single test observation for which we want to get an estimate
+#' @param B_NN Top B_NN nearest neighbors used for tuning. Default is 20
+#' @param scale_p Parameter for normalizing weights of the the top B_NN nearest neighbors. Default is 1.
+#' @param c Ratio between the subsampling scales: c = s_2/s_1
+#' @param debug Boolean flag for returning data frame with extra debug values
+#' @importFrom rlang .data
 #' @export
 tune_de_dnn <- function(X,Y,X_test, c = 2, B_NN=20, scale_p=1, debug=F){
     n <- nrow(X)
@@ -85,7 +120,6 @@ tune_de_dnn <- function(X,Y,X_test, c = 2, B_NN=20, scale_p=1, debug=F){
     X.dis = X - kronecker(matrix(1, n, 1), X_test)
     EuDis = (X.dis ^ 2) %*% matrix(1, p, 1)
     B.index = (sort(EuDis,index.return = T)$ix)[1:B_NN]
-
 
 
     # get tuned s from MSE curvature method
@@ -135,7 +169,7 @@ tune_de_dnn <- function(X,Y,X_test, c = 2, B_NN=20, scale_p=1, debug=F){
         })
     })
     tuned_mse <- B_NN_estimates %>% dplyr::group_by(s_1,c) %>%
-        dplyr::summarize(tuned_mse = mean(loss)) %>% dplyr::pull(tuned_mse)
+        dplyr::summarize(tuned_mse = mean(.data$loss)) %>% dplyr::pull(tuned_mse)
     choose_s1 = min(s_1_seq[tuned_mse <=  (1 + 0.01) * min(tuned_mse) ])
     tuned_estimate <- de.dnn(X, Y, X_test, choose_s1, fixed_c)
     list(estimate_loo = tuned_estimate,
@@ -146,6 +180,18 @@ tune_de_dnn <- function(X,Y,X_test, c = 2, B_NN=20, scale_p=1, debug=F){
 }
 
 
+#' Calculate a tuned de-DNN estimate using the R implementation
+#' This version of the algorithm attempts to calculate the Euclidean distance matrix as
+#' few times as possible
+#' @param X Matrix of covariates
+#' @param Y Matrix of responses
+#' @param X_test Matrix of a single test observation for which we want to get an estimate
+#' @param c Ratio between the subsampling scales: c = s_2/s_1
+#' @param B_NN Top B_NN nearest neighbors used for tuning. Default is 20
+#' @param scale_p Parameter for normalizing weights of the the top B_NN nearest neighbors. Default is 1.
+#' @param debug Boolean flag for returning data frame with extra debug values
+#' @importFrom stats rnorm
+#' @importFrom rlang .data
 #' @export
 tune_de_dnn_no_dist <- function(X,Y,X_test, c = 2, B_NN=20, scale_p=1, debug=F){
     n <- nrow(X)
@@ -215,7 +261,7 @@ tune_de_dnn_no_dist <- function(X,Y,X_test, c = 2, B_NN=20, scale_p=1, debug=F){
         })
     })
     tuned_mse <- B_NN_estimates %>% dplyr::group_by(s_1,c) %>%
-        dplyr::summarize(tuned_mse = mean(loss)) %>% dplyr::pull(tuned_mse)
+        dplyr::summarize(tuned_mse = mean(.data$loss)) %>% dplyr::pull(tuned_mse)
     choose_s1 = min(s_1_seq[tuned_mse <=  (1 + 0.01) * min(tuned_mse) ])
     tuned_estimate <- de.dnn_no_dist(ordered_Y,n,p, choose_s1, fixed_c)
     list(estimate_loo = tuned_estimate,
@@ -225,8 +271,6 @@ tune_de_dnn_no_dist <- function(X,Y,X_test, c = 2, B_NN=20, scale_p=1, debug=F){
     )
 }
 
-# calculate distance matrix where each column corresponds to a test observation
-#' @export
 calc_dist_mat <- function(A,B){
     M = nrow(A)
     N = nrow(B)
@@ -236,7 +280,17 @@ calc_dist_mat <- function(A,B){
 
 }
 
-#' function that allows for multiple test observations
+#' Calculate tuned de-DNN estimates using the R implementation
+#' This version of the algorithm attempts to calculate the Euclidean distance matrix as
+#' few times as possible.
+#' @param X Matrix of covariates
+#' @param Y Matrix of responses
+#' @param X_test Matrix of test observations for which we want to get an estimates
+#' @param c Ratio between the subsampling scales: c = s_2/s_1
+#' @param B_NN Top B_NN nearest neighbors used for tuning. Default is 20
+#' @param scale_p Parameter for normalizing weights of the the top B_NN nearest neighbors. Default is 1.
+#' @param debug Boolean flag for returning data frame with extra debug values
+#' @importFrom rlang .data
 #' @export
 tune_de_dnn_no_dist_test_mat <- function(X,Y,X_test, c = 2, B_NN=20, scale_p=1, debug=F){
     n <- nrow(X)
@@ -309,7 +363,7 @@ tune_de_dnn_no_dist_test_mat <- function(X,Y,X_test, c = 2, B_NN=20, scale_p=1, 
             })
         })
         tuned_mse <- B_NN_estimates %>% dplyr::group_by(s_1,c) %>%
-            dplyr::summarize(tuned_mse = mean(loss)) %>% dplyr::pull(tuned_mse)
+            dplyr::summarize(tuned_mse = mean(.data$loss)) %>% dplyr::pull(tuned_mse)
         choose_s1 = min(s_1_seq[tuned_mse <=  (1 + 0.01) * min(tuned_mse) ])
         tuned_estimate <- de.dnn_no_dist(ordered_Y,n,p, choose_s1, fixed_c)
         list(estimate_loo = tuned_estimate,

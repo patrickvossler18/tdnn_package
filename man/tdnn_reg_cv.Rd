@@ -36,6 +36,10 @@ tdnn_reg_cv(
 
 \item{n_prop}{If \eqn{s_{2} > n\dot \text{n_prop}}, default to using 1-NN estimate.}
 
+\item{estimate_variance}{Boolean flag for estimating variance. Default is FALSE.}
+
+\item{bootstrap_iter}{Number of bootstrap iterations to use when estimating variance. Default is 1000.}
+
 \item{n_threads}{Number of threads to use when calculating bootstrap variance. Default is to use all available threads.}
 
 \item{verbose}{Print which step the method is currently calculating in the console.}
