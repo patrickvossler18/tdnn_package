@@ -365,6 +365,7 @@ tune_de_dnn_no_dist_test_mat <- function(X,Y,X_test, c = 2, B_NN=20, scale_p=1, 
         tuned_mse <- B_NN_estimates %>% dplyr::group_by(s_1,c) %>%
             dplyr::summarize(tuned_mse = mean(.data$loss)) %>% dplyr::pull(tuned_mse)
         choose_s1 = min(s_1_seq[tuned_mse <=  (1 + 0.01) * min(tuned_mse) ])
+        # choose_s1 = min(s_1_seq[tuned_mse == min(tuned_mse) ])
         tuned_estimate <- de.dnn_no_dist(ordered_Y,n,p, choose_s1, fixed_c)
         list(estimate_loo = tuned_estimate,
              s_1_B_NN = choose_s1,

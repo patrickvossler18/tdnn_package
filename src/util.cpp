@@ -171,8 +171,6 @@ arma::mat weight_mat_lfac_s_2_filter(int n, const arma::vec &ord, const arma::ve
         else
         {
 
-            // weight1 = s.size*exp(lfactorial(n-ord) + lfactorial(n-s.size) - lfactorial(n) - lfactorial(n-ord-s.size+1))
-            // weight2 = 2*s.size*exp(lfactorial(n-ord) + lfactorial(n-2*s.size) - lfactorial(n) - lfactorial(n-ord-2*s.size+1))
 
             // use fact that lfactorial(x) = lgamma(x+1)
             arma::vec n_ord = arma::lgamma(((double(n) - ord) + 1.0));                 // first term

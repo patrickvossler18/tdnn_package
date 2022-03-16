@@ -336,7 +336,7 @@ arma::mat make_B_NN_estimates(
             }
         }
     }
-    // now calculate mean loss over the B_NN observation
+    // now calculate mean loss over the B_NN observations
     B_NN_estimates = B_NN_estimates / B_NN;
     return B_NN_estimates;
 }
@@ -390,6 +390,8 @@ Rcpp::List tune_de_dnn_no_dist_cpp(
 
     arma::vec tuned_estimate(n_test);
     arma::vec s_1_B_NN(n_test);
+    arma::vec curve_estimate(n_test);
+    arma::vec s_1_mse_curve(n_test);
     for (int i = 0; i < n_test; i++)
     {
         // get ith test observation
@@ -407,6 +409,8 @@ Rcpp::List tune_de_dnn_no_dist_cpp(
         {
             arma::vec estimate_curve = tdnn_ord_y(X, Y, X_test_i_mat, ordered_Y,
                                                   mse_curve_s, c, n_prop);
+            curve_estimate(i) = as_scalar(estimate_curve);
+            s_1_mse_curve(i) = as_scalar(mse_curve_s);
         }
         double s_tmp = arma::as_scalar(mse_curve_s);
         arma::vec c_vec = {c};
@@ -429,15 +433,38 @@ Rcpp::List tune_de_dnn_no_dist_cpp(
         NumericMatrix bstrap_estimates = bootstrap_cpp_mt(X, Y, X_test, s_1_B_NN, c, n_prop, bootstrap_iter, R_NilValue);
         // need to apply variance over columns
         arma::vec variance = rowVar_arma(as<arma::mat>(bstrap_estimates));
-        return Rcpp::List::create(
-            Named("estimate_loo") = tuned_estimate,
-            Named("s_1_B_NN") = s_1_B_NN,
-            Named("variance") = variance);
+        if (debug)
+        {
+            return Rcpp::List::create(
+                Named("estimate_loo") = tuned_estimate,
+                Named("estimate_curve") = curve_estimate,
+                Named("s_1_B_NN") = s_1_B_NN,
+                Named("s_1_mse_curve") = s_1_mse_curve,
+                Named("variance") = variance);
+        }
+        else
+        {
+            return Rcpp::List::create(
+                Named("estimate_loo") = tuned_estimate,
+                Named("s_1_B_NN") = s_1_B_NN,
+                Named("variance") = variance);
+        }
     }
     else
     {
-        return Rcpp::List::create(
-            Named("estimate_loo") = tuned_estimate,
-            Named("s_1_B_NN") = s_1_B_NN);
+        if (debug)
+        {
+            return Rcpp::List::create(
+                Named("estimate_loo") = tuned_estimate,
+                Named("estimate_curve") = curve_estimate,
+                Named("s_1_B_NN") = s_1_B_NN,
+                Named("s_1_mse_curve") = s_1_mse_curve);
+        }
+        else
+        {
+            return Rcpp::List::create(
+                Named("estimate_loo") = tuned_estimate,
+                Named("s_1_B_NN") = s_1_B_NN);
+        }
     }
 }
