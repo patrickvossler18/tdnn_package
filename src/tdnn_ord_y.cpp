@@ -1228,7 +1228,7 @@ struct TdnnEstimateTune : public Worker
             arma::mat vary_c_results(c.n_elem, 3);
 
             arma::vec X_test_i = X_test.row(i).as_col();
-            Rcout << X_test_i << std::endl;
+            // Rcout << X_test_i << std::endl;
             arma::mat X_test_i_mat = conv_to<arma::mat>::from(X_test.row(i));
             // get EuDist for ith test observation
             arma::vec eu_dist_col = EuDis.col(i);

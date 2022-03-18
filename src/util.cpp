@@ -168,10 +168,10 @@ arma::uvec r_like_order(const arma::vec &x, const arma::vec &y)
 // [[Rcpp::export]]
 arma::mat weight_mat_lfac_s_2_filter(int n, const arma::vec &ord, const arma::vec &s_vec, double n_prop, bool is_s_2)
 {
-    arma::mat out(n, s_vec.size());
+    arma::mat out(n, s_vec.n_elem());
 
     // for the s_val of each test observation...
-    for (int i = 0; i < s_vec.size(); i++)
+    for (int i = 0; i < s_vec.n_elem(); i++)
     {
         // Rcout << i<< std::endl;
         arma::vec weight_vec(n);
