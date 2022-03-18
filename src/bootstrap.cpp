@@ -64,7 +64,7 @@ arma::vec tdnn_st_boot(arma::mat X, arma::vec Y, arma::mat X_test,
     return estimates;
 }
 
-struct BootstrapEstimate : public Worker
+struct BootstrapEstimate : public RcppParallel::Worker
 {
     // input matrices to read from
     const arma::mat X;
@@ -77,7 +77,7 @@ struct BootstrapEstimate : public Worker
 
     // output matrix to write to
     // arma::mat boot_stats;
-    RMatrix<double> boot_stats;
+    RcppParallel::RMatrix<double> boot_stats;
 
     // for each iteration, we need to pass everything to tdnn
     BootstrapEstimate(NumericMatrix boot_stats,
@@ -112,7 +112,7 @@ struct BootstrapEstimate : public Worker
 
             // NumericVector est_rcpp = NumericVector(est.begin(),est.end());
             // boot_stats(_, i) = est_rcpp;
-            // RMatrix<double>::Column column = boot_stats.column(i);
+            // RcppParallel::RMatrix<double>::Column column = boot_stats.column(i);
             // size_t n = column.length();
             for (int j = 0; j < X_test.n_rows; j++)
             {
@@ -181,12 +181,82 @@ NumericMatrix bootstrap_cpp_mt(const arma::mat &X,
                                  c,
                                  n_prop);
 
-    parallelFor(0, B, bstrap_est);
+    RcppParallel::parallelFor(0, B, bstrap_est);
     // Rcout<< boot_stats << std::endl;
     return (boot_stats);
 };
 
-struct TrtEffectBootstrapEstimate : public Worker
+// [[Rcpp::plugins(cpp11)]]
+// [[Rcpp::export]]
+NumericMatrix bootstrap_cpp_thread(const arma::mat &X,
+                                   const arma::mat &Y,
+                                   const arma::mat &X_test,
+                                   const arma::vec s_1,
+                                   const arma::vec c,
+                                   const double n_prop,
+                                   const int B,
+                                   Nullable<NumericVector> W0_)
+{
+
+    // Filter by W0
+    int d = X.n_cols;
+    arma::mat X_subset;
+    arma::mat X_test_subset;
+    if (W0_.isNotNull())
+    {
+        NumericVector W0(W0_);
+        // Now we need to filter X and X_test to only contain these columns
+        X_subset = matrix_subset_logical(X, as<arma::vec>(W0));
+        X_test_subset = matrix_subset_logical(X_test, as<arma::vec>(W0));
+        d = sum(W0);
+    }
+    else
+    {
+        X_subset = X;
+        X_test_subset = X_test;
+    }
+
+    // Infer n and p from our data after we've filtered for relevant features
+    int n = X_subset.n_rows;
+    int p = X_subset.n_cols;
+    // int log_n = log(n);
+    // int s_2_val = std::ceil(int(round_modified(exp(M * log_n * (double(d) / (double(d) + 8))))));
+    // int s_1_val = std::ceil(int(round_modified(s_2_val * pow(c, double(d) / 2))));
+
+    arma::vec ord = arma::linspace(1, n, n);
+    arma::vec s_2 = arma::ceil(c % s_1);
+
+    // Generate these matrices once since they won't change and just pass them to the workers
+    arma::mat weight_mat_s_1 = weight_mat_lfac_s_2_filter(n, ord, s_1, n_prop, false);
+    arma::mat weight_mat_s_2 = weight_mat_lfac_s_2_filter(n, ord, s_2, n_prop, true);
+
+    // initialize results matrix
+    // arma::mat boot_stats(X_test_subset.n_rows, B);
+    NumericMatrix boot_stats(X_test_subset.n_rows, B);
+
+    RcppThread::ProgressBar bar(B, 1);
+    RcppThread::parallelFor(0, B,
+                            [&boot_stats, &X, &Y, &X_test, &weight_mat_s_1, &weight_mat_s_2, &c, &n_prop, &bar](int i)
+                            {
+                                // sample observations with replacement
+                                arma::uvec boot_idx = sample_replace_index(X.n_rows);
+                                arma::mat X_boot = matrix_row_subset_idx(X, boot_idx);
+                                arma::mat Y_boot = matrix_row_subset_idx(Y, boot_idx);
+
+                                arma::vec est = tdnn_st_boot(X_boot, Y_boot, X_test,
+                                                             weight_mat_s_1,
+                                                             weight_mat_s_2,
+                                                             c, n_prop);
+                                for (int j = 0; j < X_test.n_rows; j++)
+                                {
+                                    boot_stats(j, i) = est(j);
+                                }
+                                bar++;
+                            });
+    return (boot_stats);
+};
+
+struct TrtEffectBootstrapEstimate : public RcppParallel::Worker
 {
     // input matrices to read from
 
@@ -206,7 +276,7 @@ struct TrtEffectBootstrapEstimate : public Worker
 
     // output matrix to write to
     // arma::mat boot_stats;
-    RMatrix<double> boot_stats;
+    RcppParallel::RMatrix<double> boot_stats;
 
     // for each iteration, we need to pass everything to tdnn
     TrtEffectBootstrapEstimate(NumericMatrix boot_stats,
@@ -356,7 +426,7 @@ NumericMatrix bootstrap_trt_effect_cpp_mt(const arma::mat &X,
                                           X_test_subset,
                                           n_prop);
 
-    parallelFor(0, B, bstrap_est);
+    RcppParallel::parallelFor(0, B, bstrap_est);
     // Rcout<< boot_stats << std::endl;
     return (boot_stats);
 };
