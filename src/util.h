@@ -1,9 +1,6 @@
 #ifndef UTIL_H // To make sure you don't declare the function more than once by including the header multiple times.
 #define UTIL_H
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 
 #include <RcppArmadillo.h>
@@ -19,7 +16,6 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 
 using namespace Rcpp;
-// using namespace RcppParallel;
 using namespace arma;
 using namespace std;
 
