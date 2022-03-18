@@ -1246,10 +1246,10 @@ struct TdnnEstimateTune : public Worker
                 // get ith test observation
 
                 arma::vec mse_curve_s = tuning_ord_Y_st(ordered_Y, n, p, 1, c_val, n_prop);
-                mse_curve_s.print();
-                cout << c.n_elem << std::endl;
-                cout << c_val << std::endl;
-                cout << j << std::endl;
+                // mse_curve_s.print();
+                // cout << c.n_elem << std::endl;
+                // cout << c_val << std::endl;
+                // cout << j << std::endl;
                 // if (debug)
                 // {
                 //     estimate_curve = tdnn_ord_y_st(ordered_Y, mse_curve_s, n, p, c_val, n_prop);
