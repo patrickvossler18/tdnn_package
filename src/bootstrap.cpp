@@ -4,7 +4,7 @@
 arma::vec tdnn_st_boot(arma::mat X, arma::vec Y, arma::mat X_test,
                        const arma::mat &weight_mat_s_1,
                        const arma::mat &weight_mat_s_2,
-                       double c,
+                       const arma::vec c,
                        double n_prop)
 {
 
@@ -47,8 +47,9 @@ arma::vec tdnn_st_boot(arma::mat X, arma::vec Y, arma::mat X_test,
 
         // double w_1 = c / (c - 1);
         // double w_2 = -1 / (c - 1);
-        double w_2 = pow(c, 2 / double(p)) / (pow(c, 2 / double(p)) - 1);
-        double w_1 = -1 / (pow(c, 2 / double(p)) - 1);
+        double c_val = as_scalar(c(i));
+        double w_2 = pow(c_val, 2 / double(p)) / (pow(c_val, 2 / double(p)) - 1);
+        double w_1 = -1 / (pow(c_val, 2 / double(p)) - 1);
 
         // the weight matrix is # train obs x # test obs so we want to use the
         // ith column of the weight mat for the ith test observation
@@ -71,7 +72,7 @@ struct BootstrapEstimate : public Worker
     const arma::mat X_test;
     const arma::mat &weight_mat_s_1;
     const arma::mat &weight_mat_s_2;
-    const double c;
+    const arma::vec c;
     const double n_prop;
 
     // output matrix to write to
@@ -85,7 +86,7 @@ struct BootstrapEstimate : public Worker
                       const arma::mat &X_test,
                       const arma::mat &weight_mat_s_1,
                       const arma::mat &weight_mat_s_2,
-                      const double c,
+                      const arma::vec c,
                       const double n_prop) : X(X), Y(Y), X_test(X_test),
                                              weight_mat_s_1(weight_mat_s_1),
                                              weight_mat_s_2(weight_mat_s_2),
@@ -128,7 +129,7 @@ NumericMatrix bootstrap_cpp_mt(const arma::mat &X,
                                const arma::mat &Y,
                                const arma::mat &X_test,
                                const arma::vec s_1,
-                               const double c,
+                               const arma::vec c,
                                const double n_prop,
                                const int B,
                                Nullable<NumericVector> W0_)
@@ -160,7 +161,7 @@ NumericMatrix bootstrap_cpp_mt(const arma::mat &X,
     // int s_1_val = std::ceil(int(round_modified(s_2_val * pow(c, double(d) / 2))));
 
     arma::vec ord = arma::linspace(1, n, n);
-    arma::vec s_2 = arma::ceil(c * s_1);
+    arma::vec s_2 = arma::ceil(c % s_1);
 
     // Generate these matrices once since they won't change and just pass them to the workers
     arma::mat weight_mat_s_1 = weight_mat_lfac_s_2_filter(n, ord, s_1, n_prop, false);
@@ -193,13 +194,13 @@ struct TrtEffectBootstrapEstimate : public Worker
     const arma::mat Y_trt;
     const arma::mat weight_mat_s_1_trt;
     const arma::mat weight_mat_s_2_trt;
-    const double c_trt;
+    const arma::vec c_trt;
     const arma::mat X_ctl;
     const arma::mat Y_ctl;
     const arma::mat X_test_ctl;
     const arma::mat weight_mat_s_1_ctl;
     const arma::mat weight_mat_s_2_ctl;
-    const double c_ctl;
+    const arma::vec c_ctl;
     const arma::mat X_test;
     const double n_prop;
 
@@ -213,12 +214,12 @@ struct TrtEffectBootstrapEstimate : public Worker
                                const arma::mat &Y_trt,
                                const arma::mat &weight_mat_s_1_trt,
                                const arma::mat &weight_mat_s_2_trt,
-                               const double c_trt,
+                               const arma::vec c_trt,
                                const arma::mat &X_ctl,
                                const arma::mat &Y_ctl,
                                const arma::mat &weight_mat_s_1_ctl,
                                const arma::mat &weight_mat_s_2_ctl,
-                               const double c_ctl,
+                               const arma::vec c_ctl,
                                const arma::mat &X_test,
                                const double n_prop) : X_trt(X_trt), Y_trt(Y_trt),
                                                       weight_mat_s_1_trt(weight_mat_s_1_trt),
@@ -266,7 +267,7 @@ struct TrtEffectBootstrapEstimate : public Worker
 };
 
 std::tuple<arma::mat, arma::mat> make_weight_matrix(
-    int n, int d, double n_prop, double c, arma::vec s_choice)
+    int n, int d, double n_prop, arma::vec c, arma::vec s_choice)
 {
     arma::vec ord = arma::linspace(1, n, n);
     arma::vec s_1 = s_choice;
@@ -286,7 +287,8 @@ NumericMatrix bootstrap_trt_effect_cpp_mt(const arma::mat &X,
                                           const arma::mat &X_test,
                                           const arma::vec &s_choice_trt,
                                           const arma::vec &s_choice_ctl,
-                                          const double c,
+                                          const arma::vec &c_trt,
+                                          const arma::vec &c_ctl,
                                           const double n_prop,
                                           const int B,
                                           Nullable<NumericVector> W0_ = R_NilValue)
@@ -330,10 +332,10 @@ NumericMatrix bootstrap_trt_effect_cpp_mt(const arma::mat &X,
     arma::mat weight_mat_s_2_ctl;
 
     std::tie(weight_mat_s_1_trt, weight_mat_s_2_trt) = make_weight_matrix(X_trt.n_rows, int(d),
-                                                                          n_prop, c, s_choice_trt);
+                                                                          n_prop, c_trt, s_choice_trt);
 
     std::tie(weight_mat_s_1_ctl, weight_mat_s_2_ctl) = make_weight_matrix(X_ctl.n_rows, int(d),
-                                                                          n_prop, c, s_choice_ctl);
+                                                                          n_prop, c_ctl, s_choice_ctl);
 
     // initialize results matrix
     // arma::mat boot_stats(X_test_subset.n_rows, B);
@@ -345,12 +347,12 @@ NumericMatrix bootstrap_trt_effect_cpp_mt(const arma::mat &X,
                                           Y_trt,
                                           weight_mat_s_1_trt,
                                           weight_mat_s_2_trt,
-                                          c,
+                                          c_trt,
                                           X_ctl,
                                           Y_ctl,
                                           weight_mat_s_1_ctl,
                                           weight_mat_s_2_ctl,
-                                          c,
+                                          c_ctl,
                                           X_test_subset,
                                           n_prop);
 

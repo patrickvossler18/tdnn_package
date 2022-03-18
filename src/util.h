@@ -23,6 +23,7 @@ using namespace std;
 
 double nChoosek(double n, double k);
 NumericVector seq_cpp(double lo, double hi);
+arma::vec seq_cpp_arma(double lo, double hi);
 arma::mat matrix_subset_logical(const arma::mat &x, const arma::vec &y, int mrgn = 1);
 
 Rcpp::NumericMatrix matrix_subset_idx_rcpp(Rcpp::NumericMatrix x, Rcpp::IntegerVector y);
