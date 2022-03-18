@@ -16,6 +16,7 @@ Imports:
     strex,
     energy,
     RcppParallel,
+    RcppThread,
     RcppArmadillo,
     Rcpp,
     parallel,
@@ -24,7 +25,7 @@ Imports:
     purrr,
     rlang
 RoxygenNote: 7.1.2
-LinkingTo: Rcpp, RcppArmadillo, RcppParallel
+LinkingTo: Rcpp, RcppArmadillo, RcppParallel, RcppThread
 SystemRequirements: GNU make
 NeedsCompilation: yes
 Packaged: 2021-08-30 22:44:22 UTC; patrick

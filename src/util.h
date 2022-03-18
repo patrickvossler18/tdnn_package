@@ -5,19 +5,21 @@
 #include <omp.h>
 #endif
 
+
 #include <RcppArmadillo.h>
 #include <RcppParallel.h>
+#include "RcppThread.h"
 
 #include <math.h>
 #include <tuple>
 
-// [[Rcpp::plugins(openmp)]]
-// [[Rcpp::depends(RcppParallel)]]
-// [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::plugins(cpp11)]]
+// [[Rcpp::depends(RcppParallel)]]
+// [[Rcpp::depends(RcppThread)]]
+// [[Rcpp::depends(RcppArmadillo)]]
 
 using namespace Rcpp;
-using namespace RcppParallel;
+// using namespace RcppParallel;
 using namespace arma;
 using namespace std;
 
