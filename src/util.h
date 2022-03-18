@@ -37,7 +37,7 @@ arma::vec vector_subset_idx(const arma::vec &x, const arma::uvec &y);
 
 arma::mat weight_mat_lfac(int n, const arma::vec &ord, const arma::vec &s_vec);
 
-arma::mat weight_mat_lfac_s_2_filter(int n, const arma::vec &ord, const arma::vec &s_vec, double n_prop, bool is_s_2);
+arma::mat weight_mat_lfac_s_2_filter(int n, arma::vec ord, arma::vec s_vec, double n_prop, bool is_s_2);
 
 double round_modified(const double &x);
 arma::vec round_modified_vec(const arma::vec &x);

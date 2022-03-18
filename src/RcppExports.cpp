@@ -540,14 +540,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // weight_mat_lfac_s_2_filter
-arma::mat weight_mat_lfac_s_2_filter(int n, const arma::vec& ord, const arma::vec& s_vec, double n_prop, bool is_s_2);
+arma::mat weight_mat_lfac_s_2_filter(int n, arma::vec ord, arma::vec s_vec, double n_prop, bool is_s_2);
 RcppExport SEXP _tdnn_weight_mat_lfac_s_2_filter(SEXP nSEXP, SEXP ordSEXP, SEXP s_vecSEXP, SEXP n_propSEXP, SEXP is_s_2SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type ord(ordSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type s_vec(s_vecSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type ord(ordSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type s_vec(s_vecSEXP);
     Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
     Rcpp::traits::input_parameter< bool >::type is_s_2(is_s_2SEXP);
     rcpp_result_gen = Rcpp::wrap(weight_mat_lfac_s_2_filter(n, ord, s_vec, n_prop, is_s_2));

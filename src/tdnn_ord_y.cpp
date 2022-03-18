@@ -119,6 +119,7 @@ double tdnn_ord_y_st(arma::mat ordered_Y_i,
     // This just creates a sequence 1:n and then reverses it
     // NumericVector ord = seq_cpp(1, n);
     // ord.attr("dim") = Dimension(n, 1);
+    // arma::vec ord_arma = as<arma::vec>(ord);
     // don't need to reverse if we are using lfactorial
     // ord = n - ord;
     arma::vec ord_arma = seq_cpp_arma(1, n);
@@ -1245,7 +1246,8 @@ struct TdnnEstimateTune : public Worker
                 double estimate_curve = 0;
                 // get ith test observation
 
-                arma::vec mse_curve_s = tuning_ord_Y_st(ordered_Y, n, p, 1, c_val, n_prop);
+                // arma::vec mse_curve_s = tuning_ord_Y_st(ordered_Y, n, p, 1, c_val, n_prop);
+                arma::vec mse_curve_s = {2};
                 // mse_curve_s.print();
                 // cout << c.n_elem << std::endl;
                 // cout << c_val << std::endl;
