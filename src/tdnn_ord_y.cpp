@@ -125,6 +125,9 @@ double tdnn_ord_y_st(arma::mat ordered_Y_i,
     arma::vec ord_arma = seq_cpp_arma(1, n);
     arma::vec s_2 = arma::ceil(c * s_1);
 
+    // Rcout << "n: " << n << std::endl;
+    // Rcout << "ord_arma: " << ord_arma << std::endl;
+
     arma::mat weight_mat_s_1 = weight_mat_lfac_s_2_filter(n, ord_arma, s_1, n_prop, false);
     arma::mat weight_mat_s_2 = weight_mat_lfac_s_2_filter(n, ord_arma, s_2, n_prop, true);
 
