@@ -658,10 +658,14 @@ arma::mat make_ordered_Y_mat_debug(const arma::mat &X,
                                    const arma::mat &Y, const arma::mat &X_test,
                                    int B_NN = 20)
 {
+    /**
+     * @brief This is a debugging function for checking that we calculate the full
+     * matrix of ordered Y values correctly for all test observations.
+     * In our tuning code we order Y one-at-a-time.
+     *
+     */
     /*
-        This is a debugging function for checking that we calculate the full
-        matrix of ordered Y values correctly for all test observations.
-        In our tuning code we order Y one-at-a-time.
+
     */
     int n = X.n_rows;
     int n_test = X_test.n_rows;
@@ -769,6 +773,13 @@ arma::mat make_B_NN_estimates(
 // [[Rcpp::export]]
 arma::vec choose_s_1_val(arma::vec tuned_mse, arma::vec s_1_vec_tmp)
 {
+    /**
+     * @brief choose the best s_1 value from a vector of tuned MSE values.
+     * This function mimics the logic in tune_de_dnn_no_dist_cpp
+     * for choosing the best s_1 value and is used in our testing code to
+     * check that our choice matches our R implementation.
+     *
+     */
     double min_val = as_scalar(tuned_mse.min());
     arma::uvec near_min_vals = find(tuned_mse <= (1 + 0.01) * min_val);
     arma::vec choose_s1 = {min(s_1_vec_tmp.elem(near_min_vals))};
@@ -778,6 +789,13 @@ arma::vec choose_s_1_val(arma::vec tuned_mse, arma::vec s_1_vec_tmp)
 // [[Rcpp::export]]
 arma::vec choose_s_1_c_val(arma::vec s_1_vec, arma::vec c, arma::mat B_NN_estimates)
 {
+    /**
+     * @brief choose the best s_1 and c value pair from a matrix of tuned MSE values.
+     * This function mimics the logic in tune_de_dnn_no_dist_vary_c_* functions
+     * for choosing the best s_1 value and is used in our testing code to check that
+     * our choice matches our R implementation.
+     *
+     */
     arma::mat best_s_1_c(c.n_elem, 3);
     // loop over rows of B_NN_estimates matrix and get entry with smallest value
     for (int k = 0; k < B_NN_estimates.n_rows; k++)
@@ -816,6 +834,11 @@ Rcpp::List tune_de_dnn_no_dist_cpp(
     int bootstrap_iter = 500,
     bool debug = false)
 {
+    /**
+     * @brief Tune de_dnn for different s_1 values but keep c fixed at 2.
+     * This function calculates Euclidean distance once upfront.
+     *
+     */
     if (W0_.isNotNull())
     {
         NumericVector W0(W0_);
@@ -875,6 +898,11 @@ Rcpp::List tune_de_dnn_no_dist_cpp(
         // loop over rows of B_NN_estimates matrix and get entry with smallest value
         for (int k = 0; k < B_NN_estimates.n_rows; k++)
         {
+            /* TO-DO: replace this section with a call to the choose_s_1 function
+            need to adjust the function to also return s_1_idx.
+            Perhaps return a length-2 vector (choose_s1, s_1_idx).
+            Would need to change the testing code to use this new version too
+            */
             arma::vec tuned_mse = B_NN_estimates.row(k).as_col();
             double c_val = c(k);
             double min_val = as_scalar(tuned_mse.min());
@@ -995,11 +1023,6 @@ arma::mat make_B_NN_estimates_st(
             {
                 arma::vec s_1_val = {s_1_vec_tmp(l)};
                 double param_estimate = tdnn_ord_y_st(ordered_Y_train, s_1_val, X_train.n_rows, X_train.n_cols, c_val, n_prop);
-                // arma::vec param_estimate = tdnn_ord_y(X_train, Y_train, X_val,
-                //                                       ordered_Y_train,
-                //                                       s_1_val, c_val,
-                //                                       n_prop);
-                // double weighted_estimate = as_scalar(param_estimate * sqrt(neighbor_weight));
                 double weighted_estimate = param_estimate * sqrt(neighbor_weight);
                 double loss = pow((weighted_estimate - weighted_Y_val), 2);
 
@@ -1027,6 +1050,11 @@ Rcpp::List tune_de_dnn_no_dist_vary_c_cpp(
     int bootstrap_iter = 500,
     bool debug = false)
 {
+    /**
+     * @brief tune the de_dnn function by varying c in addition to s_1.
+     * This method calculates the distance matrix once upfront.
+     *
+     */
     if (W0_.isNotNull())
     {
         NumericVector W0(W0_);
@@ -1096,6 +1124,11 @@ Rcpp::List tune_de_dnn_no_dist_vary_c_cpp(
             // loop over rows of B_NN_estimates matrix and get entry with smallest value
             for (int k = 0; k < B_NN_estimates.n_rows; k++)
             {
+                /* TO-DO: replace this section with a call to the choose_s_1 function
+                need to adjust the function to also return s_1_idx.
+                Perhaps return a length-2 vector (choose_s1, s_1_idx).
+                Would need to change the testing code to use this new version too
+                */
                 arma::vec tuned_mse = B_NN_estimates.row(k).as_col();
                 // double c_val = c(k);
                 double min_val = as_scalar(tuned_mse.min());
