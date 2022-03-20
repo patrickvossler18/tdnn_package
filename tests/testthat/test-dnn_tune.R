@@ -1,88 +1,28 @@
-dnn = function(ordered_Y, n, p, s.size = 2) {
-    # Weight
-    ord1 = matrix(1:(n - s.size +1) , n - s.size +1 , 1)
-    # (n-k s-1) over (n s)
-    weight1 = rbind(s.size * exp(lgamma(n - ord1 + 1) + lgamma(n - s.size + 1) - lgamma(n+1) - lgamma(n - ord1 - s.size + 2)), matrix(0, nrow = s.size -1, ncol = 1))    # choose(n - ord, s.size - 1) / choose(n, s.size)
-    U1 = sum(ordered_Y * weight1)
-    return(U1)
+# source_file("old_implementation.R")
+
+set.seed(1234)
+library(tidyverse)
+library(parallel)
+library(kknn)
+
+dgp_function = function(x){
+    # This function will take a row of the matrix as input and return the 
+    # transformed value. To use this on a matrix, we can use the apply function
+    # with margin=1
+    (x[1]-1)^2 + (x[2]+1)^3 - 3*x[3]
+    # (x[1])^2 + (x[2])^3 - 3*x[3]
 }
 
 
-de.dnn <- function(
-    ordered_Y,
-    n,
-    p,
-    s.size = 2,
-    bc.p = 2) {
-    # Weight
-    ord1 = matrix(1:(n - s.size +1) , n - s.size +1 , 1)
-    ord2 = matrix(1:(n - ceiling(bc.p * s.size) +1) , n - ceiling(bc.p * s.size) +1 , 1)
-    # (n-k s-1) over (n s)
-    weight1 = rbind(s.size * exp(lgamma(n - ord1 + 1) + lgamma(n - s.size + 1) - lgamma(n+1) - lgamma(n - ord1 - s.size + 2)), matrix(0, nrow = s.size -1, ncol = 1))    # choose(n - ord, s.size - 1) / choose(n, s.size)
-    weight2 = rbind(ceiling(bc.p * s.size) * exp(lgamma(n - ord2 + 1) + lgamma(n - ceiling(bc.p * s.size) + 1) - lgamma(n+1) - lgamma(n - ord2 - ceiling(bc.p * s.size) + 2)), matrix(0, nrow = ceiling(bc.p * s.size) -1, ncol = 1))  #choose(n - ord, bc.p * s.size - 1) / choose(n, bc.p * s.size)
-    # Distance
-    # X.dis = X - kronecker(matrix(1, n, 1), X.test)
-    # EuDis = (X.dis ^ 2) %*% matrix(1, p, 1)
-    # Ascending small->large
-    # noise = matrix(rnorm(1), n, 1)
-    # TempD = data.frame(EuDis, Y, noise)[order(EuDis, noise),]
-    # Estimator
-    U1 = sum(ordered_Y * weight1)
-    U2 = sum(ordered_Y * weight2)
-    Magic = solve(matrix(c(1, 1, 1, (1 / bc.p) ^ (2 / p)), 2, 2)) %*% matrix(c(1, 0), 2, 1)
-    U = Magic[1, 1] * U1 + Magic[2, 1] * U2
-    return(U)
-}
+n=1000
+p = 3
+X = matrix(rnorm(n * p), n, p)
+epsi = matrix(rnorm(n) , n, 1)
+Y = apply(X, MARGIN = 1, dgp_function) + epsi
 
-de.dnn0 <- function(X,
-                    Y,
-                    X.test,
-                    s.size = 2,
-                    bc.p = 2) {
-    n = nrow(X)
-    p = ncol(X)
-    # Weight
-    ord1 = matrix(1:(n - s.size +1) , n - s.size +1 , 1)
-    ord2 = matrix(1:(n - ceiling(bc.p * s.size) +1) , n - ceiling(bc.p * s.size) +1 , 1)
-    # (n-k s-1) over (n s)
-    weight1 = rbind(s.size * exp(lgamma(n - ord1 + 1) + lgamma(n - s.size + 1) - lgamma(n+1) - lgamma(n - ord1 - s.size + 2)), matrix(0, nrow = s.size -1, ncol = 1))    # choose(n - ord, s.size - 1) / choose(n, s.size)
-    weight2 = rbind(ceiling(bc.p * s.size) * exp(lgamma(n - ord2 + 1) + lgamma(n - ceiling(bc.p * s.size) + 1) - lgamma(n+1) - lgamma(n - ord2 - ceiling(bc.p * s.size) + 2)), matrix(0, nrow = ceiling(bc.p * s.size) -1, ncol = 1))  #choose(n - ord, bc.p * s.size - 1) / choose(n, bc.p * s.size)
-    # Distance
-    X.dis = X - kronecker(matrix(1, n, 1), X.test)
-    EuDis = (X.dis ^ 2) %*% matrix(1, p, 1)
-    # Ascending small->large
-    noise = matrix(rnorm(1), n, 1)
-    TempD = data.frame(EuDis, Y, noise)[order(EuDis, noise),]
-    # Estimator
-    U1 = sum(TempD$Y * weight1)
-    U2 = sum(TempD$Y * weight2)
-    Magic = solve(matrix(c(1, 1, 1, (1 / bc.p) ^ (2 / p)), 2, 2)) %*% matrix(c(1, 0), 2, 1)
-    U = Magic[1, 1] * U1 + Magic[2, 1] * U2
-    return(U)
-}
-
-dnn0 <- function(X,
-                 Y,
-                 X.test,
-                 s.size = 2) {
-    n = nrow(X)
-    p = ncol(X)
-    # Weight
-    ord1 = matrix(1:(n - s.size +1) , n - s.size +1 , 1)
-    # (n-k s-1) over (n s)
-    weight1 = rbind(s.size * exp(lgamma(n - ord1 + 1) + lgamma(n - s.size + 1) - lgamma(n+1) - lgamma(n - ord1 - s.size + 2)), matrix(0, nrow = s.size -1, ncol = 1))    # choose(n - ord, s.size - 1) / choose(n, s.size)
-    # Distance
-    X.dis = X - kronecker(matrix(1, n, 1), X.test)
-    EuDis = (X.dis ^ 2) %*% matrix(1, p, 1)
-    # Ascending small->large
-    noise = matrix(rnorm(1), n, 1)
-    TempD = data.frame(EuDis, Y, noise)[order(EuDis, noise),]
-    # Estimator
-    U1 = sum(TempD$Y * weight1)
-    return(U1)
-}
-
-
+fixed_test_vector = c(2, -2, 2) # because using normally distributed data
+X_test_fixed <- matrix(fixed_test_vector, 1, p)
+mu <- dgp_function(fixed_test_vector)
 
 # generate our B LOO samples
 B = 20
@@ -111,7 +51,7 @@ boot_reps <- lapply(1:B, function(b) {
     ordered_Y_train <- Y_train[index.order]
     
     dnn.res = pmap_df(tidyr::expand_grid(c = 1, s =  s_seq), function(c, s){
-        est.dnn = dnn(ordered_Y_train, n_train, p_train, s)
+        est.dnn = dnn_ord(ordered_Y_train, n_train, p_train, s)
         bind_rows(list(data.frame(
             MSE.dnn = (est.dnn - Y_val)^2*exp(- sum((X_val - X_test_fixed)^2) / scale_p),
             s = s,
@@ -130,6 +70,17 @@ boot_rep_results_dnn = boot_rep_results_dnn/B
 
 dnn.min = boot_rep_results_dnn[which.min(boot_rep_results_dnn[, 1]), ]
 
+test_that("C++ dnn tuning gives same estimate and s_1 value for a fixed test vector",{
 
-dnn0(X, Y, X_test_fixed, dnn.min$s)
-dnn.min$s
+    dnn_R_est <- dnn0(X, Y, X_test_fixed, dnn.min$s)
+    dnn_R_s_1 <- dnn.min$s
+
+    dnn_cpp <- tdnn:::tune_dnn_no_dist_thread(X,Y,X_test_fixed,
+    s_seq = s_seq,W0_ = rep(1,p))
+    dnn_cpp_est <- as.numeric(dnn_cpp$estimate_loo)
+    dnn_cpp_s_1 <- as.numeric(dnn_cpp$s_1_B_NN)
+
+    expect_equal(dnn_R_est, dnn_cpp_est)
+    expect_equal(dnn_R_s_1, dnn_cpp_s_1)
+})
+
