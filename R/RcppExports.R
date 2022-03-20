@@ -45,8 +45,8 @@ tuning_ord_Y_debug <- function(X, Y, X_test, ordered_Y, c, n_prop) {
     .Call(`_tdnn_tuning_ord_Y_debug`, X, Y, X_test, ordered_Y, c, n_prop)
 }
 
-tuning_ord_Y_tune_c <- function(X, Y, X_test, ordered_Y, c, n_prop) {
-    .Call(`_tdnn_tuning_ord_Y_tune_c`, X, Y, X_test, ordered_Y, c, n_prop)
+make_ordered_Y_mat_debug <- function(X, Y, X_test, B_NN = 20L) {
+    .Call(`_tdnn_make_ordered_Y_mat_debug`, X, Y, X_test, B_NN)
 }
 
 tuning_ord_Y <- function(X, Y, X_test, ordered_Y, c, n_prop) {
@@ -55,10 +55,6 @@ tuning_ord_Y <- function(X, Y, X_test, ordered_Y, c, n_prop) {
 
 tuning_ord_Y_st <- function(ordered_Y, n, p, n_obs, c, n_prop) {
     .Call(`_tdnn_tuning_ord_Y_st`, ordered_Y, n, p, n_obs, c, n_prop)
-}
-
-make_ordered_Y_mat_debug <- function(X, Y, X_test, B_NN = 20L) {
-    .Call(`_tdnn_make_ordered_Y_mat_debug`, X, Y, X_test, B_NN)
 }
 
 make_B_NN_estimates <- function(X, Y, X_test_i, top_B, c_vec, s_tmp, n_prop = 0.5, B_NN = 20L, scale_p = 1, debug = FALSE) {
@@ -99,6 +95,22 @@ tdnn_reg_cpp <- function(X, Y, X_test, c, n_prop, s_1_val, bootstrap_iter, estim
 
 tdnn_reg_cv_cpp <- function(X, Y, X_test, param_mat, n_prop, B, bootstrap_iter, estimate_variance, verbose, W0_) {
     .Call(`_tdnn_tdnn_reg_cv_cpp`, X, Y, X_test, param_mat, n_prop, B, bootstrap_iter, estimate_variance, verbose, W0_)
+}
+
+dnn_ord_y_st <- function(ordered_Y_i, s_1, n, p, n_prop) {
+    .Call(`_tdnn_dnn_ord_y_st`, ordered_Y_i, s_1, n, p, n_prop)
+}
+
+dnn <- function(X, Y, X_test, s_sizes, n_prop = 0.5, W0_ = NULL) {
+    .Call(`_tdnn_dnn`, X, Y, X_test, s_sizes, n_prop, W0_)
+}
+
+dnn_B_NN_estimates <- function(X, Y, X_test_i, top_B, s_seq, n_prop = 0.5, B_NN = 20L, scale_p = 1, debug = FALSE) {
+    .Call(`_tdnn_dnn_B_NN_estimates`, X, Y, X_test_i, top_B, s_seq, n_prop, B_NN, scale_p, debug)
+}
+
+tune_dnn_no_dist_thread <- function(X, Y, X_test, s_seq, W0_, B_NN = 20L, scale_p = 1, n_prop = 0.5, debug = FALSE) {
+    .Call(`_tdnn_tune_dnn_no_dist_thread`, X, Y, X_test, s_seq, W0_, B_NN, scale_p, n_prop, debug)
 }
 
 pt_mat_dist <- function(X, y) {
