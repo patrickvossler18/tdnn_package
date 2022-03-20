@@ -249,7 +249,6 @@ struct De_dnnEstimate : public RcppParallel::Worker
     }
 };
 
-//' @export
 // [[Rcpp::plugins(cpp11)]]
 // [[Rcpp::export]]
 arma::vec de_dnn(arma::mat X, arma::vec Y, arma::mat X_test,

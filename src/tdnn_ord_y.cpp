@@ -275,140 +275,46 @@ Rcpp::List tuning_ord_Y_debug(const arma::mat &X, const arma::vec &Y,
 }
 
 // [[Rcpp::export]]
-arma::mat tuning_ord_Y_tune_c(const arma::mat &X, const arma::vec &Y,
-                              const arma::mat &X_test,
-                              const arma::mat &ordered_Y,
-                              const arma::vec &c,
-                              double n_prop)
+arma::mat make_ordered_Y_mat_debug(const arma::mat &X,
+                                   const arma::mat &Y, const arma::mat &X_test,
+                                   int B_NN = 20)
 {
+    /**
+     * @brief This is a debugging function for checking that we calculate the full
+     * matrix of ordered Y values correctly for all test observations.
+     * In our tuning code we order Y one-at-a-time.
+     *
+     */
+    /*
 
-    int n_obs = X_test.n_rows;
+    */
     int n = X.n_rows;
-    bool search_for_s = true;
-    int s_end = int(sqrt(n));
-    // tune_c_mat has 3 columns: best_s for each test observation, c value, and corresponding de_dnn estimate
-    arma::mat tune_c_mat(n_obs, 3);
-    for (int j = 0; j < c.n_elem; j++)
+    int n_test = X_test.n_rows;
+
+    // calculate EuDist for all test observations
+    arma::mat EuDis = calc_dist_mat_cpp(X, X_test);
+    // Rcout << EuDis << std::endl;
+    arma::vec noise(n);
+    double noise_val = arma::randn<double>();
+    noise.fill(noise_val);
+
+    // loop through test observations and get ordered Y and B_NN for each
+    // test observation
+    arma::mat ordered_Y_mat(n, n_test);
+    for (int i = 0; i < n_test; i++)
     {
-        double c_val = as_scalar(c(j));
-        arma::mat tuning_mat(n_obs, s_end, fill::zeros);
-        arma::vec best_s(n_obs, fill::zeros);
-        arma::vec best_s_estimates(n_obs);
-        double s = 0;
-        // using zero indexing here to match with C++, note s + 1 -> s+2 in de_dnn call
+        // get ith test observation
+        arma::vec X_test_i = X_test.row(i).as_col();
+        // get EuDist for ith test observation
+        arma::vec eu_dist_col = EuDis.col(i);
+        // sort each column and get the indices of the top B_NN
+        arma::uvec sorted_idx = sort_index(eu_dist_col);
+        arma::uvec top_B = sorted_idx.head(B_NN);
+        arma::uvec idx_tmp = r_like_order(eu_dist_col, noise);
 
-        while (search_for_s)
-        {
-            // Rcout << "s: " << s << std::endl;
-            // s_val needs to be a vector of the same length as X_test
-            arma::vec s_1(n_obs, fill::value(int(s + 2)));
-            // double s_fill = s + 2;
-            // NumericVector s_val(int(n_obs), s_fill);
-            // s_val = s + 2;
-
-            // For a given s, get the de_dnn estimates for each test observation
-            // List de_dnn_estimates = de_dnn(X, Y, X_test, s_val, c, W0_);
-            // arma::vec de_dnn_estimates = de_dnn(X, Y, X_test, s_val, c, n_prop, W0_);
-            arma::vec de_dnn_estimates = tdnn_ord_y(X, Y, X_test,
-                                                    ordered_Y, s_1,
-                                                    c_val, n_prop);
-            // This gives me an estimate for each test observation and is a n x 1 matrix
-            // arma::vec de_dnn_est_vec = as<arma::vec>(de_dnn_estimates["estimates"]);
-            arma::mat candidate_results = de_dnn_estimates;
-            candidate_results.reshape(n_obs, 1);
-
-            // Now we add this column to our matrix if the matrix is empty
-            if (s == 0 | s == 1)
-            {
-                tuning_mat.col(s) = candidate_results;
-            }
-            else if (s >= tuning_mat.n_cols)
-            {
-                // if s > ncol tuning_mat, then we will choose best s from the existing choices for each row that hasn't found a best s yet and break out of the while loop
-                arma::uvec s_vec = seq_int(0, int(s) - 1);
-                arma::mat resized_mat = matrix_subset_idx(tuning_mat, s_vec);
-
-                arma::mat out_diff = diff(resized_mat, 1, 1);
-                IntegerVector idx = Range(0, (resized_mat.n_cols) - 2);
-                arma::mat out_denom = resized_mat.cols(as<uvec>(idx));
-                arma::mat diff_ratio = diff(abs(out_diff / out_denom), 1, 1);
-
-                for (R_xlen_t i = 0; i < diff_ratio.n_rows; ++i)
-                {
-                    // Only loop through the columns if we haven't already found a
-                    // suitable s
-                    if (best_s(i) == 0)
-                    {
-                        for (R_xlen_t j = 0; j < diff_ratio.n_cols; ++j)
-                        {
-                            if (diff_ratio(i, j) > -0.01)
-                            {
-                                best_s(i) = j + 1 + 3;
-                                best_s_estimates(i) = tuning_mat(i, (j + 1 + 3 - 2));
-                                double best_s_tmp = j + 1 + 3;
-                                double best_s_est_tmp = as_scalar(tuning_mat(i, (j + 1 + 3 - 2)));
-                                Rcout << best_s_tmp << ", " << best_s_est_tmp << std::endl;
-                                tune_c_mat.row(i) = {c_val, best_s_tmp, best_s_est_tmp};
-                                break; // if we've found the column that satisfies our condition, break and move to next row.
-                            }
-                        }
-                    }
-                }
-                search_for_s = false; // since we've gone past the num of columns stop the while loop here
-                break;                // break out of our while loop to avoid going past number of columns in tuning_mat
-            }
-            else
-            {
-
-                // instead of resizing the matrix, just select columns 0-s
-                arma::uvec s_vec = seq_int(0, int(s) - 1);
-                arma::mat resized_mat = matrix_subset_idx(tuning_mat, s_vec);
-                // tuning_mat is an n x s matrix and we want to diff each of the rows
-                arma::mat out_diff = diff(resized_mat, 1, 1);
-                IntegerVector idx = Range(0, (resized_mat.n_cols) - 2);
-                arma::mat out_denom = resized_mat.cols(as<uvec>(idx));
-                arma::mat diff_ratio = diff(abs(out_diff / out_denom), 1, 1);
-                // Now we go through each row and check if any of the columns are
-                // greater than -0.01
-                for (R_xlen_t i = 0; i < diff_ratio.n_rows; ++i)
-                {
-                    // Only loop through the columns if we haven't already found a
-                    // suitable s
-                    if (best_s(i) == 0)
-                    {
-                        for (R_xlen_t j = 0; j < diff_ratio.n_cols; ++j)
-                        {
-                            if (diff_ratio(i, j) > -0.01)
-                            {
-                                best_s(i) = j + 1 + 3;
-                                best_s_estimates(i) = tuning_mat(i, (j + 1 + 3 - 2));
-                                double best_s_tmp = j + 1 + 3;
-                                double best_s_est_tmp = as_scalar(tuning_mat(i, (j + 1 + 3 - 2)));
-                                Rcout << best_s_tmp << ", " << best_s_est_tmp << std::endl;
-                                tune_c_mat.row(i) = {c_val, best_s_tmp, best_s_est_tmp};
-                                break; // if we've found the column that satisfies our condition, break and move to next row.
-                            }
-                        }
-                    }
-                }
-
-                // Check if we still have observations without an s
-                if (all(best_s))
-                {
-                    // then we are done!
-                    search_for_s = false;
-                }
-                else
-                {
-                    tuning_mat.col(s) = candidate_results;
-                }
-            }
-            s += 1;
-        }
-        // need to get the estimates for each of the best s values
+        ordered_Y_mat.col(i) = Y.rows(idx_tmp).as_col();
     }
-    // return NumericVector(best_s.begin(), best_s.end());
-    return tune_c_mat;
+    return ordered_Y_mat;
 }
 
 // [[Rcpp::export]]
@@ -651,49 +557,6 @@ arma::vec tuning_ord_Y_st(const arma::mat &ordered_Y, int n, int p, int n_obs,
 
     // return NumericVector(best_s.begin(), best_s.end());
     return best_s;
-}
-
-// [[Rcpp::export]]
-arma::mat make_ordered_Y_mat_debug(const arma::mat &X,
-                                   const arma::mat &Y, const arma::mat &X_test,
-                                   int B_NN = 20)
-{
-    /**
-     * @brief This is a debugging function for checking that we calculate the full
-     * matrix of ordered Y values correctly for all test observations.
-     * In our tuning code we order Y one-at-a-time.
-     *
-     */
-    /*
-
-    */
-    int n = X.n_rows;
-    int n_test = X_test.n_rows;
-
-    // calculate EuDist for all test observations
-    arma::mat EuDis = calc_dist_mat_cpp(X, X_test);
-    // Rcout << EuDis << std::endl;
-    arma::vec noise(n);
-    double noise_val = arma::randn<double>();
-    noise.fill(noise_val);
-
-    // loop through test observations and get ordered Y and B_NN for each
-    // test observation
-    arma::mat ordered_Y_mat(n, n_test);
-    for (int i = 0; i < n_test; i++)
-    {
-        // get ith test observation
-        arma::vec X_test_i = X_test.row(i).as_col();
-        // get EuDist for ith test observation
-        arma::vec eu_dist_col = EuDis.col(i);
-        // sort each column and get the indices of the top B_NN
-        arma::uvec sorted_idx = sort_index(eu_dist_col);
-        arma::uvec top_B = sorted_idx.head(B_NN);
-        arma::uvec idx_tmp = r_like_order(eu_dist_col, noise);
-
-        ordered_Y_mat.col(i) = Y.rows(idx_tmp).as_col();
-    }
-    return ordered_Y_mat;
 }
 
 // [[Rcpp::export]]
