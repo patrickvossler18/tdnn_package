@@ -19,6 +19,7 @@ NumericMatrix bootstrap_cpp_thread(const arma::mat &X,
                                    const arma::vec c,
                                    const double n_prop,
                                    const int B,
+                                   int num_threads,
                                    Nullable<NumericVector> W0_ = R_NilValue);
 
 NumericMatrix bootstrap_dnn_cpp_thread(const arma::mat &X,
@@ -27,6 +28,7 @@ NumericMatrix bootstrap_dnn_cpp_thread(const arma::mat &X,
                                        const arma::vec s_1,
                                        const double n_prop,
                                        const int B,
+                                       int num_threads,
                                        Nullable<NumericVector> W0_ = R_NilValue);
 
 #endif

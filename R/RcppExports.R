@@ -13,12 +13,12 @@ bootstrap_cpp_mt <- function(X, Y, X_test, s_1, c, n_prop, B, W0_) {
     .Call(`_tdnn_bootstrap_cpp_mt`, X, Y, X_test, s_1, c, n_prop, B, W0_)
 }
 
-bootstrap_cpp_thread <- function(X, Y, X_test, s_1, c, n_prop, B, W0_) {
-    .Call(`_tdnn_bootstrap_cpp_thread`, X, Y, X_test, s_1, c, n_prop, B, W0_)
+bootstrap_cpp_thread <- function(X, Y, X_test, s_1, c, n_prop, B, num_threads, W0_) {
+    .Call(`_tdnn_bootstrap_cpp_thread`, X, Y, X_test, s_1, c, n_prop, B, num_threads, W0_)
 }
 
-bootstrap_dnn_cpp_thread <- function(X, Y, X_test, s_1, n_prop, B, W0_) {
-    .Call(`_tdnn_bootstrap_dnn_cpp_thread`, X, Y, X_test, s_1, n_prop, B, W0_)
+bootstrap_dnn_cpp_thread <- function(X, Y, X_test, s_1, n_prop, B, num_threads, W0_) {
+    .Call(`_tdnn_bootstrap_dnn_cpp_thread`, X, Y, X_test, s_1, n_prop, B, num_threads, W0_)
 }
 
 bootstrap_trt_effect_cpp_mt <- function(X, Y, W, X_test, s_choice_trt, s_choice_ctl, c_trt, c_ctl, n_prop, B, W0_ = NULL) {
@@ -93,8 +93,8 @@ tune_de_dnn_no_dist_vary_c_cpp_mt <- function(X, Y, X_test, W0_, c, B_NN = 20L, 
     .Call(`_tdnn_tune_de_dnn_no_dist_vary_c_cpp_mt`, X, Y, X_test, W0_, c, B_NN, scale_p, n_prop, estimate_variance, bootstrap_iter, debug)
 }
 
-tune_de_dnn_no_dist_vary_c_cpp_thread <- function(X, Y, X_test, W0_, c, B_NN = 20L, scale_p = 1, n_prop = 0.5, estimate_variance = FALSE, bootstrap_iter = 500L, debug = FALSE, verbose = FALSE) {
-    .Call(`_tdnn_tune_de_dnn_no_dist_vary_c_cpp_thread`, X, Y, X_test, W0_, c, B_NN, scale_p, n_prop, estimate_variance, bootstrap_iter, debug, verbose)
+tune_de_dnn_no_dist_vary_c_cpp_thread <- function(X, Y, X_test, W0_, c, B_NN = 20L, scale_p = 1, n_prop = 0.5, estimate_variance = FALSE, bootstrap_iter = 500L, debug = FALSE, verbose = FALSE, num_threads = 1L) {
+    .Call(`_tdnn_tune_de_dnn_no_dist_vary_c_cpp_thread`, X, Y, X_test, W0_, c, B_NN, scale_p, n_prop, estimate_variance, bootstrap_iter, debug, verbose, num_threads)
 }
 
 tdnn_reg_cpp <- function(X, Y, X_test, c, n_prop, s_1_val, bootstrap_iter, estimate_variance, verbose, W0_) {
@@ -117,8 +117,8 @@ dnn_B_NN_estimates <- function(X, Y, X_test_i, top_B, s_seq, n_prop = 0.5, B_NN 
     .Call(`_tdnn_dnn_B_NN_estimates`, X, Y, X_test_i, top_B, s_seq, n_prop, B_NN, scale_p, debug)
 }
 
-tune_dnn_no_dist_thread <- function(X, Y, X_test, s_seq, W0_, B_NN = 20L, scale_p = 1, n_prop = 0.5, estimate_variance = FALSE, bootstrap_iter = 500L, verbose = FALSE, debug = FALSE) {
-    .Call(`_tdnn_tune_dnn_no_dist_thread`, X, Y, X_test, s_seq, W0_, B_NN, scale_p, n_prop, estimate_variance, bootstrap_iter, verbose, debug)
+tune_dnn_no_dist_thread <- function(X, Y, X_test, s_seq, W0_, B_NN = 20L, scale_p = 1, n_prop = 0.5, estimate_variance = FALSE, bootstrap_iter = 500L, verbose = FALSE, debug = FALSE, num_threads = 1L) {
+    .Call(`_tdnn_tune_dnn_no_dist_thread`, X, Y, X_test, s_seq, W0_, B_NN, scale_p, n_prop, estimate_variance, bootstrap_iter, verbose, debug, num_threads)
 }
 
 pt_mat_dist <- function(X, y) {

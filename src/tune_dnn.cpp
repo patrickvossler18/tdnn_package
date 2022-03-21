@@ -165,7 +165,8 @@ Rcpp::List tune_dnn_no_dist_thread(
     bool estimate_variance = false,
     int bootstrap_iter = 500,
     bool verbose = false,
-    bool debug = false)
+    bool debug = false,
+    int num_threads = 1)
 {
     /**
      * @brief Tune dnn for different s_1 values
@@ -200,8 +201,9 @@ Rcpp::List tune_dnn_no_dist_thread(
     NumericVector s_1_B_NN(n_test);
 
     RcppThread::ProgressBar bar(X_test.n_rows, 1);
-    RcppThread::parallelFor(0, X_test.n_rows, [&X, &Y, &X_test, &EuDis, &s_seq, &noise, &tuned_estimate, &s_1_B_NN, &n, &p, &n_prop, &B_NN, &scale_p, &debug, &bar](int i)
-                            {
+    RcppThread::parallelFor(
+        0, X_test.n_rows, [&X, &Y, &X_test, &EuDis, &s_seq, &noise, &tuned_estimate, &s_1_B_NN, &n, &p, &n_prop, &B_NN, &scale_p, &debug, &bar](int i)
+        {
         // get ith test observation
         arma::vec X_test_i = X_test.row(i).as_col();
         arma::mat X_test_i_mat = conv_to<arma::mat>::from(X_test.row(i));
@@ -218,7 +220,8 @@ Rcpp::List tune_dnn_no_dist_thread(
         arma::vec best_s_1 = {s_seq(min_idx)};
         tuned_estimate(i) = dnn_ord_y_st(ordered_Y, best_s_1, n, p, n_prop);
         s_1_B_NN(i) = as_scalar(best_s_1); 
-        bar++; });
+        bar++; },
+        num_threads);
 
     if (estimate_variance)
     {
@@ -227,7 +230,7 @@ Rcpp::List tune_dnn_no_dist_thread(
             Rcout << "Running bootstrap...";
         }
         NumericMatrix bstrap_estimates = bootstrap_dnn_cpp_thread(X, Y, X_test, s_1_B_NN, n_prop,
-                                                                  bootstrap_iter, R_NilValue);
+                                                                  bootstrap_iter, num_threads, R_NilValue);
         // need to apply variance over columns
         arma::vec variance = rowVar_arma(as<arma::mat>(bstrap_estimates));
         return Rcpp::List::create(

@@ -247,6 +247,7 @@ NumericMatrix bootstrap_cpp_thread(const arma::mat &X,
                                    const arma::vec c,
                                    const double n_prop,
                                    const int B,
+                                   int num_threads,
                                    Nullable<NumericVector> W0_)
 {
 
@@ -287,24 +288,26 @@ NumericMatrix bootstrap_cpp_thread(const arma::mat &X,
     NumericMatrix boot_stats(X_test_subset.n_rows, B);
 
     RcppThread::ProgressBar bar(B, 1);
-    RcppThread::parallelFor(0, B,
-                            [&boot_stats, &X, &Y, &X_test, &weight_mat_s_1, &weight_mat_s_2, &c, &n_prop, &bar](int i)
-                            {
-                                // sample observations with replacement
-                                arma::uvec boot_idx = sample_replace_index(X.n_rows);
-                                arma::mat X_boot = matrix_row_subset_idx(X, boot_idx);
-                                arma::mat Y_boot = matrix_row_subset_idx(Y, boot_idx);
+    RcppThread::parallelFor(
+        0, B,
+        [&boot_stats, &X, &Y, &X_test, &weight_mat_s_1, &weight_mat_s_2, &c, &n_prop, &bar](int i)
+        {
+            // sample observations with replacement
+            arma::uvec boot_idx = sample_replace_index(X.n_rows);
+            arma::mat X_boot = matrix_row_subset_idx(X, boot_idx);
+            arma::mat Y_boot = matrix_row_subset_idx(Y, boot_idx);
 
-                                arma::vec est = tdnn_st_boot(X_boot, Y_boot, X_test,
-                                                             weight_mat_s_1,
-                                                             weight_mat_s_2,
-                                                             c, n_prop);
-                                for (int j = 0; j < X_test.n_rows; j++)
-                                {
-                                    boot_stats(j, i) = est(j);
-                                }
-                                bar++;
-                            });
+            arma::vec est = tdnn_st_boot(X_boot, Y_boot, X_test,
+                                         weight_mat_s_1,
+                                         weight_mat_s_2,
+                                         c, n_prop);
+            for (int j = 0; j < X_test.n_rows; j++)
+            {
+                boot_stats(j, i) = est(j);
+            }
+            bar++;
+        },
+        num_threads);
     return (boot_stats);
 };
 
@@ -316,6 +319,7 @@ NumericMatrix bootstrap_dnn_cpp_thread(const arma::mat &X,
                                        const arma::vec s_1,
                                        const double n_prop,
                                        const int B,
+                                       int num_threads,
                                        Nullable<NumericVector> W0_)
 {
 
@@ -351,22 +355,24 @@ NumericMatrix bootstrap_dnn_cpp_thread(const arma::mat &X,
     NumericMatrix boot_stats(X_test_subset.n_rows, B);
 
     RcppThread::ProgressBar bar(B, 1);
-    RcppThread::parallelFor(0, B,
-                            [&boot_stats, &X, &Y, &X_test, &weight_mat_s_1, &n_prop, &bar](int i)
-                            {
-                                // sample observations with replacement
-                                arma::uvec boot_idx = sample_replace_index(X.n_rows);
-                                arma::mat X_boot = matrix_row_subset_idx(X, boot_idx);
-                                arma::mat Y_boot = matrix_row_subset_idx(Y, boot_idx);
+    RcppThread::parallelFor(
+        0, B,
+        [&boot_stats, &X, &Y, &X_test, &weight_mat_s_1, &n_prop, &bar](int i)
+        {
+            // sample observations with replacement
+            arma::uvec boot_idx = sample_replace_index(X.n_rows);
+            arma::mat X_boot = matrix_row_subset_idx(X, boot_idx);
+            arma::mat Y_boot = matrix_row_subset_idx(Y, boot_idx);
 
-                                arma::vec est = dnn_st_boot(X_boot, Y_boot, X_test,
-                                                            weight_mat_s_1, n_prop);
-                                for (int j = 0; j < X_test.n_rows; j++)
-                                {
-                                    boot_stats(j, i) = est(j);
-                                }
-                                bar++;
-                            });
+            arma::vec est = dnn_st_boot(X_boot, Y_boot, X_test,
+                                        weight_mat_s_1, n_prop);
+            for (int j = 0; j < X_test.n_rows; j++)
+            {
+                boot_stats(j, i) = est(j);
+            }
+            bar++;
+        },
+        num_threads);
     return (boot_stats);
 };
 

@@ -1316,7 +1316,8 @@ Rcpp::List tune_de_dnn_no_dist_vary_c_cpp_thread(
     bool estimate_variance = false,
     int bootstrap_iter = 500,
     bool debug = false,
-    bool verbose = false)
+    bool verbose = false,
+    int num_threads = 1)
 {
     if (W0_.isNotNull())
     {
@@ -1446,7 +1447,8 @@ Rcpp::List tune_de_dnn_no_dist_vary_c_cpp_thread(
         }
         NumericMatrix bstrap_estimates = bootstrap_cpp_thread(X, Y, X_test, s_1_B_NN,
                                                               c_B_NN, n_prop,
-                                                              bootstrap_iter, R_NilValue);
+                                                              bootstrap_iter,
+                                                              num_threads, R_NilValue);
         // need to apply variance over columns
         arma::vec variance = rowVar_arma(as<arma::mat>(bstrap_estimates));
         if (debug)
