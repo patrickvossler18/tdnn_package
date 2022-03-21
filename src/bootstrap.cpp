@@ -64,6 +64,58 @@ arma::vec tdnn_st_boot(arma::mat X, arma::vec Y, arma::mat X_test,
     return estimates;
 }
 
+// [[Rcpp::export]]
+arma::vec dnn_st_boot(arma::mat X, arma::vec Y, arma::mat X_test,
+                      const arma::mat &weight_mat_s_1,
+                      double n_prop)
+{
+
+    arma::vec estimates(X_test.n_rows);
+    int n = X.n_rows;
+    int p = X.n_cols;
+
+    for (int i = 0; i < X_test.n_rows; i++)
+    {
+        arma::mat all_cols(p, 1);
+        all_cols.fill(1.0);
+
+        // arma::mat all_rows;
+        arma::mat X_dis;
+        arma::mat EuDis;
+
+        arma::mat X_test_row = X_test.row(i);
+        // all_rows = single_vec * X_test_row;
+        arma::mat all_rows = arma::repmat(X_test_row, n, 1);
+
+        X_dis = X - all_rows;
+
+        EuDis = (arma::pow(X_dis, 2)) * all_cols;
+
+        arma::vec noise(n);
+        double noise_val = arma::randn<double>();
+        noise.fill(noise_val);
+
+        arma::vec vec_eu_dis = conv_to<arma::vec>::from(EuDis);
+
+        arma::uvec index = r_like_order(vec_eu_dis, noise);
+
+        arma::mat ordered_Y = conv_to<arma::mat>::from(Y).rows(index);
+        // // Rcout << ordered_Y_vec[order_vec];
+        // // Rcout << ordered_Y;
+
+        arma::vec U_1_vec(ordered_Y.n_rows);
+
+        // the weight matrix is # train obs x # test obs so we want to use the
+        // ith column of the weight mat for the ith test observation
+        // U_1_vec = reshape(ordered_Y, 1, n) * weight_mat_s_1.col(i);
+        U_1_vec = ordered_Y.as_row() * weight_mat_s_1.col(i);
+
+        estimates(i) = arma::as_scalar(U_1_vec);
+    }
+    // Rcout << estimates << std::endl;
+    return estimates;
+}
+
 struct BootstrapEstimate : public RcppParallel::Worker
 {
     // input matrices to read from
@@ -247,6 +299,68 @@ NumericMatrix bootstrap_cpp_thread(const arma::mat &X,
                                                              weight_mat_s_1,
                                                              weight_mat_s_2,
                                                              c, n_prop);
+                                for (int j = 0; j < X_test.n_rows; j++)
+                                {
+                                    boot_stats(j, i) = est(j);
+                                }
+                                bar++;
+                            });
+    return (boot_stats);
+};
+
+// [[Rcpp::plugins(cpp11)]]
+// [[Rcpp::export]]
+NumericMatrix bootstrap_dnn_cpp_thread(const arma::mat &X,
+                                       const arma::mat &Y,
+                                       const arma::mat &X_test,
+                                       const arma::vec s_1,
+                                       const double n_prop,
+                                       const int B,
+                                       Nullable<NumericVector> W0_)
+{
+
+    // Filter by W0
+    int d = X.n_cols;
+    arma::mat X_subset;
+    arma::mat X_test_subset;
+    if (W0_.isNotNull())
+    {
+        NumericVector W0(W0_);
+        // Now we need to filter X and X_test to only contain these columns
+        X_subset = matrix_subset_logical(X, as<arma::vec>(W0));
+        X_test_subset = matrix_subset_logical(X_test, as<arma::vec>(W0));
+        d = sum(W0);
+    }
+    else
+    {
+        X_subset = X;
+        X_test_subset = X_test;
+    }
+
+    // Infer n and p from our data after we've filtered for relevant features
+    int n = X_subset.n_rows;
+    int p = X_subset.n_cols;
+
+    arma::vec ord = arma::linspace(1, n, n);
+
+    // Generate these matrices once since they won't change and just pass them to the workers
+    arma::mat weight_mat_s_1 = weight_mat_lfac_s_2_filter(n, ord, s_1, n_prop, false);
+
+    // initialize results matrix
+    // arma::mat boot_stats(X_test_subset.n_rows, B);
+    NumericMatrix boot_stats(X_test_subset.n_rows, B);
+
+    RcppThread::ProgressBar bar(B, 1);
+    RcppThread::parallelFor(0, B,
+                            [&boot_stats, &X, &Y, &X_test, &weight_mat_s_1, &n_prop, &bar](int i)
+                            {
+                                // sample observations with replacement
+                                arma::uvec boot_idx = sample_replace_index(X.n_rows);
+                                arma::mat X_boot = matrix_row_subset_idx(X, boot_idx);
+                                arma::mat Y_boot = matrix_row_subset_idx(Y, boot_idx);
+
+                                arma::vec est = dnn_st_boot(X_boot, Y_boot, X_test,
+                                                            weight_mat_s_1, n_prop);
                                 for (int j = 0; j < X_test.n_rows; j++)
                                 {
                                     boot_stats(j, i) = est(j);

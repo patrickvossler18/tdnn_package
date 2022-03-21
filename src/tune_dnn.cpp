@@ -162,6 +162,9 @@ Rcpp::List tune_dnn_no_dist_thread(
     int B_NN = 20,
     double scale_p = 1,
     double n_prop = 0.5,
+    bool estimate_variance = false,
+    int bootstrap_iter = 500,
+    bool verbose = false,
     bool debug = false)
 {
     /**
@@ -217,27 +220,25 @@ Rcpp::List tune_dnn_no_dist_thread(
         s_1_B_NN(i) = as_scalar(best_s_1); 
         bar++; });
 
-    // for (int i = 0; i < n_test; i++)
-    // {
-    //     // get ith test observation
-    //     arma::vec X_test_i = X_test.row(i).as_col();
-    //     arma::mat X_test_i_mat = conv_to<arma::mat>::from(X_test.row(i));
-    //     // get EuDist for ith test observation
-    //     arma::vec eu_dist_col = EuDis.col(i);
-    //     // sort each column and get the indices of the top B_NN
-    //     arma::uvec sorted_idx = sort_index(eu_dist_col);
-    //     arma::uvec top_B = sorted_idx.head(B_NN);
-    //     arma::uvec idx_tmp = r_like_order(eu_dist_col, noise);
-    //     arma::mat ordered_Y = conv_to<arma::mat>::from(Y).rows(idx_tmp);
-    //     // get a 1 x s_seq.n_elem matrix. Find idx min
-    //     arma::vec B_NN_estimates = dnn_B_NN_estimates(X, Y, X_test_i, top_B, s_seq, n_prop, B_NN, scale_p, debug);
-    //     arma::uword min_idx = arma::index_min(B_NN_estimates);
-    //     arma::vec best_s_1 = {s_seq(min_idx)};
-    //     tuned_estimate(i) = dnn_ord_y_st(ordered_Y, best_s_1, n, p, n_prop);
-    //     s_1_B_NN(i) = as_scalar(best_s_1);
-    // }
-
-    return Rcpp::List::create(
-        Named("estimate_loo") = tuned_estimate,
-        Named("s_1_B_NN") = s_1_B_NN);
+    if (estimate_variance)
+    {
+        if (verbose)
+        {
+            Rcout << "Running bootstrap...";
+        }
+        NumericMatrix bstrap_estimates = bootstrap_dnn_cpp_thread(X, Y, X_test, s_1_B_NN, n_prop,
+                                                                  bootstrap_iter, R_NilValue);
+        // need to apply variance over columns
+        arma::vec variance = rowVar_arma(as<arma::mat>(bstrap_estimates));
+        return Rcpp::List::create(
+            Named("estimate_loo") = tuned_estimate,
+            Named("s_1_B_NN") = s_1_B_NN,
+            Named("variance") = variance);
+    }
+    else
+    {
+        return Rcpp::List::create(
+            Named("estimate_loo") = tuned_estimate,
+            Named("s_1_B_NN") = s_1_B_NN);
+    }
 }

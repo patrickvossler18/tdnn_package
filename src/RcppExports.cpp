@@ -30,6 +30,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// dnn_st_boot
+arma::vec dnn_st_boot(arma::mat X, arma::vec Y, arma::mat X_test, const arma::mat& weight_mat_s_1, double n_prop);
+RcppExport SEXP _tdnn_dnn_st_boot(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP weight_mat_s_1SEXP, SEXP n_propSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type weight_mat_s_1(weight_mat_s_1SEXP);
+    Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
+    rcpp_result_gen = Rcpp::wrap(dnn_st_boot(X, Y, X_test, weight_mat_s_1, n_prop));
+    return rcpp_result_gen;
+END_RCPP
+}
 // bootstrap_cpp_mt
 NumericMatrix bootstrap_cpp_mt(const arma::mat& X, const arma::mat& Y, const arma::mat& X_test, const arma::vec s_1, const arma::vec c, const double n_prop, const int B, Nullable<NumericVector> W0_);
 RcppExport SEXP _tdnn_bootstrap_cpp_mt(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_1SEXP, SEXP cSEXP, SEXP n_propSEXP, SEXP BSEXP, SEXP W0_SEXP) {
@@ -63,6 +78,23 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const int >::type B(BSEXP);
     Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
     rcpp_result_gen = Rcpp::wrap(bootstrap_cpp_thread(X, Y, X_test, s_1, c, n_prop, B, W0_));
+    return rcpp_result_gen;
+END_RCPP
+}
+// bootstrap_dnn_cpp_thread
+NumericMatrix bootstrap_dnn_cpp_thread(const arma::mat& X, const arma::mat& Y, const arma::mat& X_test, const arma::vec s_1, const double n_prop, const int B, Nullable<NumericVector> W0_);
+RcppExport SEXP _tdnn_bootstrap_dnn_cpp_thread(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_1SEXP, SEXP n_propSEXP, SEXP BSEXP, SEXP W0_SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< const arma::vec >::type s_1(s_1SEXP);
+    Rcpp::traits::input_parameter< const double >::type n_prop(n_propSEXP);
+    Rcpp::traits::input_parameter< const int >::type B(BSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type W0_(W0_SEXP);
+    rcpp_result_gen = Rcpp::wrap(bootstrap_dnn_cpp_thread(X, Y, X_test, s_1, n_prop, B, W0_));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -490,8 +522,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // tune_dnn_no_dist_thread
-Rcpp::List tune_dnn_no_dist_thread(arma::mat X, arma::vec Y, arma::mat X_test, arma::vec s_seq, Nullable<NumericVector> W0_, int B_NN, double scale_p, double n_prop, bool debug);
-RcppExport SEXP _tdnn_tune_dnn_no_dist_thread(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_seqSEXP, SEXP W0_SEXP, SEXP B_NNSEXP, SEXP scale_pSEXP, SEXP n_propSEXP, SEXP debugSEXP) {
+Rcpp::List tune_dnn_no_dist_thread(arma::mat X, arma::vec Y, arma::mat X_test, arma::vec s_seq, Nullable<NumericVector> W0_, int B_NN, double scale_p, double n_prop, bool estimate_variance, int bootstrap_iter, bool verbose, bool debug);
+RcppExport SEXP _tdnn_tune_dnn_no_dist_thread(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_seqSEXP, SEXP W0_SEXP, SEXP B_NNSEXP, SEXP scale_pSEXP, SEXP n_propSEXP, SEXP estimate_varianceSEXP, SEXP bootstrap_iterSEXP, SEXP verboseSEXP, SEXP debugSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -503,8 +535,11 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type B_NN(B_NNSEXP);
     Rcpp::traits::input_parameter< double >::type scale_p(scale_pSEXP);
     Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
+    Rcpp::traits::input_parameter< bool >::type estimate_variance(estimate_varianceSEXP);
+    Rcpp::traits::input_parameter< int >::type bootstrap_iter(bootstrap_iterSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
     Rcpp::traits::input_parameter< bool >::type debug(debugSEXP);
-    rcpp_result_gen = Rcpp::wrap(tune_dnn_no_dist_thread(X, Y, X_test, s_seq, W0_, B_NN, scale_p, n_prop, debug));
+    rcpp_result_gen = Rcpp::wrap(tune_dnn_no_dist_thread(X, Y, X_test, s_seq, W0_, B_NN, scale_p, n_prop, estimate_variance, bootstrap_iter, verbose, debug));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -696,8 +731,10 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_tdnn_tdnn_st_boot", (DL_FUNC) &_tdnn_tdnn_st_boot, 7},
+    {"_tdnn_dnn_st_boot", (DL_FUNC) &_tdnn_dnn_st_boot, 5},
     {"_tdnn_bootstrap_cpp_mt", (DL_FUNC) &_tdnn_bootstrap_cpp_mt, 8},
     {"_tdnn_bootstrap_cpp_thread", (DL_FUNC) &_tdnn_bootstrap_cpp_thread, 8},
+    {"_tdnn_bootstrap_dnn_cpp_thread", (DL_FUNC) &_tdnn_bootstrap_dnn_cpp_thread, 7},
     {"_tdnn_bootstrap_trt_effect_cpp_mt", (DL_FUNC) &_tdnn_bootstrap_trt_effect_cpp_mt, 11},
     {"_tdnn_tdnn", (DL_FUNC) &_tdnn_tdnn, 8},
     {"_tdnn_de_dnn", (DL_FUNC) &_tdnn_de_dnn, 7},
@@ -722,7 +759,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_tdnn_dnn_ord_y_st", (DL_FUNC) &_tdnn_dnn_ord_y_st, 5},
     {"_tdnn_dnn", (DL_FUNC) &_tdnn_dnn, 6},
     {"_tdnn_dnn_B_NN_estimates", (DL_FUNC) &_tdnn_dnn_B_NN_estimates, 9},
-    {"_tdnn_tune_dnn_no_dist_thread", (DL_FUNC) &_tdnn_tune_dnn_no_dist_thread, 9},
+    {"_tdnn_tune_dnn_no_dist_thread", (DL_FUNC) &_tdnn_tune_dnn_no_dist_thread, 12},
     {"_tdnn_pt_mat_dist", (DL_FUNC) &_tdnn_pt_mat_dist, 2},
     {"_tdnn_make_ord_vec", (DL_FUNC) &_tdnn_make_ord_vec, 1},
     {"_tdnn_make_ordered_Y_vec", (DL_FUNC) &_tdnn_make_ordered_Y_vec, 4},

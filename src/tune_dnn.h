@@ -2,5 +2,6 @@
 #define TUNE_DNN_H
 
 #include "util.h"
+#include "bootstrap.h"
 
 #endif
