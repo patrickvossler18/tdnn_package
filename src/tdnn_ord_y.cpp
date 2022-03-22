@@ -1361,8 +1361,9 @@ Rcpp::List tune_de_dnn_no_dist_vary_c_cpp_thread(
         Rcout << "Estimating...";
     }
     RcppThread::ProgressBar bar(X_test.n_rows, 1);
-    RcppThread::parallelFor(0, X_test.n_rows, [&X, &Y, &X_test, &EuDis, &noise, &c, &tuned_estimate, &s_1_B_NN, &c_B_NN, &curve_estimate, &s_1_mse_curve, &B_NN, &n, &p, &scale_p, &debug, &n_prop, &bar](int i)
-                            {
+    RcppThread::parallelFor(
+        0, X_test.n_rows, [&X, &Y, &X_test, &EuDis, &noise, &c, &tuned_estimate, &s_1_B_NN, &c_B_NN, &curve_estimate, &s_1_mse_curve, &B_NN, &n, &p, &scale_p, &debug, &n_prop, &bar](int i)
+        {
         arma::mat vary_c_results(c.n_elem, 3);
 
         arma::vec X_test_i = X_test.row(i).as_col();
@@ -1441,7 +1442,8 @@ Rcpp::List tune_de_dnn_no_dist_vary_c_cpp_thread(
         tuned_estimate[i] = tdnn_ord_y_st(ordered_Y, best_s_1_vec, n, p, best_c, n_prop);
         s_1_B_NN[i] = best_s_1;
         c_B_NN[i] = best_c;
-        bar++; });
+        bar++; },
+        num_threads);
 
     if (estimate_variance)
     {
