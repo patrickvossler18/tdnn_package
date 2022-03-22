@@ -1332,7 +1332,11 @@ Rcpp::List tune_de_dnn_no_dist_vary_c_cpp_thread(
     int n = X.n_rows;
     int p = X.n_cols;
     int n_test = X_test.n_rows;
-    double fixed_c = 2;
+    if (verbose)
+    {
+        Rcout << "n: " << n << std::endl;
+        Rcout << "p: " << p << std::endl;
+    }
 
     // calculate EuDist for all test observations
     arma::mat EuDis = calc_dist_mat_cpp(X, X_test);
