@@ -21,6 +21,29 @@ double dnn_ord_y_st(arma::mat ordered_Y_i, arma::vec s_1, int n, int p, double n
 
 // [[Rcpp::plugins(cpp11)]]
 // [[Rcpp::export]]
+arma::vec dnn_ord_y_all_st(arma::mat ordered_Y_i, arma::vec s_1, int n, int p, double n_prop)
+{
+    /*
+        This function gives the dnn estimates for multiple s_1 values and is useful for the
+        make_B_NN_estimates step
+    */
+    arma::vec ord_arma = seq_cpp_arma(1, n);
+
+    arma::mat weight_mat_s_1 = weight_mat_lfac_s_2_filter(n, ord_arma, s_1, n_prop, false);
+
+    arma::rowvec ordered_Y_row = ordered_Y_i.as_row();
+    arma::mat U_1_vec(1, s_1.n_elem);
+
+    // the weight matrix is # train obs x # test obs so we want to use
+    // the ith column of the weight mat for the ith test observation
+    // U_1_vec = reshape(ordered_Y, 1, n) * weight_mat_s_1.col(i);
+    U_1_vec = ordered_Y_row * weight_mat_s_1;
+
+    return U_1_vec.as_col();
+}
+
+// [[Rcpp::plugins(cpp11)]]
+// [[Rcpp::export]]
 NumericVector dnn(arma::mat X, arma::vec Y, arma::mat X_test,
                   arma::vec s_sizes,
                   double n_prop = 0.5,
@@ -138,14 +161,18 @@ arma::vec dnn_B_NN_estimates(
         double neighbor_weight = exp(
             -arma::sum(arma::pow((X_val.as_col() - X_test_i), 2)) / scale_p);
         double weighted_Y_val = as_scalar(Y_val * sqrt(neighbor_weight));
-        for (int l = 0; l < s_seq.n_elem; l++)
-        {
-            arma::vec s_1_val = {s_seq(l)};
-            double param_estimate = dnn_ord_y_st(ordered_Y_train, s_1_val, X_train.n_rows, X_train.n_cols, n_prop);
-            double weighted_estimate = param_estimate * sqrt(neighbor_weight);
-            double loss = pow((weighted_estimate - weighted_Y_val), 2);
-            B_NN_estimates(l) += loss;
-        }
+        arma::vec param_estimate = dnn_ord_y_all_st(ordered_Y_train, s_seq, X_train.n_rows, X_train.n_cols, n_prop);
+        arma::vec weighted_estimate = param_estimate * sqrt(neighbor_weight);
+        arma::vec loss = pow((weighted_estimate - weighted_Y_val), 2);
+        B_NN_estimates += loss;
+        // for (int l = 0; l < s_seq.n_elem; l++)
+        // {
+        //     arma::vec s_1_val = {s_seq(l)};
+        //     double param_estimate = dnn_ord_y_st(ordered_Y_train, s_1_val, X_train.n_rows, X_train.n_cols, n_prop);
+        //     double weighted_estimate = param_estimate * sqrt(neighbor_weight);
+        //     double loss = pow((weighted_estimate - weighted_Y_val), 2);
+        //     B_NN_estimates(l) += loss;
+        // }
     }
     // now calculate mean loss over the B_NN observations
     B_NN_estimates = B_NN_estimates / B_NN;

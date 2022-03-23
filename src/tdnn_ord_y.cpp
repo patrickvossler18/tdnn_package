@@ -135,6 +135,7 @@ double tdnn_ord_y_st(arma::mat ordered_Y_i,
     arma::vec U_1_vec(ordered_Y_i.n_elem);
     // arma::vec U_2_vec(ordered_Y.n_rows);
     arma::vec U_2_vec;
+
     // double w_1 = c / (c - 1);
     // double w_2 = -1 / (c - 1);
     double w_2 = pow(c, 2 / double(p)) / (pow(c, 2 / double(p)) - 1);
@@ -149,6 +150,38 @@ double tdnn_ord_y_st(arma::mat ordered_Y_i,
     arma::vec U_vec = w_1 * U_1_vec + w_2 * U_2_vec;
     // Rcout << "U_vec: " << U_vec << std::endl;
     return arma::as_scalar(U_vec);
+}
+
+// [[Rcpp::plugins(cpp11)]]
+// [[Rcpp::export]]
+arma::vec tdnn_ord_y_all_st(arma::mat ordered_Y_i,
+                            arma::vec s_1,
+                            int n,
+                            int p,
+                            double c,
+                            double n_prop)
+{
+
+    /*
+        This version of TDNN takes the ordered Y vector as input as well as vector s_1 and calculates the estimates
+        using matrix multiplication instead of looping over values
+    */
+    arma::vec ord_arma = seq_cpp_arma(1, n);
+    arma::mat weight_mat_s_1 = weight_mat_lfac_s_2_filter(n, ord_arma, s_1, n_prop, false);
+    arma::rowvec ordered_Y_row = ordered_Y_i.as_row();
+    arma::mat U_1(1, s_1.n_elem);
+
+    U_1 = ordered_Y_row * weight_mat_s_1;
+
+    double w_2 = pow(c, 2 / double(p)) / (pow(c, 2 / double(p)) - 1);
+    double w_1 = -1 / (pow(c, 2 / double(p)) - 1);
+    arma::vec s_2 = arma::ceil(c * s_1);
+    arma::mat weight_mat_s_2 = weight_mat_lfac_s_2_filter(n, ord_arma, s_2, n_prop, true);
+    arma::mat U_2(1, s_1.n_elem);
+    U_2 = ordered_Y_row * weight_mat_s_2;
+    arma::mat U_vec = w_1 * U_1 + w_2 * U_2;
+
+    return U_vec.as_col();
 }
 
 // [[Rcpp::export]]
@@ -877,21 +910,26 @@ arma::mat make_B_NN_estimates_st(
         // to be column format, too so we will take the difference of them as columns
         double neighbor_weight = exp(
             -arma::sum(arma::pow((X_val.as_col() - X_test_i), 2)) / scale_p);
+        double sqrt_neighbor_weight = sqrt(neighbor_weight);
         // Rcout << -arma::sum(arma::pow((X_val.as_col() - X_test_i), 2)) << std::endl;
         double weighted_Y_val = as_scalar(Y_val * sqrt(neighbor_weight));
         for (int k = 0; k < c_vec.n_elem; k++)
         {
             double c_val = c_vec(k);
-            for (int l = 0; l < s_1_vec_tmp.n_elem; l++)
-            {
-                arma::vec s_1_val = {s_1_vec_tmp(l)};
-                double param_estimate = tdnn_ord_y_st(ordered_Y_train, s_1_val, X_train.n_rows, X_train.n_cols, c_val, n_prop);
-                double weighted_estimate = param_estimate * sqrt(neighbor_weight);
-                double loss = pow((weighted_estimate - weighted_Y_val), 2);
+            arma::vec param_estimate = tdnn_ord_y_all_st(ordered_Y_train, s_1_vec_tmp, X_train.n_rows, X_train.n_cols, c_val, n_prop);
+            arma::vec weighted_estimate = param_estimate * sqrt_neighbor_weight;
+            arma::vec loss = pow((weighted_estimate - weighted_Y_val), 2);
+            B_NN_estimates.row(k) += loss.as_row();
+            // for (int l = 0; l < s_1_vec_tmp.n_elem; l++)
+            // {
+            //     arma::vec s_1_val = {s_1_vec_tmp(l)};
+            //     double param_estimate = tdnn_ord_y_st(ordered_Y_train, s_1_val, X_train.n_rows, X_train.n_cols, c_val, n_prop);
+            //     double weighted_estimate = param_estimate * sqrt(neighbor_weight);
+            //     double loss = pow((weighted_estimate - weighted_Y_val), 2);
 
-                B_NN_estimates(k, l) += loss;
-                // B_NN_estimates.row(i) = { loss, weighted_Y_val,weighted_estimate, s_1_vec_tmp(l), c_val};
-            }
+            //     B_NN_estimates(k, l) += loss;
+            //     // B_NN_estimates.row(i) = { loss, weighted_Y_val,weighted_estimate, s_1_vec_tmp(l), c_val};
+            // }
         }
     }
     // now calculate mean loss over the B_NN observations

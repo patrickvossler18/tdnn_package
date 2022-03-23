@@ -49,6 +49,10 @@ tdnn_ord_y_st <- function(ordered_Y_i, s_1, n, p, c, n_prop) {
     .Call(`_tdnn_tdnn_ord_y_st`, ordered_Y_i, s_1, n, p, c, n_prop)
 }
 
+tdnn_ord_y_all_st <- function(ordered_Y_i, s_1, n, p, c, n_prop) {
+    .Call(`_tdnn_tdnn_ord_y_all_st`, ordered_Y_i, s_1, n, p, c, n_prop)
+}
+
 tuning_ord_Y_debug <- function(X, Y, X_test, ordered_Y, c, n_prop) {
     .Call(`_tdnn_tuning_ord_Y_debug`, X, Y, X_test, ordered_Y, c, n_prop)
 }
@@ -107,6 +111,10 @@ tdnn_reg_cv_cpp <- function(X, Y, X_test, param_mat, n_prop, B, bootstrap_iter, 
 
 dnn_ord_y_st <- function(ordered_Y_i, s_1, n, p, n_prop) {
     .Call(`_tdnn_dnn_ord_y_st`, ordered_Y_i, s_1, n, p, n_prop)
+}
+
+dnn_ord_y_all_st <- function(ordered_Y_i, s_1, n, p, n_prop) {
+    .Call(`_tdnn_dnn_ord_y_all_st`, ordered_Y_i, s_1, n, p, n_prop)
 }
 
 dnn <- function(X, Y, X_test, s_sizes, n_prop = 0.5, W0_ = NULL) {

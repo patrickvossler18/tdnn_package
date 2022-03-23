@@ -221,6 +221,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// tdnn_ord_y_all_st
+arma::vec tdnn_ord_y_all_st(arma::mat ordered_Y_i, arma::vec s_1, int n, int p, double c, double n_prop);
+RcppExport SEXP _tdnn_tdnn_ord_y_all_st(SEXP ordered_Y_iSEXP, SEXP s_1SEXP, SEXP nSEXP, SEXP pSEXP, SEXP cSEXP, SEXP n_propSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type ordered_Y_i(ordered_Y_iSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type s_1(s_1SEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type p(pSEXP);
+    Rcpp::traits::input_parameter< double >::type c(cSEXP);
+    Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
+    rcpp_result_gen = Rcpp::wrap(tdnn_ord_y_all_st(ordered_Y_i, s_1, n, p, c, n_prop));
+    return rcpp_result_gen;
+END_RCPP
+}
 // tuning_ord_Y_debug
 Rcpp::List tuning_ord_Y_debug(const arma::mat& X, const arma::vec& Y, const arma::mat& X_test, const arma::mat& ordered_Y, double c, double n_prop);
 RcppExport SEXP _tdnn_tuning_ord_Y_debug(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP ordered_YSEXP, SEXP cSEXP, SEXP n_propSEXP) {
@@ -489,6 +505,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// dnn_ord_y_all_st
+arma::vec dnn_ord_y_all_st(arma::mat ordered_Y_i, arma::vec s_1, int n, int p, double n_prop);
+RcppExport SEXP _tdnn_dnn_ord_y_all_st(SEXP ordered_Y_iSEXP, SEXP s_1SEXP, SEXP nSEXP, SEXP pSEXP, SEXP n_propSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type ordered_Y_i(ordered_Y_iSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type s_1(s_1SEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type p(pSEXP);
+    Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
+    rcpp_result_gen = Rcpp::wrap(dnn_ord_y_all_st(ordered_Y_i, s_1, n, p, n_prop));
+    return rcpp_result_gen;
+END_RCPP
+}
 // dnn
 NumericVector dnn(arma::mat X, arma::vec Y, arma::mat X_test, arma::vec s_sizes, double n_prop, Nullable<NumericVector> W0_);
 RcppExport SEXP _tdnn_dnn(SEXP XSEXP, SEXP YSEXP, SEXP X_testSEXP, SEXP s_sizesSEXP, SEXP n_propSEXP, SEXP W0_SEXP) {
@@ -746,6 +777,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_tdnn_tuning_est", (DL_FUNC) &_tdnn_tuning_est, 6},
     {"_tdnn_tdnn_ord_y", (DL_FUNC) &_tdnn_tdnn_ord_y, 7},
     {"_tdnn_tdnn_ord_y_st", (DL_FUNC) &_tdnn_tdnn_ord_y_st, 6},
+    {"_tdnn_tdnn_ord_y_all_st", (DL_FUNC) &_tdnn_tdnn_ord_y_all_st, 6},
     {"_tdnn_tuning_ord_Y_debug", (DL_FUNC) &_tdnn_tuning_ord_Y_debug, 6},
     {"_tdnn_make_ordered_Y_mat_debug", (DL_FUNC) &_tdnn_make_ordered_Y_mat_debug, 4},
     {"_tdnn_tuning_ord_Y", (DL_FUNC) &_tdnn_tuning_ord_Y, 6},
@@ -761,6 +793,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_tdnn_tdnn_reg_cpp", (DL_FUNC) &_tdnn_tdnn_reg_cpp, 10},
     {"_tdnn_tdnn_reg_cv_cpp", (DL_FUNC) &_tdnn_tdnn_reg_cv_cpp, 10},
     {"_tdnn_dnn_ord_y_st", (DL_FUNC) &_tdnn_dnn_ord_y_st, 5},
+    {"_tdnn_dnn_ord_y_all_st", (DL_FUNC) &_tdnn_dnn_ord_y_all_st, 5},
     {"_tdnn_dnn", (DL_FUNC) &_tdnn_dnn, 6},
     {"_tdnn_dnn_B_NN_estimates", (DL_FUNC) &_tdnn_dnn_B_NN_estimates, 9},
     {"_tdnn_tune_dnn_no_dist_thread", (DL_FUNC) &_tdnn_tune_dnn_no_dist_thread, 13},
