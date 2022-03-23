@@ -474,12 +474,13 @@ arma::vec tuning_ord_Y(const arma::mat &X, const arma::vec &Y,
 
 // [[Rcpp::export]]
 arma::vec tuning_ord_Y_st(const arma::mat &ordered_Y, int n, int p, int n_obs,
+                          int s_1_max,
                           double c,
                           double n_prop)
 {
 
     bool search_for_s = true;
-    int s_end = int(sqrt(n));
+    int s_end = s_1_max;
     arma::mat tuning_mat(n_obs, s_end, fill::zeros);
     arma::vec best_s(n_obs, fill::zeros);
     double s = 0;
@@ -873,7 +874,7 @@ arma::mat make_B_NN_estimates_st(
     const arma::vec &X_test_i,
     const arma::uvec &top_B,
     const arma::vec c_vec,
-    double s_tmp,
+    const arma::vec s_1_vec_tmp,
     double n_prop = 0.5, int B_NN = 20,
     double scale_p = 1,
     bool debug = false)
@@ -881,7 +882,7 @@ arma::mat make_B_NN_estimates_st(
     int n = X.n_rows;
     // arma::vec c_vec = {c};
     // arma::vec s_1_vec_tmp = as<arma::vec>(seq_cpp(s_tmp, 2 * s_tmp));
-    arma::vec s_1_vec_tmp = seq_cpp_arma(s_tmp, 2 * s_tmp);
+    // arma::vec s_1_vec_tmp = seq_cpp_arma(s_tmp, 2 * s_tmp);
     arma::uvec idx_vec = seq_int(0, n - 1);
     // arma::mat B_NN_estimates(B_NN, 5);
     arma::mat B_NN_estimates(c_vec.n_elem, s_1_vec_tmp.n_elem, fill::zeros);
@@ -1182,8 +1183,10 @@ struct TdnnEstimateTune : public RcppParallel::Worker
                 arma::vec c_val_vec = {c_val};
                 double estimate_curve = 0;
                 // get ith test observation
+                double max_s_1 = floor((n - 5) / c_val) - 1;
 
-                arma::vec mse_curve_s = tuning_ord_Y_st(ordered_Y, n, p, 1, c_val, n_prop);
+                arma::vec mse_curve_s = tuning_ord_Y_st(ordered_Y, n, p, 1, int(max_s_1), c_val, n_prop);
+                // arma::vec mse_curve_s = tuning_ord_Y_st(ordered_Y, n, p, 1, c_val, n_prop);
                 // mse_curve_s.print();
                 // cout << c.n_elem << std::endl;
                 // cout << c_val << std::endl;
@@ -1201,10 +1204,10 @@ struct TdnnEstimateTune : public RcppParallel::Worker
                 double s_tmp = arma::as_scalar(mse_curve_s);
                 // arma::vec c_vec = {c};
                 // arma::vec s_1_vec_tmp = as<arma::vec>(seq_cpp(s_tmp, 2 * s_tmp));
-                arma::vec s_1_vec_tmp = seq_cpp_arma(s_tmp, 2 * s_tmp);
+                arma::vec s_1_vec_tmp = seq_cpp_arma(s_tmp, min(max_s_1, 2 * s_tmp));
                 // Rcout << "s_1_vec_tmp: " << s_1_vec_tmp << std::endl;
                 arma::mat B_NN_estimates = make_B_NN_estimates_st(X, Y, X_test_i, top_B, c_val_vec,
-                                                                  s_tmp, n_prop, B_NN, scale_p, debug = false);
+                                                                  s_1_vec_tmp, n_prop, B_NN, scale_p, debug = false);
                 arma::mat best_s_1_c(c_val_vec.n_elem, 3);
                 // loop over rows of B_NN_estimates matrix and get entry with smallest value
                 for (int k = 0; k < B_NN_estimates.n_rows; k++)
@@ -1212,12 +1215,14 @@ struct TdnnEstimateTune : public RcppParallel::Worker
                     arma::vec tuned_mse = B_NN_estimates.row(k).as_col();
                     // double c_val = c(k);
                     double min_val = as_scalar(tuned_mse.min());
-                    arma::uvec near_min_vals = find(tuned_mse <= (1 + 0.01) * min_val);
-                    double choose_s1 = as_scalar(min(s_1_vec_tmp.elem(near_min_vals)));
+                    uword min_idx = index_min(tuned_mse);
+                    double choose_s1 = as_scalar(s_1_vec_tmp(min_idx));
+                    // arma::uvec near_min_vals = find(tuned_mse <= (1 + 0.01) * min_val);
+                    // double choose_s1 = as_scalar(min(s_1_vec_tmp.elem(near_min_vals)));
                     // Rcout << "choose_s1: " << choose_s1 << std::endl;
-                    double s_1_mse = as_scalar(tuned_mse.elem(find(s_1_vec_tmp == choose_s1)));
+                    // double s_1_mse = as_scalar(tuned_mse.elem(find(s_1_vec_tmp == choose_s1)));
                     // Rcout << "s_1_mse: " << s_1_mse << std::endl;
-                    best_s_1_c.row(k) = {c_val, choose_s1, s_1_mse};
+                    best_s_1_c.row(k) = {c_val, choose_s1, min_val};
                 }
                 // get index of row with minimum tuned mse
                 uword best_row = best_s_1_c.col(2).index_min();
@@ -1420,9 +1425,9 @@ Rcpp::List tune_de_dnn_no_dist_vary_c_cpp_thread(
             double c_val = c(j);
             arma::vec c_val_vec = {c_val};
             double estimate_curve = 0;
-            // get ith test observation
+            double max_s_1 = floor((n - 5) / c_val) - 1;
 
-            arma::vec mse_curve_s = tuning_ord_Y_st(ordered_Y, n, p, 1, c_val, n_prop);
+            arma::vec mse_curve_s = tuning_ord_Y_st(ordered_Y, n, p, 1, double(max_s_1), c_val, n_prop);
             // arma::vec mse_curve_s = {2};
             // mse_curve_s.print();
             // cout << c.n_elem << std::endl;
@@ -1441,10 +1446,10 @@ Rcpp::List tune_de_dnn_no_dist_vary_c_cpp_thread(
             double s_tmp = arma::as_scalar(mse_curve_s);
             // arma::vec c_vec = {c};
             // arma::vec s_1_vec_tmp = as<arma::vec>(seq_cpp(s_tmp, 2 * s_tmp));
-            arma::vec s_1_vec_tmp = seq_cpp_arma(s_tmp, 2 * s_tmp);
+            arma::vec s_1_vec_tmp = seq_cpp_arma(s_tmp, min(max_s_1, 2 * s_tmp));
             // Rcout << "s_1_vec_tmp: " << s_1_vec_tmp << std::endl;
             arma::mat B_NN_estimates = make_B_NN_estimates_st(X, Y, X_test_i, top_B, c_val_vec,
-                                                                s_tmp, n_prop, B_NN, scale_p, debug = false);
+                                                                s_1_vec_tmp, n_prop, B_NN, scale_p, debug = false);
             arma::mat best_s_1_c(c_val_vec.n_elem, 3);
             // loop over rows of B_NN_estimates matrix and get entry with smallest value
             for (int k = 0; k < B_NN_estimates.n_rows; k++)
@@ -1452,12 +1457,14 @@ Rcpp::List tune_de_dnn_no_dist_vary_c_cpp_thread(
                 arma::vec tuned_mse = B_NN_estimates.row(k).as_col();
                 // double c_val = c(k);
                 double min_val = as_scalar(tuned_mse.min());
-                arma::uvec near_min_vals = find(tuned_mse <= (1 + 0.01) * min_val);
-                double choose_s1 = as_scalar(min(s_1_vec_tmp.elem(near_min_vals)));
+                uword min_idx = index_min(tuned_mse);
+                double choose_s1 = as_scalar(s_1_vec_tmp(min_idx));
+                // arma::uvec near_min_vals = find(tuned_mse <= (1 + 0.01) * min_val);
+                // double choose_s1 = as_scalar(min(s_1_vec_tmp.elem(near_min_vals)));
                 // Rcout << "choose_s1: " << choose_s1 << std::endl;
-                double s_1_mse = as_scalar(tuned_mse.elem(find(s_1_vec_tmp == choose_s1)));
+                // double s_1_mse = as_scalar(tuned_mse.elem(find(s_1_vec_tmp == choose_s1)));
                 // Rcout << "s_1_mse: " << s_1_mse << std::endl;
-                best_s_1_c.row(k) = {c_val, choose_s1, s_1_mse};
+                best_s_1_c.row(k) = {c_val, choose_s1, min_val};
             }
             // get index of row with minimum tuned mse
             uword best_row = best_s_1_c.col(2).index_min();

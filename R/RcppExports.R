@@ -65,8 +65,8 @@ tuning_ord_Y <- function(X, Y, X_test, ordered_Y, c, n_prop) {
     .Call(`_tdnn_tuning_ord_Y`, X, Y, X_test, ordered_Y, c, n_prop)
 }
 
-tuning_ord_Y_st <- function(ordered_Y, n, p, n_obs, c, n_prop) {
-    .Call(`_tdnn_tuning_ord_Y_st`, ordered_Y, n, p, n_obs, c, n_prop)
+tuning_ord_Y_st <- function(ordered_Y, n, p, n_obs, s_1_max, c, n_prop) {
+    .Call(`_tdnn_tuning_ord_Y_st`, ordered_Y, n, p, n_obs, s_1_max, c, n_prop)
 }
 
 make_B_NN_estimates <- function(X, Y, X_test_i, top_B, c_vec, s_tmp, n_prop = 0.5, B_NN = 20L, scale_p = 1, debug = FALSE) {
@@ -85,8 +85,8 @@ tune_de_dnn_no_dist_cpp <- function(X, Y, X_test, W0_, c, B_NN = 20L, scale_p = 
     .Call(`_tdnn_tune_de_dnn_no_dist_cpp`, X, Y, X_test, W0_, c, B_NN, scale_p, n_prop, estimate_variance, bootstrap_iter, debug)
 }
 
-make_B_NN_estimates_st <- function(X, Y, X_test_i, top_B, c_vec, s_tmp, n_prop = 0.5, B_NN = 20L, scale_p = 1, debug = FALSE) {
-    .Call(`_tdnn_make_B_NN_estimates_st`, X, Y, X_test_i, top_B, c_vec, s_tmp, n_prop, B_NN, scale_p, debug)
+make_B_NN_estimates_st <- function(X, Y, X_test_i, top_B, c_vec, s_1_vec_tmp, n_prop = 0.5, B_NN = 20L, scale_p = 1, debug = FALSE) {
+    .Call(`_tdnn_make_B_NN_estimates_st`, X, Y, X_test_i, top_B, c_vec, s_1_vec_tmp, n_prop, B_NN, scale_p, debug)
 }
 
 tune_de_dnn_no_dist_vary_c_cpp <- function(X, Y, X_test, W0_, c, B_NN = 20L, scale_p = 1, n_prop = 0.5, estimate_variance = FALSE, bootstrap_iter = 500L, debug = FALSE) {

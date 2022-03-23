@@ -284,8 +284,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // tuning_ord_Y_st
-arma::vec tuning_ord_Y_st(const arma::mat& ordered_Y, int n, int p, int n_obs, double c, double n_prop);
-RcppExport SEXP _tdnn_tuning_ord_Y_st(SEXP ordered_YSEXP, SEXP nSEXP, SEXP pSEXP, SEXP n_obsSEXP, SEXP cSEXP, SEXP n_propSEXP) {
+arma::vec tuning_ord_Y_st(const arma::mat& ordered_Y, int n, int p, int n_obs, int s_1_max, double c, double n_prop);
+RcppExport SEXP _tdnn_tuning_ord_Y_st(SEXP ordered_YSEXP, SEXP nSEXP, SEXP pSEXP, SEXP n_obsSEXP, SEXP s_1_maxSEXP, SEXP cSEXP, SEXP n_propSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -293,9 +293,10 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     Rcpp::traits::input_parameter< int >::type p(pSEXP);
     Rcpp::traits::input_parameter< int >::type n_obs(n_obsSEXP);
+    Rcpp::traits::input_parameter< int >::type s_1_max(s_1_maxSEXP);
     Rcpp::traits::input_parameter< double >::type c(cSEXP);
     Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
-    rcpp_result_gen = Rcpp::wrap(tuning_ord_Y_st(ordered_Y, n, p, n_obs, c, n_prop));
+    rcpp_result_gen = Rcpp::wrap(tuning_ord_Y_st(ordered_Y, n, p, n_obs, s_1_max, c, n_prop));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -366,8 +367,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // make_B_NN_estimates_st
-arma::mat make_B_NN_estimates_st(const arma::mat& X, const arma::mat& Y, const arma::vec& X_test_i, const arma::uvec& top_B, const arma::vec c_vec, double s_tmp, double n_prop, int B_NN, double scale_p, bool debug);
-RcppExport SEXP _tdnn_make_B_NN_estimates_st(SEXP XSEXP, SEXP YSEXP, SEXP X_test_iSEXP, SEXP top_BSEXP, SEXP c_vecSEXP, SEXP s_tmpSEXP, SEXP n_propSEXP, SEXP B_NNSEXP, SEXP scale_pSEXP, SEXP debugSEXP) {
+arma::mat make_B_NN_estimates_st(const arma::mat& X, const arma::mat& Y, const arma::vec& X_test_i, const arma::uvec& top_B, const arma::vec c_vec, const arma::vec s_1_vec_tmp, double n_prop, int B_NN, double scale_p, bool debug);
+RcppExport SEXP _tdnn_make_B_NN_estimates_st(SEXP XSEXP, SEXP YSEXP, SEXP X_test_iSEXP, SEXP top_BSEXP, SEXP c_vecSEXP, SEXP s_1_vec_tmpSEXP, SEXP n_propSEXP, SEXP B_NNSEXP, SEXP scale_pSEXP, SEXP debugSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -376,12 +377,12 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::vec& >::type X_test_i(X_test_iSEXP);
     Rcpp::traits::input_parameter< const arma::uvec& >::type top_B(top_BSEXP);
     Rcpp::traits::input_parameter< const arma::vec >::type c_vec(c_vecSEXP);
-    Rcpp::traits::input_parameter< double >::type s_tmp(s_tmpSEXP);
+    Rcpp::traits::input_parameter< const arma::vec >::type s_1_vec_tmp(s_1_vec_tmpSEXP);
     Rcpp::traits::input_parameter< double >::type n_prop(n_propSEXP);
     Rcpp::traits::input_parameter< int >::type B_NN(B_NNSEXP);
     Rcpp::traits::input_parameter< double >::type scale_p(scale_pSEXP);
     Rcpp::traits::input_parameter< bool >::type debug(debugSEXP);
-    rcpp_result_gen = Rcpp::wrap(make_B_NN_estimates_st(X, Y, X_test_i, top_B, c_vec, s_tmp, n_prop, B_NN, scale_p, debug));
+    rcpp_result_gen = Rcpp::wrap(make_B_NN_estimates_st(X, Y, X_test_i, top_B, c_vec, s_1_vec_tmp, n_prop, B_NN, scale_p, debug));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -781,7 +782,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_tdnn_tuning_ord_Y_debug", (DL_FUNC) &_tdnn_tuning_ord_Y_debug, 6},
     {"_tdnn_make_ordered_Y_mat_debug", (DL_FUNC) &_tdnn_make_ordered_Y_mat_debug, 4},
     {"_tdnn_tuning_ord_Y", (DL_FUNC) &_tdnn_tuning_ord_Y, 6},
-    {"_tdnn_tuning_ord_Y_st", (DL_FUNC) &_tdnn_tuning_ord_Y_st, 6},
+    {"_tdnn_tuning_ord_Y_st", (DL_FUNC) &_tdnn_tuning_ord_Y_st, 7},
     {"_tdnn_make_B_NN_estimates", (DL_FUNC) &_tdnn_make_B_NN_estimates, 10},
     {"_tdnn_choose_s_1_val", (DL_FUNC) &_tdnn_choose_s_1_val, 2},
     {"_tdnn_choose_s_1_c_val", (DL_FUNC) &_tdnn_choose_s_1_c_val, 3},
