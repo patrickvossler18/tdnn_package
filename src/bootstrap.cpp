@@ -248,7 +248,8 @@ NumericMatrix bootstrap_cpp_thread(const arma::mat &X,
                                    const double n_prop,
                                    const int B,
                                    int num_threads,
-                                   Nullable<NumericVector> W0_)
+                                   Nullable<NumericVector> W0_,
+                                   bool verbose = false)
 {
 
     // Filter by W0
@@ -290,7 +291,7 @@ NumericMatrix bootstrap_cpp_thread(const arma::mat &X,
     RcppThread::ProgressBar bar(B, 1);
     RcppThread::parallelFor(
         0, B,
-        [&boot_stats, &X, &Y, &X_test, &weight_mat_s_1, &weight_mat_s_2, &c, &n_prop, &bar](int i)
+        [&boot_stats, &X, &Y, &X_test, &weight_mat_s_1, &weight_mat_s_2, &c, &n_prop, &verbose, &bar](int i)
         {
             // sample observations with replacement
             arma::uvec boot_idx = sample_replace_index(X.n_rows);
@@ -305,7 +306,10 @@ NumericMatrix bootstrap_cpp_thread(const arma::mat &X,
             {
                 boot_stats(j, i) = est(j);
             }
-            bar++;
+            if (verbose)
+            {
+                bar++;
+            }
         },
         num_threads);
     return (boot_stats);

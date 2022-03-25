@@ -229,7 +229,7 @@ Rcpp::List tune_dnn_no_dist_thread(
 
     RcppThread::ProgressBar bar(X_test.n_rows, 1);
     RcppThread::parallelFor(
-        0, X_test.n_rows, [&X, &Y, &X_test, &EuDis, &s_seq, &noise, &tuned_estimate, &s_1_B_NN, &n, &p, &n_prop, &B_NN, &scale_p, &debug, &bar](int i)
+        0, X_test.n_rows, [&X, &Y, &X_test, &EuDis, &s_seq, &noise, &tuned_estimate, &s_1_B_NN, &n, &p, &n_prop, &B_NN, &scale_p, &debug, &verbose, &bar](int i)
         {
         // get ith test observation
         arma::vec X_test_i = X_test.row(i).as_col();
@@ -247,7 +247,9 @@ Rcpp::List tune_dnn_no_dist_thread(
         arma::vec best_s_1 = {s_seq(min_idx)};
         tuned_estimate(i) = dnn_ord_y_st(ordered_Y, best_s_1, n, p, n_prop);
         s_1_B_NN(i) = as_scalar(best_s_1); 
-        bar++; },
+        if(verbose){
+            bar++;
+        } },
         num_threads);
 
     if (estimate_variance)

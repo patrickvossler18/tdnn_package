@@ -1405,7 +1405,7 @@ Rcpp::List tune_de_dnn_no_dist_vary_c_cpp_thread(
     }
     RcppThread::ProgressBar bar(X_test.n_rows, 1);
     RcppThread::parallelFor(
-        0, X_test.n_rows, [&X, &Y, &X_test, &EuDis, &noise, &c, &tuned_estimate, &s_1_B_NN, &c_B_NN, &curve_estimate, &s_1_mse_curve, &B_NN, &n, &p, &scale_p, &debug, &n_prop, &bar](int i)
+        0, X_test.n_rows, [&X, &Y, &X_test, &EuDis, &noise, &c, &tuned_estimate, &s_1_B_NN, &c_B_NN, &curve_estimate, &s_1_mse_curve, &B_NN, &n, &p, &scale_p, &debug, &n_prop, &verbose, &bar](int i)
         {
         arma::mat vary_c_results(c.n_elem, 3);
 
@@ -1446,7 +1446,8 @@ Rcpp::List tune_de_dnn_no_dist_vary_c_cpp_thread(
             double s_tmp = arma::as_scalar(mse_curve_s);
             // arma::vec c_vec = {c};
             // arma::vec s_1_vec_tmp = as<arma::vec>(seq_cpp(s_tmp, 2 * s_tmp));
-            arma::vec s_1_vec_tmp = seq_cpp_arma(s_tmp, min(max_s_1, 2 * s_tmp));
+            // arma::vec s_1_vec_tmp = seq_cpp_arma(ceil(0.5*s_tmp), min(max_s_1, ceil(1.5 * s_tmp)));
+            arma::vec s_1_vec_tmp = seq_cpp_arma(s_tmp, 2 * s_tmp);
             // Rcout << "s_1_vec_tmp: " << s_1_vec_tmp << std::endl;
             arma::mat B_NN_estimates = make_B_NN_estimates_st(X, Y, X_test_i, top_B, c_val_vec,
                                                                 s_1_vec_tmp, n_prop, B_NN, scale_p, debug = false);
@@ -1487,7 +1488,9 @@ Rcpp::List tune_de_dnn_no_dist_vary_c_cpp_thread(
         tuned_estimate[i] = tdnn_ord_y_st(ordered_Y, best_s_1_vec, n, p, best_c, n_prop);
         s_1_B_NN[i] = best_s_1;
         c_B_NN[i] = best_c;
-        bar++; },
+        if(verbose){
+            bar++;
+        } },
         num_threads);
 
     if (estimate_variance)
