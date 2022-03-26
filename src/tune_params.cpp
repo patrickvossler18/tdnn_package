@@ -129,10 +129,11 @@ struct ParamEstimates : public RcppParallel::Worker
     const arma::mat ord_arma;
     const arma::mat param_mat;
 
-    double n_prop;
     int n;
     int p;
     int log_n;
+    double n_prop;
+
 
     // output vector to write to
     RcppParallel::RVector<double> estimates;
