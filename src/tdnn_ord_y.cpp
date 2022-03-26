@@ -747,7 +747,6 @@ Rcpp::List tune_de_dnn_no_dist_cpp(
 
     // Infer n and p from our data after we've filtered for relevant features
     int n = X.n_rows;
-    int p = X.n_cols;
     int n_test = X_test.n_rows;
     double fixed_c = 2;
 
@@ -875,9 +874,10 @@ arma::mat make_B_NN_estimates_st(
     const arma::uvec &top_B,
     const arma::vec c_vec,
     const arma::vec s_1_vec_tmp,
-    double n_prop = 0.5, int B_NN = 20,
-    double scale_p = 1,
-    bool debug = false)
+    double n_prop,
+    int B_NN,
+    double scale_p,
+    bool debug)
 {
     int n = X.n_rows;
     // arma::vec c_vec = {c};
@@ -970,7 +970,6 @@ Rcpp::List tune_de_dnn_no_dist_vary_c_cpp(
     int n = X.n_rows;
     int p = X.n_cols;
     int n_test = X_test.n_rows;
-    double fixed_c = 2;
 
     // calculate EuDist for all test observations
     arma::mat EuDis = calc_dist_mat_cpp(X, X_test);
@@ -1113,12 +1112,7 @@ Rcpp::List tune_de_dnn_no_dist_vary_c_cpp(
 
 struct TdnnEstimateTune : public RcppParallel::Worker
 {
-    // outputs
-    RcppParallel::RVector<double> tuned_estimate;
-    RcppParallel::RVector<double> s_1_B_NN;
-    RcppParallel::RVector<double> c_B_NN;
-    RcppParallel::RMatrix<double> curve_estimate;
-    RcppParallel::RMatrix<double> s_1_mse_curve;
+
 
     // inputs
     const arma::mat X;
@@ -1127,6 +1121,13 @@ struct TdnnEstimateTune : public RcppParallel::Worker
     const arma::mat EuDis;
     const arma::vec noise;
     const arma::vec c;
+
+    // outputs
+    RcppParallel::RVector<double> tuned_estimate;
+    RcppParallel::RVector<double> s_1_B_NN;
+    RcppParallel::RVector<double> c_B_NN;
+    RcppParallel::RMatrix<double> curve_estimate;
+    RcppParallel::RMatrix<double> s_1_mse_curve;
 
     // constants
     int B_NN;
@@ -1181,7 +1182,7 @@ struct TdnnEstimateTune : public RcppParallel::Worker
             {
                 double c_val = c(j);
                 arma::vec c_val_vec = {c_val};
-                double estimate_curve = 0;
+                // double estimate_curve = 0;
                 // get ith test observation
                 double max_s_1 = floor((n - 5) / c_val) - 1;
 
@@ -1276,7 +1277,6 @@ Rcpp::List tune_de_dnn_no_dist_vary_c_cpp_mt(
     int n = X.n_rows;
     int p = X.n_cols;
     int n_test = X_test.n_rows;
-    double fixed_c = 2;
 
     // calculate EuDist for all test observations
     arma::mat EuDis = calc_dist_mat_cpp(X, X_test);
@@ -1394,11 +1394,6 @@ Rcpp::List tune_de_dnn_no_dist_vary_c_cpp_thread(
     NumericMatrix curve_estimate(n_test, c.n_elem);
     NumericMatrix s_1_mse_curve(n_test, c.n_elem);
 
-    // TdnnEstimateTune parallel_est_tune(X, Y, X_test, EuDis, noise,
-    //                                    c, tuned_estimate, s_1_B_NN, c_B_NN, curve_estimate,
-    //                                    s_1_mse_curve, B_NN, n, p, scale_p, debug);
-
-    // RcppThread::parallelFor(0, X_test.n_rows, parallel_est_tune);
     if (verbose)
     {
         Rcout << "Estimating...";
@@ -1428,21 +1423,13 @@ Rcpp::List tune_de_dnn_no_dist_vary_c_cpp_thread(
             double max_s_1 = floor((n - 5) / c_val) - 1;
 
             arma::vec mse_curve_s = tuning_ord_Y_st(ordered_Y, n, p, 1, double(max_s_1), c_val, n_prop);
-            // arma::vec mse_curve_s = {2};
-            // mse_curve_s.print();
-            // cout << c.n_elem << std::endl;
-            // cout << c_val << std::endl;
-            // cout << j << std::endl;
-            // if (debug)
-            // {
-            //     estimate_curve = tdnn_ord_y_st(ordered_Y, mse_curve_s, n, p, c_val, n_prop);
-            //     // arma::vec estimate_curve = tdnn_ord_y(X, Y, X_test_i_mat, ordered_Y,
-            //     //                                       mse_curve_s, c_val, n_prop);
-            //     // cout << "i,j: " << i << ", " << j << std::endl;
-            //     // cout << "mse_curve_s: " << as_scalar(mse_curve_s) << std::endl;
-            // }
-            // curve_estimate(i, j) = estimate_curve;
-            // s_1_mse_curve(i, j) = as_scalar(mse_curve_s);
+            if (debug)
+            {
+                estimate_curve = tdnn_ord_y_st(ordered_Y, mse_curve_s, n, p, c_val, n_prop);
+                curve_estimate(i, j) = estimate_curve;
+                s_1_mse_curve(i, j) = as_scalar(mse_curve_s);
+            }
+
             double s_tmp = arma::as_scalar(mse_curve_s);
             // arma::vec c_vec = {c};
             // arma::vec s_1_vec_tmp = as<arma::vec>(seq_cpp(s_tmp, 2 * s_tmp));
@@ -1502,7 +1489,7 @@ Rcpp::List tune_de_dnn_no_dist_vary_c_cpp_thread(
         NumericMatrix bstrap_estimates = bootstrap_cpp_thread(X, Y, X_test, s_1_B_NN,
                                                               c_B_NN, n_prop,
                                                               bootstrap_iter,
-                                                              num_threads, R_NilValue);
+                                                              num_threads, R_NilValue, false);
         // need to apply variance over columns
         arma::vec variance = rowVar_arma(as<arma::mat>(bstrap_estimates));
         if (debug)
