@@ -480,7 +480,8 @@ arma::vec tuning_ord_Y_st(const arma::mat &ordered_Y, int n, int p, int n_obs,
 {
 
     bool search_for_s = true;
-    int s_end = s_1_max;
+    // int s_end = s_1_max;
+    int s_end = int(sqrt(n));
     arma::mat tuning_mat(n_obs, s_end, fill::zeros);
     arma::vec best_s(n_obs, fill::zeros);
     double s = 0;
@@ -1113,7 +1114,6 @@ Rcpp::List tune_de_dnn_no_dist_vary_c_cpp(
 struct TdnnEstimateTune : public RcppParallel::Worker
 {
 
-
     // inputs
     const arma::mat X;
     const arma::vec Y;
@@ -1444,15 +1444,17 @@ Rcpp::List tune_de_dnn_no_dist_vary_c_cpp_thread(
             {
                 arma::vec tuned_mse = B_NN_estimates.row(k).as_col();
                 // double c_val = c(k);
+                // double min_val = as_scalar(tuned_mse.min());
+                // uword min_idx = index_min(tuned_mse);
+                // double choose_s1 = as_scalar(s_1_vec_tmp(min_idx));
+                // best_s_1_c.row(k) = {c_val, choose_s1, min_val};
                 double min_val = as_scalar(tuned_mse.min());
-                uword min_idx = index_min(tuned_mse);
-                double choose_s1 = as_scalar(s_1_vec_tmp(min_idx));
-                // arma::uvec near_min_vals = find(tuned_mse <= (1 + 0.01) * min_val);
-                // double choose_s1 = as_scalar(min(s_1_vec_tmp.elem(near_min_vals)));
+                arma::uvec near_min_vals = find(tuned_mse <= (1 + 0.01) * min_val);
+                double choose_s1 = as_scalar(min(s_1_vec_tmp.elem(near_min_vals)));
                 // Rcout << "choose_s1: " << choose_s1 << std::endl;
-                // double s_1_mse = as_scalar(tuned_mse.elem(find(s_1_vec_tmp == choose_s1)));
+                double s_1_mse = as_scalar(tuned_mse.elem(find(s_1_vec_tmp == choose_s1)));
                 // Rcout << "s_1_mse: " << s_1_mse << std::endl;
-                best_s_1_c.row(k) = {c_val, choose_s1, min_val};
+                best_s_1_c.row(k) = {c_val, choose_s1, s_1_mse};
             }
             // get index of row with minimum tuned mse
             uword best_row = best_s_1_c.col(2).index_min();
