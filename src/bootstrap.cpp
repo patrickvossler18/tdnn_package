@@ -167,12 +167,12 @@ struct BootstrapEstimate : public RcppParallel::Worker
             arma::uvec boot_idx = sample_replace_index(X.n_rows);
             arma::mat X_boot = matrix_row_subset_idx(X, boot_idx);
             arma::mat Y_boot = matrix_row_subset_idx(Y, boot_idx);
-            arma::mat weight_mat_s_1_boot = matrix_row_subset_idx(weight_mat_s_1, boot_idx);
-            arma::mat weight_mat_s_2_boot = matrix_row_subset_idx(weight_mat_s_2, boot_idx);
+            // arma::mat weight_mat_s_1_boot = matrix_row_subset_idx(weight_mat_s_1, boot_idx);
+            // arma::mat weight_mat_s_2_boot = matrix_row_subset_idx(weight_mat_s_2, boot_idx);
 
             arma::vec est = tdnn_st_boot(X_boot, Y_boot, X_test,
-                                         weight_mat_s_1_boot,
-                                         weight_mat_s_2_boot,
+                                         weight_mat_s_1,
+                                         weight_mat_s_2,
                                          c, n_prop);
             // Rcout << est << std::endl;
             // boot_stats.column(i) = est;
@@ -357,23 +357,23 @@ NumericMatrix bootstrap_trt_effect_cpp_thread(const arma::mat &X_ctl,
             arma::uvec trt_boot_idx = sample_replace_index(X_trt.n_rows);
             arma::mat X_boot_trt = matrix_row_subset_idx(X_trt, trt_boot_idx);
             arma::mat Y_boot_trt = matrix_row_subset_idx(Y_trt, trt_boot_idx);
-            arma::mat weight_mat_s_1_trt_boot = matrix_row_subset_idx(weight_mat_s_1_trt, trt_boot_idx);
-            arma::mat weight_mat_s_2_trt_boot = matrix_row_subset_idx(weight_mat_s_2_trt, trt_boot_idx);
+            // arma::mat weight_mat_s_1_trt_boot = matrix_row_subset_idx(weight_mat_s_1_trt, trt_boot_idx);
+            // arma::mat weight_mat_s_2_trt_boot = matrix_row_subset_idx(weight_mat_s_2_trt, trt_boot_idx);f
 
             arma::uvec ctl_boot_idx = sample_replace_index(X_ctl.n_rows);
             arma::mat X_boot_ctl = matrix_row_subset_idx(X_ctl, ctl_boot_idx);
             arma::mat Y_boot_ctl = matrix_row_subset_idx(Y_ctl, ctl_boot_idx);
-            arma::mat weight_mat_s_1_ctl_boot = matrix_row_subset_idx(weight_mat_s_1_ctl, ctl_boot_idx);
-            arma::mat weight_mat_s_2_ctl_boot = matrix_row_subset_idx(weight_mat_s_2_ctl, ctl_boot_idx);
+            // arma::mat weight_mat_s_1_ctl_boot = matrix_row_subset_idx(weight_mat_s_1_ctl, ctl_boot_idx);
+            // arma::mat weight_mat_s_2_ctl_boot = matrix_row_subset_idx(weight_mat_s_2_ctl, ctl_boot_idx);
 
             arma::vec trt_mu = tdnn_st_boot(X_boot_trt, Y_boot_trt, X_test,
-                                            weight_mat_s_1_trt_boot,
-                                            weight_mat_s_2_trt_boot,
+                                            weight_mat_s_1_trt,
+                                            weight_mat_s_2_trt,
                                             c_trt, n_prop);
 
             arma::vec ctl_mu = tdnn_st_boot(X_boot_ctl, Y_boot_ctl, X_test,
-                                            weight_mat_s_1_ctl_boot,
-                                            weight_mat_s_2_ctl_boot,
+                                            weight_mat_s_1_ctl,
+                                            weight_mat_s_2_ctl,
                                             c_ctl, n_prop);
             arma::vec est = trt_mu - ctl_mu;
 
