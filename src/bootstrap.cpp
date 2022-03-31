@@ -5,7 +5,7 @@ std::tuple<arma::mat, arma::mat> make_weight_matrix(
 {
     arma::vec ord = arma::linspace(1, n, n);
     arma::vec s_1 = s_choice;
-    arma::vec s_2 = arma::ceil(c * s_1);
+    arma::vec s_2 = arma::ceil(c % s_1);
 
     arma::mat weight_mat_s_1 = weight_mat_lfac_s_2_filter(n, ord, s_1, n_prop, false);
     arma::mat weight_mat_s_2 = weight_mat_lfac_s_2_filter(n, ord, s_2, n_prop, true);

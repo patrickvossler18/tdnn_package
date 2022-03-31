@@ -259,7 +259,7 @@ Rcpp::List tune_dnn_no_dist_thread(
             Rcout << "Running bootstrap...";
         }
         NumericMatrix bstrap_estimates = bootstrap_dnn_cpp_thread(X, Y, X_test, s_1_B_NN, n_prop,
-                                                                  bootstrap_iter, num_threads, R_NilValue);
+                                                                  bootstrap_iter, num_threads, R_NilValue, false);
         // need to apply variance over columns
         arma::vec variance = rowVar_arma(as<arma::mat>(bstrap_estimates));
         return Rcpp::List::create(

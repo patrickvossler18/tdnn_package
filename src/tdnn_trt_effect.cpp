@@ -127,7 +127,6 @@ Rcpp::List tune_treatment_effect_thread(
 
             arma::vec mse_curve_s_ctl = tuning_ord_Y_st(ordered_Y_ctl, n_ctl, p_ctl, 1, double(max_s_1_ctl), c_val, n_prop);
             arma::vec mse_curve_s_trt = tuning_ord_Y_st(ordered_Y_trt, n_trt, p_trt, 1, double(max_s_1_trt), c_val, n_prop);
-            Rcout << mse_curve_s_ctl << std::endl;
             double s_tmp_ctl = arma::as_scalar(mse_curve_s_ctl);
             double s_tmp_trt = arma::as_scalar(mse_curve_s_trt);
 
