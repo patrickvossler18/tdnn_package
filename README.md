@@ -10,6 +10,11 @@ The `tdnn` R package provides an implementation of the two-scale distributional 
 
 ## Installation
 
+### Binary version
+
+A binary version of the package can be installed from the [releases page of this repository](https://github.com/patrickvossler18/tdnn_package/releases/).
+
+
 ### Development version
 
 At this time the `tdnn` package must be compiled from source to be used. The `tdnn` package is able to compile from source using the standard C++ compiler toolchains for R in MacOS X and Linux only. See https://www.rstudio.com/products/rpackages/devtools/ for details of the developer toolchains needed for your platform.
