@@ -119,7 +119,7 @@ arma::vec make_param_estimate(const arma::mat &X_train,
     return (avg_est);
 }
 
-struct ParamEstimates : public Worker
+struct ParamEstimates : public RcppParallel::Worker
 {
     const arma::mat X_train;
     const arma::mat Y_train;
@@ -129,13 +129,14 @@ struct ParamEstimates : public Worker
     const arma::mat ord_arma;
     const arma::mat param_mat;
 
-    double n_prop;
     int n;
     int p;
     int log_n;
+    double n_prop;
+
 
     // output vector to write to
-    RVector<double> estimates;
+    RcppParallel::RVector<double> estimates;
 
     ParamEstimates(const arma::mat &X_train,
                    const arma::mat &Y_train,
@@ -289,7 +290,7 @@ arma::vec tune_params(const arma::mat &X,
         ParamEstimates param_estimates(X_train, Y_train, X_val,
                                        ordered_Y, ord_arma, param_mat,
                                        n, p, log_n, n_prop, param_est_vec);
-        parallelFor(0, n_params, param_estimates);
+        RcppParallel::parallelFor(0, n_params, param_estimates);
         arma::vec param_est_vec_arma = as<arma::vec>(param_est_vec);
         results_mat.col(b) = pow(param_est_vec_arma - arma::as_scalar(Y_val), 2);
 
@@ -384,7 +385,7 @@ Rcpp::List tune_params_debug(const arma::mat &X,
         // ParamEstimates param_estimates(X_train, Y_train, X_val,
         //                                ordered_Y, ord_arma, param_mat,
         //                                n, p, log_n, n_prop, param_est_vec);
-        // parallelFor(0, n_params, param_estimates);
+        // RcppParallel::parallelFor(0, n_params, param_estimates);
         // arma::vec param_est_vec_arma = as<arma::vec>(param_est_vec);
         // results_mat.col(b) = pow(param_est_vec_arma - arma::as_scalar(Y_val), 2);
 

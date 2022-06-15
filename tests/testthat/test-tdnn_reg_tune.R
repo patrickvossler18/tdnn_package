@@ -103,12 +103,12 @@ test_that("Our C++ ordered Y matrix matches the matrix from R",{
 debug=F
 X_test_i <- matrix(X_test_mat[1,],1,ncol(X_test_mat))
 scale_p=1
-c = 2
+c = c(2,3)
 s_1 = 2
 B_NN = 1
 s_1_tuning_seq = seq(2,4,1)
-param_df <- tidyr::expand_grid(c = fixed_c, s_1 =  s_1_tuning_seq)
-B_NN_estimates_R <- map_df(1:B_NN, function(b){
+param_df <- tidyr::expand_grid(c = c, s_1 =  s_1_tuning_seq)
+B_NN_estimates_R <- purrr::map_df(1:B_NN, function(b){
     X_train <- X[-B.index[b],]
     Y_train <- as.matrix(Y[-B.index[b],])
 
@@ -127,7 +127,7 @@ B_NN_estimates_R <- map_df(1:B_NN, function(b){
     weighted_y_val = Y_val*sqrt(neighbor_weights)
 
     # this loops through the parameter combinations and returns a data frame with the results
-    pmap_df(param_df, function(c, s_1) {
+    purrr::pmap_df(param_df, function(c, s_1) {
         param_estimate = tdnn:::de.dnn_no_dist(ordered_Y_train,n_train, p_train, s_1, c)
         weighted_estimate = param_estimate*sqrt(neighbor_weights)
         if(debug){
@@ -153,31 +153,118 @@ B_NN_estimates_R <- map_df(1:B_NN, function(b){
     })
 })
 
-test_that("our C++ B-NN estimates match our R B-NN estimates",{
-    B_NN_estimates_cpp <- tdnn:::make_B_NN_estimates(X,Y,t(X_test_i),top_B = B.index-1,s_tmp = 2,c = 2, B_NN = B_NN,debug = F)
+test_that("our C++ B-NN estimates match our R B-NN estimates for vector of c values",{
+    B_NN_estimates_cpp <- tdnn:::make_B_NN_estimates(X,Y,t(X_test_i),
+                                                     top_B = B.index-1,
+                                                     s_tmp = 2,c_vec = c, B_NN = B_NN,debug = F)
     expect_equal(
-        as.numeric(B_NN_estimates_cpp),
+
+        as.vector(t(B_NN_estimates_cpp)),
         B_NN_estimates_R$loss
     )
 })
 
 
+test_that("our C++ B-NN estimates match our R B-NN estimates for fixed c",{
+    c = 2
+    s_1 = 2
+    B_NN = 1
+    s_1_tuning_seq = seq(2,4,1)
+    param_df <- tidyr::expand_grid(c = c, s_1 =  s_1_tuning_seq)
+    B_NN_estimates_R <- purrr::map_df(1:B_NN, function(b){
+        X_train <- X[-B.index[b],]
+        Y_train <- as.matrix(Y[-B.index[b],])
+
+        X_val <- matrix(X[B.index[b],], 1, ncol(X))
+        Y_val <- as.matrix(Y[B.index[b],])
+
+        n_train = nrow(X_train)
+        p_train = ncol(X_train)
+
+        X_train_dis = X_train - kronecker(matrix(1, n_train, 1), X_val)
+        EuDis_train = (X_train_dis ^ 2) %*% matrix(1, p_train, 1)
+        noise_train = matrix(rnorm(1), n_train, 1)
+        ordered_Y_train <- Y_train[order(EuDis_train,noise_train)]
+
+        neighbor_weights = exp(- sum((X_val - X_test_i)^2) / scale_p)
+        weighted_y_val = Y_val*sqrt(neighbor_weights)
+
+        # this loops through the parameter combinations and returns a data frame with the results
+        purrr::pmap_df(param_df, function(c, s_1) {
+            param_estimate = tdnn:::de.dnn_no_dist(ordered_Y_train,n_train, p_train, s_1, c)
+            weighted_estimate = param_estimate*sqrt(neighbor_weights)
+            if(debug){
+                return(data.frame(
+                    estimate = param_estimate,
+                    s_1 = s_1,
+                    c = c,
+                    y_val = Y_val,
+                    neighbor_weights = neighbor_weights,
+                    weighted_estimate = weighted_estimate,
+                    weighted_y_val= weighted_y_val,
+                    loss = (weighted_estimate - weighted_y_val)^2
+                ))
+            } else{
+                return(
+                    data.frame(
+                        s_1 = s_1,
+                        c = c,
+                        loss = (weighted_estimate - weighted_y_val)^2
+                    )
+                )
+            }
+        })
+    })
+    B_NN_estimates_cpp <- tdnn:::make_B_NN_estimates(X,Y,t(X_test_i),
+                                                     top_B = B.index-1,
+                                                     s_tmp = 2,c_vec = 2, B_NN = B_NN,debug = F)
+    expect_equal(
+
+        as.vector(t(B_NN_estimates_cpp)),
+        B_NN_estimates_R$loss
+    )
+})
+
+test_that("for a vector of c values, our choice of s_1 from B_NN tuning in C++ gives same answer as the R code",{
+    c_vals = c(2,3)
+    B_NN_estimates_cpp <- tdnn:::make_B_NN_estimates(X,Y,t(X_test_i),
+                                                     top_B = B.index-1,
+                                                     s_tmp = 2,c_vec = c_vals,
+                                                     B_NN = B_NN)
+    # R version
+    best_params <- B_NN_estimates_R %>% dplyr::group_by(c, s_1) %>%
+        dplyr::summarize(tuned_mse = mean(.data$loss)) %>%
+        group_modify(~.x %>% filter(tuned_mse <= (1 + 0.01) * min(tuned_mse))) %>%
+        filter(s_1 == min(s_1)) %>% ungroup() %>% filter(tuned_mse == min(tuned_mse))
+    best_s1 = best_params %>% pull(s_1)
+    best_c = best_params %>% pull(c)
+    # C++ version
+    best_params_cpp <- as.numeric(tdnn:::choose_s_1_c_val(2,c_vals,B_NN_estimates_cpp))
+    best_c_cpp = best_params_cpp[1]
+    best_s1_cpp = best_params_cpp[2]
+    expect_equal(
+        c(best_s1, best_c),
+        c(best_s1_cpp, best_c_cpp)
+    )
+
+})
 
 
-B_NN_estimates_cpp <- tdnn:::make_B_NN_estimates(X,Y,t(X_test_i),top_B = B.index-1,s_tmp = 2,c = 2, B_NN = B_NN)
+
+B_NN_estimates_cpp <- tdnn:::make_B_NN_estimates(X,Y,t(X_test_i),top_B = B.index-1,s_tmp = 2,c_vec = 2, B_NN = B_NN)
 tuned_mse <- B_NN_estimates_R %>% dplyr::group_by(s_1,c) %>%
     dplyr::summarize(tuned_mse = mean(loss)) %>% dplyr::pull(tuned_mse)
 choose_s1 = min(s_1_tuning_seq[tuned_mse <=  (1 + 0.01) * min(tuned_mse) ])
 choose_s1_cpp = tdnn:::choose_s_1_val(matrix(B_NN_estimates_cpp,length(s_1_tuning_seq),1),s_1_tuning_seq)
 
-test_that("our choice of s_1 from the B_NN tuning in C++ gives same answer as R code",{
+test_that("for a fixed c, our choice of s_1 from the B_NN tuning in C++ gives same answer as R code",{
     expect_equal(
         as.numeric(choose_s1_cpp),
         choose_s1
     )
 })
 
-test_that("tuned estimates from C++ match tuned estimates from full R function",{
+test_that("for a fixed c, tuned estimates from C++ match tuned estimates from full R function",{
     expect_equal(
         as.numeric(tdnn:::tune_de_dnn_no_dist_cpp(X,Y,X_test_fixed,W0_ = rep(1,p),c = 2, B_NN = 20,scale_p = 1,n_prop=0.5)$estimate_loo),
         tdnn:::tune_de_dnn_no_dist(X,Y,X_test_fixed,c = 2, B_NN = 20,scale_p = 1, debug=F)$estimate_loo,
@@ -230,7 +317,9 @@ test_that("Bootstrap estimate matches tuned C++ estimate when using the same s v
     tune_de_dnn_cpp_mat <- tdnn:::tune_de_dnn_no_dist_cpp(X,Y,X_test_mat,W0_ = rep(1,p),c = 2,
                                                           B_NN = 20,scale_p = 1,n_prop=0.5, debug = F)
 
-    expect_equal(as.numeric(tdnn:::tdnn_st_boot(X,Y,X_test_mat,weight_mat_s_1, weight_mat_s_2,c = fixed_c,n_prop = 0.5)),
+    expect_equal(as.numeric(tdnn:::tdnn_st_boot(X,Y,X_test_mat,weight_mat_s_1,
+                                                weight_mat_s_2,
+                                                c = rep(fixed_c,nrow(X_test_mat)),n_prop = 0.5)),
                  as.numeric(tune_de_dnn_cpp_mat$estimate_loo))
 
 })

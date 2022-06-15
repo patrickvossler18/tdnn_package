@@ -1,6 +1,6 @@
 #include "dnn_parallel.h"
 
-struct TdnnEstimate : public Worker
+struct TdnnEstimate : public RcppParallel::Worker
 {
 
     // input matrices to read from
@@ -16,7 +16,7 @@ struct TdnnEstimate : public Worker
     const int d;
 
     // output vector to write to
-    RVector<double> estimates;
+    RcppParallel::RVector<double> estimates;
 
     // initialize from Rcpp input and output matrixes (the RMatrix class
     // can be automatically converted to from the Rcpp matrix type)
@@ -144,12 +144,12 @@ arma::vec tdnn(arma::mat X, arma::vec Y, arma::mat X_test,
                               weight_mat_s_2,
                               c, n, d);
 
-    parallelFor(0, X_test.n_rows, tdnnEstimate);
+    RcppParallel::parallelFor(0, X_test.n_rows, tdnnEstimate);
 
     return as<arma::vec>(estimates);
 }
 
-struct De_dnnEstimate : public Worker
+struct De_dnnEstimate : public RcppParallel::Worker
 {
 
     // input matrices to read from
@@ -168,7 +168,7 @@ struct De_dnnEstimate : public Worker
     const int d;
 
     // output matrix to write to
-    RVector<double> estimates;
+    RcppParallel::RVector<double> estimates;
 
     // initialize from Rcpp input and output matrixes (the RMatrix class
     // can be automatically converted to from the Rcpp matrix type)
@@ -249,7 +249,6 @@ struct De_dnnEstimate : public Worker
     }
 };
 
-//' @export
 // [[Rcpp::plugins(cpp11)]]
 // [[Rcpp::export]]
 arma::vec de_dnn(arma::mat X, arma::vec Y, arma::mat X_test,
@@ -301,7 +300,7 @@ arma::vec de_dnn(arma::mat X, arma::vec Y, arma::mat X_test,
                                   s_2,
                                   c, n, p, d);
 
-    parallelFor(0, X_test.n_rows, de_dnnEstimate);
+    RcppParallel::parallelFor(0, X_test.n_rows, de_dnnEstimate);
 
     // List out = List::create( Named("estimates") = estimates);
     // return out;

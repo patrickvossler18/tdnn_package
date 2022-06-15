@@ -1,10 +1,24 @@
 #include "bootstrap.h"
 
+std::tuple<arma::mat, arma::mat> make_weight_matrix(
+    int n, int d, double n_prop, arma::vec c, arma::vec s_choice)
+{
+    arma::vec ord = arma::linspace(1, n, n);
+    arma::vec s_1 = s_choice;
+    arma::vec s_2 = arma::ceil(c % s_1);
+
+    arma::mat weight_mat_s_1 = weight_mat_lfac_s_2_filter(n, ord, s_1, n_prop, false);
+    arma::mat weight_mat_s_2 = weight_mat_lfac_s_2_filter(n, ord, s_2, n_prop, true);
+
+    // Generate these matrices once since they won't change and just pass them to the workers
+    return std::make_tuple(weight_mat_s_1, weight_mat_s_2);
+}
+
 // [[Rcpp::export]]
 arma::vec tdnn_st_boot(arma::mat X, arma::vec Y, arma::mat X_test,
                        const arma::mat &weight_mat_s_1,
                        const arma::mat &weight_mat_s_2,
-                       double c,
+                       const arma::vec c,
                        double n_prop)
 {
 
@@ -47,8 +61,9 @@ arma::vec tdnn_st_boot(arma::mat X, arma::vec Y, arma::mat X_test,
 
         // double w_1 = c / (c - 1);
         // double w_2 = -1 / (c - 1);
-        double w_2 = pow(c, 2 / double(p)) / (pow(c, 2 / double(p)) - 1);
-        double w_1 = -1 / (pow(c, 2 / double(p)) - 1);
+        double c_val = as_scalar(c(i));
+        double w_2 = pow(c_val, 2 / double(p)) / (pow(c_val, 2 / double(p)) - 1);
+        double w_1 = -1 / (pow(c_val, 2 / double(p)) - 1);
 
         // the weight matrix is # train obs x # test obs so we want to use the
         // ith column of the weight mat for the ith test observation
@@ -63,7 +78,59 @@ arma::vec tdnn_st_boot(arma::mat X, arma::vec Y, arma::mat X_test,
     return estimates;
 }
 
-struct BootstrapEstimate : public Worker
+// [[Rcpp::export]]
+arma::vec dnn_st_boot(arma::mat X, arma::vec Y, arma::mat X_test,
+                      const arma::mat &weight_mat_s_1,
+                      double n_prop)
+{
+
+    arma::vec estimates(X_test.n_rows);
+    int n = X.n_rows;
+    int p = X.n_cols;
+
+    for (int i = 0; i < X_test.n_rows; i++)
+    {
+        arma::mat all_cols(p, 1);
+        all_cols.fill(1.0);
+
+        // arma::mat all_rows;
+        arma::mat X_dis;
+        arma::mat EuDis;
+
+        arma::mat X_test_row = X_test.row(i);
+        // all_rows = single_vec * X_test_row;
+        arma::mat all_rows = arma::repmat(X_test_row, n, 1);
+
+        X_dis = X - all_rows;
+
+        EuDis = (arma::pow(X_dis, 2)) * all_cols;
+
+        arma::vec noise(n);
+        double noise_val = arma::randn<double>();
+        noise.fill(noise_val);
+
+        arma::vec vec_eu_dis = conv_to<arma::vec>::from(EuDis);
+
+        arma::uvec index = r_like_order(vec_eu_dis, noise);
+
+        arma::mat ordered_Y = conv_to<arma::mat>::from(Y).rows(index);
+        // // Rcout << ordered_Y_vec[order_vec];
+        // // Rcout << ordered_Y;
+
+        arma::vec U_1_vec(ordered_Y.n_rows);
+
+        // the weight matrix is # train obs x # test obs so we want to use the
+        // ith column of the weight mat for the ith test observation
+        // U_1_vec = reshape(ordered_Y, 1, n) * weight_mat_s_1.col(i);
+        U_1_vec = ordered_Y.as_row() * weight_mat_s_1.col(i);
+
+        estimates(i) = arma::as_scalar(U_1_vec);
+    }
+    // Rcout << estimates << std::endl;
+    return estimates;
+}
+
+struct BootstrapEstimate : public RcppParallel::Worker
 {
     // input matrices to read from
     const arma::mat X;
@@ -71,12 +138,12 @@ struct BootstrapEstimate : public Worker
     const arma::mat X_test;
     const arma::mat &weight_mat_s_1;
     const arma::mat &weight_mat_s_2;
-    const double c;
+    const arma::vec c;
     const double n_prop;
 
     // output matrix to write to
     // arma::mat boot_stats;
-    RMatrix<double> boot_stats;
+    RcppParallel::RMatrix<double> boot_stats;
 
     // for each iteration, we need to pass everything to tdnn
     BootstrapEstimate(NumericMatrix boot_stats,
@@ -85,7 +152,7 @@ struct BootstrapEstimate : public Worker
                       const arma::mat &X_test,
                       const arma::mat &weight_mat_s_1,
                       const arma::mat &weight_mat_s_2,
-                      const double c,
+                      const arma::vec c,
                       const double n_prop) : X(X), Y(Y), X_test(X_test),
                                              weight_mat_s_1(weight_mat_s_1),
                                              weight_mat_s_2(weight_mat_s_2),
@@ -100,6 +167,8 @@ struct BootstrapEstimate : public Worker
             arma::uvec boot_idx = sample_replace_index(X.n_rows);
             arma::mat X_boot = matrix_row_subset_idx(X, boot_idx);
             arma::mat Y_boot = matrix_row_subset_idx(Y, boot_idx);
+            // arma::mat weight_mat_s_1_boot = matrix_row_subset_idx(weight_mat_s_1, boot_idx);
+            // arma::mat weight_mat_s_2_boot = matrix_row_subset_idx(weight_mat_s_2, boot_idx);
 
             arma::vec est = tdnn_st_boot(X_boot, Y_boot, X_test,
                                          weight_mat_s_1,
@@ -111,7 +180,7 @@ struct BootstrapEstimate : public Worker
 
             // NumericVector est_rcpp = NumericVector(est.begin(),est.end());
             // boot_stats(_, i) = est_rcpp;
-            // RMatrix<double>::Column column = boot_stats.column(i);
+            // RcppParallel::RMatrix<double>::Column column = boot_stats.column(i);
             // size_t n = column.length();
             for (int j = 0; j < X_test.n_rows; j++)
             {
@@ -128,14 +197,13 @@ NumericMatrix bootstrap_cpp_mt(const arma::mat &X,
                                const arma::mat &Y,
                                const arma::mat &X_test,
                                const arma::vec s_1,
-                               const double c,
+                               const arma::vec c,
                                const double n_prop,
                                const int B,
                                Nullable<NumericVector> W0_)
 {
 
     // Filter by W0
-    int d = X.n_cols;
     arma::mat X_subset;
     arma::mat X_test_subset;
     if (W0_.isNotNull())
@@ -144,7 +212,6 @@ NumericMatrix bootstrap_cpp_mt(const arma::mat &X,
         // Now we need to filter X and X_test to only contain these columns
         X_subset = matrix_subset_logical(X, as<arma::vec>(W0));
         X_test_subset = matrix_subset_logical(X_test, as<arma::vec>(W0));
-        d = sum(W0);
     }
     else
     {
@@ -154,13 +221,9 @@ NumericMatrix bootstrap_cpp_mt(const arma::mat &X,
 
     // Infer n and p from our data after we've filtered for relevant features
     int n = X_subset.n_rows;
-    int p = X_subset.n_cols;
-    // int log_n = log(n);
-    // int s_2_val = std::ceil(int(round_modified(exp(M * log_n * (double(d) / (double(d) + 8))))));
-    // int s_1_val = std::ceil(int(round_modified(s_2_val * pow(c, double(d) / 2))));
 
     arma::vec ord = arma::linspace(1, n, n);
-    arma::vec s_2 = arma::ceil(c * s_1);
+    arma::vec s_2 = arma::ceil(c % s_1);
 
     // Generate these matrices once since they won't change and just pass them to the workers
     arma::mat weight_mat_s_1 = weight_mat_lfac_s_2_filter(n, ord, s_1, n_prop, false);
@@ -180,12 +243,217 @@ NumericMatrix bootstrap_cpp_mt(const arma::mat &X,
                                  c,
                                  n_prop);
 
-    parallelFor(0, B, bstrap_est);
+    RcppParallel::parallelFor(0, B, bstrap_est);
     // Rcout<< boot_stats << std::endl;
     return (boot_stats);
 };
 
-struct TrtEffectBootstrapEstimate : public Worker
+// [[Rcpp::plugins(cpp11)]]
+// [[Rcpp::export]]
+NumericMatrix bootstrap_cpp_thread(const arma::mat &X,
+                                   const arma::mat &Y,
+                                   const arma::mat &X_test,
+                                   const arma::vec s_1,
+                                   const arma::vec c,
+                                   const double n_prop,
+                                   const int B,
+                                   int num_threads,
+                                   Nullable<NumericVector> W0_,
+                                   bool verbose)
+{
+    arma::mat X_subset;
+    arma::mat X_test_subset;
+    if (W0_.isNotNull())
+    {
+        NumericVector W0(W0_);
+        // Now we need to filter X and X_test to only contain these columns
+        X_subset = matrix_subset_logical(X, as<arma::vec>(W0));
+        X_test_subset = matrix_subset_logical(X_test, as<arma::vec>(W0));
+    }
+    else
+    {
+        X_subset = X;
+        X_test_subset = X_test;
+    }
+    // Infer n and p from our data after we've filtered for relevant features
+    int n = X_subset.n_rows;
+
+    arma::vec ord = arma::linspace(1, n, n);
+    arma::vec s_2 = arma::ceil(c % s_1);
+    arma::mat weight_mat_s_1 = weight_mat_lfac_s_2_filter(n, ord, s_1, n_prop, false);
+    arma::mat weight_mat_s_2 = weight_mat_lfac_s_2_filter(n, ord, s_2, n_prop, true);
+
+    // initialize results matrix
+    // arma::mat boot_stats(X_test_subset.n_rows, B);
+    NumericMatrix boot_stats(X_test_subset.n_rows, B);
+    RcppThread::ProgressBar bar(B, 1);
+    RcppThread::parallelFor(
+        0, B,
+        [&boot_stats, &X, &Y, &X_test, &weight_mat_s_1, &weight_mat_s_2, &c, &n_prop, &verbose, &bar](int i)
+        {
+            // sample observations with replacement
+            arma::uvec boot_idx = sample_replace_index(X.n_rows);
+            arma::mat X_boot = matrix_row_subset_idx(X, boot_idx);
+            arma::mat Y_boot = matrix_row_subset_idx(Y, boot_idx);
+
+            arma::vec est = tdnn_st_boot(X_boot, Y_boot, X_test,
+                                         weight_mat_s_1,
+                                         weight_mat_s_2,
+                                         c, n_prop);
+            for (int j = 0; j < X_test.n_rows; j++)
+            {
+                boot_stats(j, i) = est(j);
+            }
+            if (verbose)
+            {
+                bar++;
+            }
+        },
+        num_threads);
+    return (boot_stats);
+}
+
+// [[Rcpp::plugins(cpp11)]]
+// [[Rcpp::export]]
+NumericMatrix bootstrap_trt_effect_cpp_thread(const arma::mat &X_ctl,
+                                              const arma::mat &Y_ctl,
+                                              const arma::mat &X_trt,
+                                              const arma::mat &Y_trt,
+                                              const arma::mat &X_test,
+                                              const arma::vec &s_choice_trt,
+                                              const arma::vec &s_choice_ctl,
+                                              const arma::vec &c_trt,
+                                              const arma::vec &c_ctl,
+                                              const double n_prop,
+                                              const int B,
+                                              int num_threads,
+                                              bool verbose)
+{
+
+    arma::mat weight_mat_s_1_trt;
+    arma::mat weight_mat_s_2_trt;
+
+    arma::mat weight_mat_s_1_ctl;
+    arma::mat weight_mat_s_2_ctl;
+
+    std::tie(weight_mat_s_1_trt, weight_mat_s_2_trt) = make_weight_matrix(X_trt.n_rows, X_trt.n_cols,
+                                                                          n_prop, c_trt, s_choice_trt);
+
+    std::tie(weight_mat_s_1_ctl, weight_mat_s_2_ctl) = make_weight_matrix(X_ctl.n_rows, X_trt.n_cols,
+                                                                          n_prop, c_ctl, s_choice_ctl);
+
+    // initialize results matrix
+    // arma::mat boot_stats(X_test_subset.n_rows, B);
+    NumericMatrix boot_stats(X_test.n_rows, B);
+
+    RcppThread::ProgressBar bar(B, 1);
+    RcppThread::parallelFor(
+        0, B,
+        [&boot_stats, &X_ctl, &Y_ctl, &X_trt, &Y_trt, &X_test,
+         &weight_mat_s_1_ctl, &weight_mat_s_2_ctl, &weight_mat_s_1_trt, &weight_mat_s_2_trt,
+         &c_ctl, &c_trt, &n_prop, &verbose, &bar](int i)
+        {
+            // sample observations with replacement
+            arma::uvec trt_boot_idx = sample_replace_index(X_trt.n_rows);
+            arma::mat X_boot_trt = matrix_row_subset_idx(X_trt, trt_boot_idx);
+            arma::mat Y_boot_trt = matrix_row_subset_idx(Y_trt, trt_boot_idx);
+            // arma::mat weight_mat_s_1_trt_boot = matrix_row_subset_idx(weight_mat_s_1_trt, trt_boot_idx);
+            // arma::mat weight_mat_s_2_trt_boot = matrix_row_subset_idx(weight_mat_s_2_trt, trt_boot_idx);f
+
+            arma::uvec ctl_boot_idx = sample_replace_index(X_ctl.n_rows);
+            arma::mat X_boot_ctl = matrix_row_subset_idx(X_ctl, ctl_boot_idx);
+            arma::mat Y_boot_ctl = matrix_row_subset_idx(Y_ctl, ctl_boot_idx);
+            // arma::mat weight_mat_s_1_ctl_boot = matrix_row_subset_idx(weight_mat_s_1_ctl, ctl_boot_idx);
+            // arma::mat weight_mat_s_2_ctl_boot = matrix_row_subset_idx(weight_mat_s_2_ctl, ctl_boot_idx);
+
+            arma::vec trt_mu = tdnn_st_boot(X_boot_trt, Y_boot_trt, X_test,
+                                            weight_mat_s_1_trt,
+                                            weight_mat_s_2_trt,
+                                            c_trt, n_prop);
+
+            arma::vec ctl_mu = tdnn_st_boot(X_boot_ctl, Y_boot_ctl, X_test,
+                                            weight_mat_s_1_ctl,
+                                            weight_mat_s_2_ctl,
+                                            c_ctl, n_prop);
+            arma::vec est = trt_mu - ctl_mu;
+
+            for (int j = 0; j < X_test.n_rows; j++)
+            {
+                boot_stats(j, i) = est(j);
+            }
+            if (verbose)
+            {
+                bar++;
+            }
+        },
+        num_threads);
+    return (boot_stats);
+};
+
+// [[Rcpp::plugins(cpp11)]]
+// [[Rcpp::export]]
+NumericMatrix bootstrap_dnn_cpp_thread(const arma::mat &X,
+                                       const arma::mat &Y,
+                                       const arma::mat &X_test,
+                                       const arma::vec s_1,
+                                       const double n_prop,
+                                       const int B,
+                                       int num_threads,
+                                       Nullable<NumericVector> W0_,
+                                       bool verbose)
+{
+
+    // Filter by W0
+    arma::mat X_subset;
+    arma::mat X_test_subset;
+    if (W0_.isNotNull())
+    {
+        NumericVector W0(W0_);
+        // Now we need to filter X and X_test to only contain these columns
+        X_subset = matrix_subset_logical(X, as<arma::vec>(W0));
+        X_test_subset = matrix_subset_logical(X_test, as<arma::vec>(W0));
+    }
+    else
+    {
+        X_subset = X;
+        X_test_subset = X_test;
+    }
+
+    // Infer n and p from our data after we've filtered for relevant features
+    int n = X_subset.n_rows;
+
+    arma::vec ord = arma::linspace(1, n, n);
+
+    // Generate these matrices once since they won't change and just pass them to the workers
+    arma::mat weight_mat_s_1 = weight_mat_lfac_s_2_filter(n, ord, s_1, n_prop, false);
+
+    // initialize results matrix
+    // arma::mat boot_stats(X_test_subset.n_rows, B);
+    NumericMatrix boot_stats(X_test_subset.n_rows, B);
+
+    RcppThread::ProgressBar bar(B, 1);
+    RcppThread::parallelFor(
+        0, B,
+        [&boot_stats, &X, &Y, &X_test, &weight_mat_s_1, &n_prop, &bar](int i)
+        {
+            // sample observations with replacement
+            arma::uvec boot_idx = sample_replace_index(X.n_rows);
+            arma::mat X_boot = matrix_row_subset_idx(X, boot_idx);
+            arma::mat Y_boot = matrix_row_subset_idx(Y, boot_idx);
+
+            arma::vec est = dnn_st_boot(X_boot, Y_boot, X_test,
+                                        weight_mat_s_1, n_prop);
+            for (int j = 0; j < X_test.n_rows; j++)
+            {
+                boot_stats(j, i) = est(j);
+            }
+            bar++;
+        },
+        num_threads);
+    return (boot_stats);
+};
+
+struct TrtEffectBootstrapEstimate : public RcppParallel::Worker
 {
     // input matrices to read from
 
@@ -193,19 +461,19 @@ struct TrtEffectBootstrapEstimate : public Worker
     const arma::mat Y_trt;
     const arma::mat weight_mat_s_1_trt;
     const arma::mat weight_mat_s_2_trt;
-    const double c_trt;
+    const arma::vec c_trt;
     const arma::mat X_ctl;
     const arma::mat Y_ctl;
     const arma::mat X_test_ctl;
     const arma::mat weight_mat_s_1_ctl;
     const arma::mat weight_mat_s_2_ctl;
-    const double c_ctl;
+    const arma::vec c_ctl;
     const arma::mat X_test;
     const double n_prop;
 
     // output matrix to write to
     // arma::mat boot_stats;
-    RMatrix<double> boot_stats;
+    RcppParallel::RMatrix<double> boot_stats;
 
     // for each iteration, we need to pass everything to tdnn
     TrtEffectBootstrapEstimate(NumericMatrix boot_stats,
@@ -213,12 +481,12 @@ struct TrtEffectBootstrapEstimate : public Worker
                                const arma::mat &Y_trt,
                                const arma::mat &weight_mat_s_1_trt,
                                const arma::mat &weight_mat_s_2_trt,
-                               const double c_trt,
+                               const arma::vec c_trt,
                                const arma::mat &X_ctl,
                                const arma::mat &Y_ctl,
                                const arma::mat &weight_mat_s_1_ctl,
                                const arma::mat &weight_mat_s_2_ctl,
-                               const double c_ctl,
+                               const arma::vec c_ctl,
                                const arma::mat &X_test,
                                const double n_prop) : X_trt(X_trt), Y_trt(Y_trt),
                                                       weight_mat_s_1_trt(weight_mat_s_1_trt),
@@ -265,20 +533,6 @@ struct TrtEffectBootstrapEstimate : public Worker
     }
 };
 
-std::tuple<arma::mat, arma::mat> make_weight_matrix(
-    int n, int d, double n_prop, double c, arma::vec s_choice)
-{
-    arma::vec ord = arma::linspace(1, n, n);
-    arma::vec s_1 = s_choice;
-    arma::vec s_2 = arma::ceil(c * s_1);
-
-    arma::mat weight_mat_s_1 = weight_mat_lfac_s_2_filter(n, ord, s_1, n_prop, false);
-    arma::mat weight_mat_s_2 = weight_mat_lfac_s_2_filter(n, ord, s_2, n_prop, true);
-
-    // Generate these matrices once since they won't change and just pass them to the workers
-    return std::make_tuple(weight_mat_s_1, weight_mat_s_2);
-}
-
 // [[Rcpp::export]]
 NumericMatrix bootstrap_trt_effect_cpp_mt(const arma::mat &X,
                                           const arma::mat &Y,
@@ -286,10 +540,11 @@ NumericMatrix bootstrap_trt_effect_cpp_mt(const arma::mat &X,
                                           const arma::mat &X_test,
                                           const arma::vec &s_choice_trt,
                                           const arma::vec &s_choice_ctl,
-                                          const double c,
+                                          const arma::vec &c_trt,
+                                          const arma::vec &c_ctl,
                                           const double n_prop,
                                           const int B,
-                                          Nullable<NumericVector> W0_ = R_NilValue)
+                                          Nullable<NumericVector> W0_)
 {
 
     // Filter by W0
@@ -310,10 +565,6 @@ NumericMatrix bootstrap_trt_effect_cpp_mt(const arma::mat &X,
         X_test_subset = X_test;
     }
 
-    // Infer n and p from our data after we've filtered for relevant features
-    int n = X_subset.n_rows;
-    // int p = X_subset.n_cols;
-
     arma::uvec trt_idx = find(W == 1);
     arma::uvec ctl_idx = find(W == 0);
 
@@ -330,10 +581,10 @@ NumericMatrix bootstrap_trt_effect_cpp_mt(const arma::mat &X,
     arma::mat weight_mat_s_2_ctl;
 
     std::tie(weight_mat_s_1_trt, weight_mat_s_2_trt) = make_weight_matrix(X_trt.n_rows, int(d),
-                                                                          n_prop, c, s_choice_trt);
+                                                                          n_prop, c_trt, s_choice_trt);
 
     std::tie(weight_mat_s_1_ctl, weight_mat_s_2_ctl) = make_weight_matrix(X_ctl.n_rows, int(d),
-                                                                          n_prop, c, s_choice_ctl);
+                                                                          n_prop, c_ctl, s_choice_ctl);
 
     // initialize results matrix
     // arma::mat boot_stats(X_test_subset.n_rows, B);
@@ -345,16 +596,16 @@ NumericMatrix bootstrap_trt_effect_cpp_mt(const arma::mat &X,
                                           Y_trt,
                                           weight_mat_s_1_trt,
                                           weight_mat_s_2_trt,
-                                          c,
+                                          c_trt,
                                           X_ctl,
                                           Y_ctl,
                                           weight_mat_s_1_ctl,
                                           weight_mat_s_2_ctl,
-                                          c,
+                                          c_ctl,
                                           X_test_subset,
                                           n_prop);
 
-    parallelFor(0, B, bstrap_est);
+    RcppParallel::parallelFor(0, B, bstrap_est);
     // Rcout<< boot_stats << std::endl;
     return (boot_stats);
 };

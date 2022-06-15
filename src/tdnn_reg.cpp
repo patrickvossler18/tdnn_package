@@ -23,7 +23,7 @@ List tdnn_reg_cpp(
         W0 = rep(1, X.n_cols);
     }
 
-    int d = sum(W0);
+    // int d = sum(W0);
     int s_2_val = int(std::ceil(s_1_val * c));
     // int s_2_val = std::ceil(int(round_modified(exp(M * log(X.n_rows) * (double(d) / (double(d) + 8))))));
     // int s_1_val = std::ceil(int(round_modified(s_2_val * pow(c, double(d) / 2))));

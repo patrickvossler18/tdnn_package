@@ -1,3 +1,37 @@
+dnn_ord = function(ordered_Y, n, p, s.size = 2) {
+    # Weight
+    ord1 = matrix(1:(n - s.size +1) , n - s.size +1 , 1)
+    # (n-k s-1) over (n s)
+    weight1 = rbind(s.size * exp(lgamma(n - ord1 + 1) + lgamma(n - s.size + 1) - lgamma(n+1) - lgamma(n - ord1 - s.size + 2)), matrix(0, nrow = s.size -1, ncol = 1))    # choose(n - ord, s.size - 1) / choose(n, s.size)
+    U1 = sum(ordered_Y * weight1)
+    return(U1)
+}
+
+
+
+
+dnn0 <- function(X,
+                 Y,
+                 X.test,
+                 s.size = 2) {
+    n = nrow(X)
+    p = ncol(X)
+    # Weight
+    ord1 = matrix(1:(n - s.size +1) , n - s.size +1 , 1)
+    # (n-k s-1) over (n s)
+    weight1 = rbind(s.size * exp(lgamma(n - ord1 + 1) + lgamma(n - s.size + 1) - lgamma(n+1) - lgamma(n - ord1 - s.size + 2)), matrix(0, nrow = s.size -1, ncol = 1))    # choose(n - ord, s.size - 1) / choose(n, s.size)
+    # Distance
+    X.dis = X - kronecker(matrix(1, n, 1), X.test)
+    EuDis = (X.dis ^ 2) %*% matrix(1, p, 1)
+    # Ascending small->large
+    noise = matrix(rnorm(1), n, 1)
+    TempD = data.frame(EuDis, Y, noise)[order(EuDis, noise),]
+    # Estimator
+    U1 = sum(TempD$Y * weight1)
+    return(U1)
+}
+
+
 de.dnn <-
   function(Dataset,
            s.size = 2,

@@ -1,28 +1,25 @@
 #ifndef UTIL_H // To make sure you don't declare the function more than once by including the header multiple times.
 #define UTIL_H
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
 #include <RcppArmadillo.h>
 #include <RcppParallel.h>
+#include "RcppThread.h"
 
 #include <math.h>
 #include <tuple>
 
-// [[Rcpp::plugins(openmp)]]
-// [[Rcpp::depends(RcppParallel)]]
-// [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::plugins(cpp11)]]
+// [[Rcpp::depends(RcppParallel)]]
+// [[Rcpp::depends(RcppThread)]]
+// [[Rcpp::depends(RcppArmadillo)]]
 
 using namespace Rcpp;
-using namespace RcppParallel;
 using namespace arma;
 using namespace std;
 
 double nChoosek(double n, double k);
 NumericVector seq_cpp(double lo, double hi);
+arma::vec seq_cpp_arma(double lo, double hi);
 arma::mat matrix_subset_logical(const arma::mat &x, const arma::vec &y, int mrgn = 1);
 
 Rcpp::NumericMatrix matrix_subset_idx_rcpp(Rcpp::NumericMatrix x, Rcpp::IntegerVector y);
@@ -36,7 +33,7 @@ arma::vec vector_subset_idx(const arma::vec &x, const arma::uvec &y);
 
 arma::mat weight_mat_lfac(int n, const arma::vec &ord, const arma::vec &s_vec);
 
-arma::mat weight_mat_lfac_s_2_filter(int n, const arma::vec &ord, const arma::vec &s_vec, double n_prop, bool is_s_2);
+arma::mat weight_mat_lfac_s_2_filter(int n, arma::vec ord, arma::vec s_vec, double n_prop, bool is_s_2);
 
 double round_modified(const double &x);
 arma::vec round_modified_vec(const arma::vec &x);

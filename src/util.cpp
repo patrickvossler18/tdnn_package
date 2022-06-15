@@ -40,6 +40,22 @@ NumericVector seq_cpp(double lo, double hi)
     return sequence;
 }
 
+arma::vec seq_cpp_arma(double lo, double hi)
+{
+    double n = hi - lo + 1;
+
+    // Create a new integer vector, sequence, of size n
+    arma::vec sequence(n);
+
+    for (int i = 0; i < n; i++)
+    {
+        // Set the ith element of sequence to lo plus i
+        sequence(i) = lo + i;
+    }
+    // Return
+    return sequence;
+}
+
 arma::mat matrix_subset_logical(const arma::mat &x,
                                 const arma::vec &y, int mrgn)
 {
@@ -150,16 +166,17 @@ arma::uvec r_like_order(const arma::vec &x, const arma::vec &y)
 }
 
 // [[Rcpp::export]]
-arma::mat weight_mat_lfac_s_2_filter(int n, const arma::vec &ord, const arma::vec &s_vec, double n_prop, bool is_s_2)
+arma::mat weight_mat_lfac_s_2_filter(int n, arma::vec ord,
+                                     arma::vec s_vec, double n_prop, bool is_s_2)
 {
-    arma::mat out(n, s_vec.size());
+    arma::mat out(n, s_vec.n_elem);
 
     // for the s_val of each test observation...
-    for (int i = 0; i < s_vec.size(); i++)
+    for (int i = 0; i < s_vec.n_elem; i++)
     {
         // Rcout << i<< std::endl;
         arma::vec weight_vec(n);
-        double s_val = arma::as_scalar(s_vec[i]);
+        double s_val = arma::as_scalar(s_vec(i));
 
         // if s_val is > n/2 then we're just going to use 1-NN
         if ((is_s_2) & (s_val > (double(n) * n_prop)))
@@ -170,7 +187,6 @@ arma::mat weight_mat_lfac_s_2_filter(int n, const arma::vec &ord, const arma::ve
         }
         else
         {
-
 
             // use fact that lfactorial(x) = lgamma(x+1)
             arma::vec n_ord = arma::lgamma(((double(n) - ord) + 1.0));                 // first term
@@ -271,7 +287,6 @@ arma::vec colSums_arma(const arma::mat &x)
     }
     return ans;
 }
-
 
 arma::vec rowVar_arma(const arma::mat &x)
 {
