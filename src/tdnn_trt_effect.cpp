@@ -22,6 +22,15 @@ arma::vec min_mse_and_s_1(arma::vec mse_vec, arma::vec s_1_vec)
     return {min_val, choose_s1};
 }
 
+arma::vec near_min_mse_and_s_1(arma::vec mse_vec, arma::vec s_1_vec)
+{
+    double min_val = as_scalar(mse_vec.min());
+    arma::uvec near_min_vals = find(mse_vec <= (1 + 0.01) * min_val);
+    double choose_s1 = as_scalar(min(s_1_vec.elem(near_min_vals)));
+    double s_1_mse = as_scalar(mse_vec.elem(find(s_1_vec == choose_s1)));
+    return {s_1_mse, choose_s1};
+}
+
 // [[Rcpp::plugins(cpp11)]]
 // [[Rcpp::depends(RcppThread)]]
 // [[Rcpp::export]]
@@ -132,10 +141,10 @@ Rcpp::List tune_treatment_effect_thread(
 
             arma::vec s_1_vec_tmp_ctl = seq_cpp_arma(s_tmp_ctl, 2 * s_tmp_ctl);
             arma::vec s_1_vec_tmp_trt = seq_cpp_arma(s_tmp_trt, 2 * s_tmp_trt);
-            // Rcout << "s_1_vec_tmp: " << s_1_vec_tmp << std::endl;
+            // Rcout << "s_1_vec_tmp_ctl: " << s_1_vec_tmp_ctl << std::endl;
             arma::mat B_NN_estimates_ctl = make_B_NN_estimates_st(X_ctl, Y_ctl, X_test_i, top_B_ctl, c_val_vec,
                                                                 s_1_vec_tmp_ctl, n_prop, B_NN, scale_p, false);
-
+            // Rcout << "B_NN_estimates_ctl: " << B_NN_estimates_ctl << std::endl;
             arma::mat B_NN_estimates_trt = make_B_NN_estimates_st(X_trt, Y_trt, X_test_i, top_B_trt, c_val_vec,
                                                                 s_1_vec_tmp_trt, n_prop, B_NN, scale_p, false);
 
@@ -146,8 +155,10 @@ Rcpp::List tune_treatment_effect_thread(
             {
                 arma::vec tuned_mse_ctl = B_NN_estimates_ctl.row(k).as_col();
                 arma::vec tuned_mse_trt = B_NN_estimates_trt.row(k).as_col();
-                arma::vec min_mse_s_1_vec_ctl = min_mse_and_s_1(tuned_mse_ctl, s_1_vec_tmp_ctl);
-                arma::vec min_mse_s_1_vec_trt = min_mse_and_s_1(tuned_mse_trt, s_1_vec_tmp_trt);
+                // arma::vec min_mse_s_1_vec_ctl = min_mse_and_s_1(tuned_mse_ctl, s_1_vec_tmp_ctl);
+                // arma::vec min_mse_s_1_vec_trt = min_mse_and_s_1(tuned_mse_trt, s_1_vec_tmp_trt);
+                arma::vec min_mse_s_1_vec_ctl = near_min_mse_and_s_1(tuned_mse_ctl, s_1_vec_tmp_ctl);
+                arma::vec min_mse_s_1_vec_trt = near_min_mse_and_s_1(tuned_mse_trt, s_1_vec_tmp_trt);
                 best_s_1_c_ctl.row(k) = {c_val, min_mse_s_1_vec_ctl[1], min_mse_s_1_vec_ctl[0]};
                 best_s_1_c_trt.row(k) = {c_val, min_mse_s_1_vec_trt[1], min_mse_s_1_vec_trt[0]};
             }

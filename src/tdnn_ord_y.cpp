@@ -1438,6 +1438,7 @@ Rcpp::List tune_de_dnn_no_dist_vary_c_cpp_thread(
             // Rcout << "s_1_vec_tmp: " << s_1_vec_tmp << std::endl;
             arma::mat B_NN_estimates = make_B_NN_estimates_st(X, Y, X_test_i, top_B, c_val_vec,
                                                                 s_1_vec_tmp, n_prop, B_NN, scale_p, debug = false);
+            // Rcout << "B_NN_estimates: " << B_NN_estimates << std::endl;
             arma::mat best_s_1_c(c_val_vec.n_elem, 3);
             // loop over rows of B_NN_estimates matrix and get entry with smallest value
             for (int k = 0; k < B_NN_estimates.n_rows; k++)
